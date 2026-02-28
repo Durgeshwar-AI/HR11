@@ -11,7 +11,6 @@ import livekitRoutes from "./routes/livekit/livekit.route.js";
 import agentToolsRoutes from "./routes/agents/agentTools.route.js";
 import resumeRoutes from "./routes/agents/resume.route.js";
 import formsRoutes from "./routes/forms/forms.route.js";
-import resumeRoutes from "./routes/agents/resume.route.js";
 
 const app = express();
 
@@ -33,7 +32,6 @@ app.use("/api/interview", livekitRoutes);
 app.use("/api/agent", agentToolsRoutes);
 app.use("/api/candidates", resumeRoutes);
 app.use("/api/forms", formsRoutes);
-app.use("/api/ai", resumeRoutes);
 
 app.use((err, req, res, _next) => {
   console.error("Unhandled error:", err);
