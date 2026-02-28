@@ -15,7 +15,7 @@ import {
   MOCK_OPENINGS,
   MOCK_CANDIDATES,
 } from "../../constants/data";
-import { jobsApi } from "../../services/api";
+import { jobsApi, isLoggedIn } from "../../services/api";
 
 type DashboardOpening = {
   id: string | number;
@@ -153,6 +153,13 @@ export function CompanyDashboard() {
   const navigate = useNavigate();
   const [openings, setOpenings] = useState<DashboardOpening[]>(MOCK_OPENINGS as DashboardOpening[]);
   const [stats, setStats] = useState(MOCK_STATS);
+
+  /* Redirect to login if not authenticated */
+  useEffect(() => {
+    if (!isLoggedIn()) {
+      navigate("/company-login");
+    }
+  }, [navigate]);
 
   /* Try fetching real jobs from backend, fallback to mock */
   useEffect(() => {

@@ -51,14 +51,6 @@ const JobRoleSchema = new mongoose.Schema(
     submissionDeadline: { type: Date, default: null }, // After this date, no new resumes accepted
     topN: { type: Number, default: 5 }, // How many candidates to keep
     autoRejectionDone: { type: Boolean, default: false }, // True once the cron has processed this job
-
-    // ── Interview pipeline ───────────────────────────────────────
-    pipeline: [
-      {
-        index:     { type: Number, required: true },
-        roundName: { type: String, required: true },
-      },
-    ],
   },
   { timestamps: true },
 );

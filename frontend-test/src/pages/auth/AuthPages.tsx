@@ -294,7 +294,7 @@ export function CandidateLogin() {
     try {
       const res = await authApi.candidateLogin({ email, password: pass });
       saveAuth(res.token, res.user as { _id?: string; [key: string]: unknown });
-      navigate("/recent-openings");
+      navigate("/candidate-profile");
     } catch (err: unknown) {
       setError(getMessage(err, "Login failed"));
     } finally {
@@ -371,7 +371,7 @@ export function CandidateRegister() {
     try {
       const res = await authApi.candidateRegister({ name: form.name, email: form.email, password: form.pass, role: form.role });
       saveAuth(res.token, res.user as { _id?: string; [key: string]: unknown });
-      navigate("/recent-openings");
+      navigate("/candidate-profile");
     } catch (err: unknown) {
       setError(getMessage(err, "Registration failed"));
     } finally {

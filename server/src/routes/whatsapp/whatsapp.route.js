@@ -336,43 +336,42 @@ router.post("/webhook", async (req, res) => {
   }
 });
 
-export default router;
 
 
 /**
  * Send a WhatsApp text reply via Meta Cloud API.
  */
-async function sendWhatsAppReply(to, text) {
-  const phoneNumberId = process.env.WA_PHONE_NUMBER_ID;
-  const accessToken = process.env.WA_ACCESS_TOKEN;
+// async function sendWhatsAppReply(to, text) {
+//   const phoneNumberId = process.env.WA_PHONE_NUMBER_ID;
+//   const accessToken = process.env.WA_ACCESS_TOKEN;
 
-  if (!phoneNumberId || !accessToken) {
-    console.warn("[WhatsApp] WA_PHONE_NUMBER_ID or WA_ACCESS_TOKEN not set — reply skipped");
-    return;
-  }
+//   if (!phoneNumberId || !accessToken) {
+//     console.warn("[WhatsApp] WA_PHONE_NUMBER_ID or WA_ACCESS_TOKEN not set — reply skipped");
+//     return;
+//   }
 
-  const res = await fetch(
-    `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to,
-        type: "text",
-        text: { body: text },
-      }),
-    },
-  );
+//   const res = await fetch(
+//     `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+//     {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//       body: JSON.stringify({
+//         messaging_product: "whatsapp",
+//         to,
+//         type: "text",
+//         text: { body: text },
+//       }),
+//     },
+//   );
 
-  if (!res.ok) {
-    const err = await res.text();
-    console.error("[WhatsApp] Failed to send reply:", err);
-  }
-}
+//   if (!res.ok) {
+//     const err = await res.text();
+//     console.error("[WhatsApp] Failed to send reply:", err);
+//   }
+// }
 
 /**
  * GET /api/whatsapp/webhook
