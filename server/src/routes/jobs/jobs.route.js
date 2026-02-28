@@ -8,7 +8,7 @@ const router = express.Router();
 // ─── Create new job role ─────────────────────────────────────────
 router.post("/", authenticateHR, async (req, res) => {
   try {
-    const { title, description, skills } = req.body;
+    const { title, description, skills, submissionDeadline, topN } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: "title is required" });
@@ -19,6 +19,10 @@ router.post("/", authenticateHR, async (req, res) => {
       description,
       skills: skills || [],
       createdBy: req.hrUser.id,
+      ...(submissionDeadline && {
+        submissionDeadline: new Date(submissionDeadline),
+      }),
+      ...(topN && { topN: Number(topN) }),
     });
 
     res.status(201).json(jobRole);
@@ -50,11 +54,13 @@ router.get("/:id", authenticateHR, async (req, res) => {
   try {
     const job = await JobRole.findById(req.params.id).populate(
       "createdBy",
-      "name email"
+      "name email",
     );
     if (!job) return res.status(404).json({ error: "Job not found" });
 
-    const questions = await Question.find({ jobId: job._id }).sort("stepNumber");
+    const questions = await Question.find({ jobId: job._id }).sort(
+      "stepNumber",
+    );
 
     res.json({ ...job.toObject(), questions });
   } catch (err) {
@@ -65,13 +71,20 @@ router.get("/:id", authenticateHR, async (req, res) => {
 // ─── Update job role metadata ────────────────────────────────────
 router.put("/:id", authenticateHR, async (req, res) => {
   try {
-    const { title, description, skills, status } = req.body;
+    const { title, description, skills, status, submissionDeadline, topN } =
+      req.body;
 
-    const job = await JobRole.findByIdAndUpdate(
-      req.params.id,
-      { title, description, skills, status },
-      { new: true, runValidators: true }
-    );
+    const update = { title, description, skills, status };
+    if (submissionDeadline !== undefined)
+      update.submissionDeadline = submissionDeadline
+        ? new Date(submissionDeadline)
+        : null;
+    if (topN !== undefined) update.topN = Number(topN);
+
+    const job = await JobRole.findByIdAndUpdate(req.params.id, update, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!job) return res.status(404).json({ error: "Job not found" });
     res.json(job);
@@ -86,7 +99,7 @@ router.delete("/:id", authenticateHR, async (req, res) => {
     const job = await JobRole.findByIdAndUpdate(
       req.params.id,
       { status: "Closed" },
-      { new: true }
+      { new: true },
     );
     if (!job) return res.status(404).json({ error: "Job not found" });
     res.json({ message: "Job archived", job });

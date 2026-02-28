@@ -2,6 +2,7 @@ import express from "express";
 import upload from "../../config/multer.js";
 import { screenResume } from "../../services/aiService.services.js";
 import Candidate from "../../models/candidate.screening.model.js";
+import JobRole from "../../models/JobRole.model.js";
 
 const router = express.Router();
 
@@ -10,11 +11,14 @@ router.post("/:id/screen", async (req, res) => {
     const { jobTitle, jobDescription } = req.body;
 
     if (!jobTitle || !jobDescription) {
-      return res.status(400).json({ error: "jobTitle and jobDescription are required" });
+      return res
+        .status(400)
+        .json({ error: "jobTitle and jobDescription are required" });
     }
 
     const candidate = await Candidate.findById(req.params.id);
-    if (!candidate) return res.status(404).json({ error: "Candidate not found" });
+    if (!candidate)
+      return res.status(404).json({ error: "Candidate not found" });
 
     const result = await screenResume({
       resumeUrl: candidate.resume.url,
@@ -47,9 +51,23 @@ router.post("/submit-and-screen", upload.single("resume"), async (req, res) => {
     const FormFields = req.body;
 
     if (!jobTitle || !jobDescription) {
-      return res.status(400).json({ 
-        error: "jobTitle and jobDescription are required" 
+      return res.status(400).json({
+        error: "jobTitle and jobDescription are required",
       });
+    }
+
+    // ── Block submissions after the deadline ─────────────────────
+    if (jobId) {
+      const job = await JobRole.findById(jobId);
+      if (
+        job?.submissionDeadline &&
+        new Date() > new Date(job.submissionDeadline)
+      ) {
+        return res.status(403).json({
+          error:
+            "The submission deadline for this job has passed. Applications are no longer accepted.",
+        });
+      }
     }
 
     const candidate = await Candidate.create({
@@ -84,7 +102,6 @@ router.post("/submit-and-screen", upload.single("resume"), async (req, res) => {
       resumeUrl: candidate.resume.url,
       screening: result,
     });
-
   } catch (err) {
     console.error("Submit and screen error:", err);
     res.status(500).json({ error: err.message });

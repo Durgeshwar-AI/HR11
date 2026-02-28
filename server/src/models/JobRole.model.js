@@ -16,8 +16,13 @@ const JobRoleSchema = new mongoose.Schema(
       default: "Draft",
     },
     totalSteps: { type: Number, default: 0 }, // Auto-computed from Question count
+
+    // ── Screening deadline & auto-rejection ──────────────────────
+    submissionDeadline: { type: Date, default: null }, // After this date, no new resumes accepted
+    topN: { type: Number, default: 5 }, // How many candidates to keep
+    autoRejectionDone: { type: Boolean, default: false }, // True once the cron has processed this job
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const JobRole = mongoose.model("JobRole", JobRoleSchema);
