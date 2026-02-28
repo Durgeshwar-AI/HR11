@@ -58,18 +58,37 @@ async function upload<T = unknown>(path: string, form: FormData): Promise<T> {
 /* ─── Auth ─────────────────────────────────────────────────────── */
 
 export const authApi = {
-  hrRegister: (data: { name: string; email: string; password: string; company?: string }) =>
-    request("/auth/hr/register", { method: "POST", body: JSON.stringify(data) }),
+  hrRegister: (data: {
+    name: string;
+    email: string;
+    password: string;
+    company?: string;
+  }) =>
+    request("/auth/hr/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
   hrLogin: (data: { email: string; password: string }) =>
     request("/auth/hr/login", { method: "POST", body: JSON.stringify(data) }),
 
   // Candidate auth — if your backend adds these endpoints later, they're ready
-  candidateRegister: (data: { name: string; email: string; password: string; role?: string }) =>
-    request("/auth/candidate/register", { method: "POST", body: JSON.stringify(data) }),
+  candidateRegister: (data: {
+    name: string;
+    email: string;
+    password: string;
+    role?: string;
+  }) =>
+    request("/auth/candidate/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
   candidateLogin: (data: { email: string; password: string }) =>
-    request("/auth/candidate/login", { method: "POST", body: JSON.stringify(data) }),
+    request("/auth/candidate/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };
 
 /* ─── Jobs ─────────────────────────────────────────────────────── */
@@ -87,14 +106,27 @@ export const jobsApi = {
     request(`/jobs/${id}`, { method: "PUT", body: JSON.stringify(data) }),
 
   archive: (id: string) => request(`/jobs/${id}`, { method: "DELETE" }),
+
+  // ── Pipeline management ────────────────────────────────────────
+  getPipeline: (id: string) => request(`/jobs/${id}/pipeline`),
+
+  schedulePipeline: (id: string, startDate?: string) =>
+    request(`/jobs/${id}/schedule`, {
+      method: "POST",
+      body: JSON.stringify({ startDate }),
+    }),
 };
 
 /* ─── Resume / Screening ──────────────────────────────────────── */
 
 export const resumeApi = {
-  submitAndScreen: (form: FormData) => upload("/candidates/submit-and-screen", form),
+  submitAndScreen: (form: FormData) =>
+    upload("/candidates/submit-and-screen", form),
 
-  screenExisting: (candidateId: string, data: { jobTitle: string; jobDescription: string }) =>
+  screenExisting: (
+    candidateId: string,
+    data: { jobTitle: string; jobDescription: string },
+  ) =>
     request(`/candidates/${candidateId}/screen`, {
       method: "POST",
       body: JSON.stringify(data),
@@ -104,7 +136,12 @@ export const resumeApi = {
 /* ─── Aptitude ─────────────────────────────────────────────────── */
 
 export const aptitudeApi = {
-  getQuestions: (params?: { limit?: number; difficulty?: string; category?: string; jobId?: string }) => {
+  getQuestions: (params?: {
+    limit?: number;
+    difficulty?: string;
+    category?: string;
+    jobId?: string;
+  }) => {
     const sp = new URLSearchParams();
     if (params?.limit) sp.set("limit", String(params.limit));
     if (params?.difficulty) sp.set("difficulty", params.difficulty);
@@ -113,14 +150,23 @@ export const aptitudeApi = {
     return request(`/aptitude/questions?${sp}`);
   },
 
-  submit: (data: { jobId: string; candidateId: string; answers: { questionId: string; selectedOption: number }[] }) =>
+  submit: (data: {
+    jobId: string;
+    candidateId: string;
+    answers: { questionId: string; selectedOption: number }[];
+  }) =>
     request("/aptitude/submit", { method: "POST", body: JSON.stringify(data) }),
 };
 
 /* ─── Coding Challenge ─────────────────────────────────────────── */
 
 export const codingApi = {
-  getQuestions: (params?: { limit?: number; difficulty?: string; tag?: string; jobId?: string }) => {
+  getQuestions: (params?: {
+    limit?: number;
+    difficulty?: string;
+    tag?: string;
+    jobId?: string;
+  }) => {
     const sp = new URLSearchParams();
     if (params?.limit) sp.set("limit", String(params.limit));
     if (params?.difficulty) sp.set("difficulty", params.difficulty);
@@ -129,7 +175,13 @@ export const codingApi = {
     return request(`/coding/questions?${sp}`);
   },
 
-  submit: (data: { jobId: string; candidateId: string; questionId: string; language: string; code: string }) =>
+  submit: (data: {
+    jobId: string;
+    candidateId: string;
+    questionId: string;
+    language: string;
+    code: string;
+  }) =>
     request("/coding/submit", { method: "POST", body: JSON.stringify(data) }),
 
   finish: (data: { jobId: string; candidateId: string }) =>
@@ -139,7 +191,12 @@ export const codingApi = {
 /* ─── Technical Interview ──────────────────────────────────────── */
 
 export const technicalApi = {
-  getQuestions: (params?: { limit?: number; difficulty?: string; category?: string; jobId?: string }) => {
+  getQuestions: (params?: {
+    limit?: number;
+    difficulty?: string;
+    category?: string;
+    jobId?: string;
+  }) => {
     const sp = new URLSearchParams();
     if (params?.limit) sp.set("limit", String(params.limit));
     if (params?.difficulty) sp.set("difficulty", params.difficulty);
@@ -148,8 +205,15 @@ export const technicalApi = {
     return request(`/technical/questions?${sp}`);
   },
 
-  submit: (data: { jobId: string; candidateId: string; answers: { questionId: string; selectedOption: number }[] }) =>
-    request("/technical/submit", { method: "POST", body: JSON.stringify(data) }),
+  submit: (data: {
+    jobId: string;
+    candidateId: string;
+    answers: { questionId: string; selectedOption: number }[];
+  }) =>
+    request("/technical/submit", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };
 
 /* ─── Interviews / Leaderboard ────────────────────────────────── */
@@ -159,7 +223,21 @@ export const interviewsApi = {
 
   get: (interviewId: string) => request(`/interviews/${interviewId}`),
 
-  leaderboard: (jobId: string) => request(`/interviews/job/${jobId}/leaderboard`),
+  leaderboard: (jobId: string) =>
+    request(`/interviews/job/${jobId}/leaderboard`),
+
+  // Pipeline progress
+  pipelineProgress: (jobId: string) =>
+    request(`/interviews/job/${jobId}/pipeline-progress`),
+
+  candidateProgress: (candidateId: string, jobId: string) =>
+    request(`/interviews/progress/${candidateId}/job/${jobId}`),
+
+  shortlistStage: (jobId: string, roundNumber: number) =>
+    request(`/interviews/job/${jobId}/shortlist-stage`, {
+      method: "POST",
+      body: JSON.stringify({ roundNumber }),
+    }),
 };
 
 /* ─── Token helpers ───────────────────────────────────────────── */

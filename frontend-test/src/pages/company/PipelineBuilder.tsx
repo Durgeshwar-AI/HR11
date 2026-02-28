@@ -76,19 +76,17 @@ export function PipelineBuilder() {
   const [deployed, setDeployed] = useState(false);
   const flowRef = useRef<HTMLDivElement>(null);
   const drag = useDragSort(setPipeline);
-  const selectedIds = pipeline.map((r) => r.id);
 
   const addRound = (r: PipelineRound) => {
-    if (!selectedIds.includes(r.id)) {
-      setPipeline((p) => [...p, r]);
-      setTimeout(
-        () => flowRef.current?.scrollTo({ top: 9999, behavior: "smooth" }),
-        80,
-      );
-    }
+    // Repeats ARE allowed — just push another copy
+    setPipeline((p) => [...p, r]);
+    setTimeout(
+      () => flowRef.current?.scrollTo({ top: 9999, behavior: "smooth" }),
+      80,
+    );
   };
-  const removeRound = (id: string) =>
-    setPipeline((p) => p.filter((r) => r.id !== id));
+  const removeRound = (idx: number) =>
+    setPipeline((p) => p.filter((_, i) => i !== idx));
   const canDeploy = !!jobTitle.trim() && pipeline.length > 0 && !loading;
 
   const deploy = async () => {
@@ -97,8 +95,16 @@ export function PipelineBuilder() {
     try {
       await jobsApi.create({
         title: jobTitle.trim(),
-        description: `Pipeline with ${pipeline.length} rounds`,
+        description: `Hiring pipeline: ${pipeline.map((r) => r.label).join(" → ")}`,
         totalRounds: pipeline.length,
+        // Send full pipeline with stageType so backend can save it
+        pipeline: pipeline.map((r, i) => ({
+          stageType: r.id, // ROUNDS[].id === stageType
+          stageName: r.label,
+          order: i + 1,
+          thresholdScore: 60,
+          daysAfterPrev: 3,
+        })),
       });
       setDeployed(true);
     } catch (err: unknown) {
@@ -164,43 +170,30 @@ export function PipelineBuilder() {
             <SectionLabel>Available Rounds ({ROUNDS.length})</SectionLabel>
             <div className="flex flex-col gap-[7px]">
               {ROUNDS.map((r) => {
-                const sel = selectedIds.includes(r.id);
+                const count = pipeline.filter((p) => p.id === r.id).length;
                 return (
                   <button
                     key={r.id}
                     onClick={() => addRound(r)}
-                    disabled={sel}
-                    className={[
-                      "border-2 px-3.5 py-2.5 flex items-center gap-2.5 transition-all text-left",
-                      sel
-                        ? "bg-surface-alt border-border-clr cursor-default opacity-45"
-                        : "bg-surface border-secondary cursor-pointer hover:border-primary",
-                    ].join(" ")}
+                    className="border-2 px-3.5 py-2.5 flex items-center gap-2.5 transition-all text-left bg-surface border-secondary cursor-pointer hover:border-primary"
                   >
                     <span className="text-lg">{r.icon}</span>
                     <div className="flex-1">
-                      <span
-                        className={[
-                          "font-display font-extrabold text-sm uppercase",
-                          sel ? "text-ink-faint" : "text-secondary",
-                        ].join(" ")}
-                      >
+                      <span className="font-display font-extrabold text-sm uppercase text-secondary">
                         {r.label}
                       </span>
-                      {sel && (
+                      {count > 0 && (
                         <span className="text-[10px] text-primary ml-2 font-body">
-                          ✓ Added
+                          ×{count} added
                         </span>
                       )}
                       <div className="text-[10px] text-ink-faint font-body mt-px">
                         {r.duration}
                       </div>
                     </div>
-                    {!sel && (
-                      <div className="w-[22px] h-[22px] bg-secondary text-white flex items-center justify-center text-base font-bold">
-                        +
-                      </div>
-                    )}
+                    <div className="w-[22px] h-[22px] bg-secondary text-white flex items-center justify-center text-base font-bold">
+                      +
+                    </div>
                   </button>
                 );
               })}
@@ -249,7 +242,7 @@ export function PipelineBuilder() {
                 const isOver = drag.overIdx === i && drag.dragIdx !== i;
                 return (
                   <div
-                    key={round.id}
+                    key={`${round.id}-${i}`}
                     className="w-full flex flex-col items-center"
                   >
                     <Connector />
@@ -299,7 +292,7 @@ export function PipelineBuilder() {
                         </div>
                       </div>
                       <button
-                        onClick={() => removeRound(round.id)}
+                        onClick={() => removeRound(i)}
                         className="bg-transparent border border-border-clr text-ink-faint w-6 h-6 cursor-pointer text-[11px] flex items-center justify-center"
                       >
                         ✕
@@ -355,14 +348,14 @@ export function PipelineBuilder() {
           <pre className="p-5 font-mono text-[11px] leading-[1.75] overflow-auto max-h-[400px] text-ink-light bg-surface-alt">
             {JSON.stringify(
               {
-                job_title: jobTitle || "Untitled",
-                created_at: new Date().toISOString(),
-                total_rounds: pipeline.length,
-                rounds: pipeline.map((r, i) => ({
-                  round_number: i + 1,
-                  round_id: r.id,
-                  label: r.label,
-                  agents: r.agents,
+                title: jobTitle || "Untitled",
+                totalRounds: pipeline.length,
+                pipeline: pipeline.map((r, i) => ({
+                  stageType: r.id,
+                  stageName: r.label,
+                  order: i + 1,
+                  thresholdScore: 60,
+                  daysAfterPrev: 3,
                 })),
               },
               null,
