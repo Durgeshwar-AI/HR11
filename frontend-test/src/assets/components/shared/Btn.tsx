@@ -10,7 +10,7 @@ const SIZE_CLS: Record<string, string> = {
 const VARIANT_STYLES = {
   primary: {
     base: "bg-primary border-primary text-white",
-    hover: "bg-secondary border-secondary text-white shadow-brutal-sm",
+    hover: "bg-secondary border-white text-white shadow-brutal-sm",
   },
   secondary: {
     base: "bg-transparent border-secondary text-secondary",
