@@ -32,7 +32,6 @@ app.use("/api/interview", livekitRoutes);
 app.use("/api/agent", agentToolsRoutes);
 app.use("/api/candidates", resumeRoutes);
 app.use("/api/forms", formsRoutes);
-app.use("/api/ai", resumeRoutes);
 
 app.use((err, req, res, _next) => {
   console.error("Unhandled error:", err);

@@ -346,7 +346,7 @@ export function PipelineBuilder() {
                 job_title: jobTitle || "Untitled",
                 created_at: new Date().toISOString(),
                 total_rounds: pipeline.length,
-                rounds: pipeline.map((r: any, i: number) => ({
+                  rounds: pipeline.map((r: any, i: number) => ({
                   round_number: i + 1,
                   round_id: r.id,
                   label: r.label,

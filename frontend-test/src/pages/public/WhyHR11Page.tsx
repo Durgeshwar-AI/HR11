@@ -2,6 +2,7 @@ import { PublicNav } from "../../assets/components/layout/PublicNav";
 import { Ticker } from "../../assets/components/layout/Ticker";
 import { Btn } from "../../assets/components/shared/Btn";
 import { WHY_POINTS } from "../../constants/data";
+import { useNavigate } from "react-router-dom";
 
 function WhyCard({ point, index }: any) {
   return (
@@ -20,10 +21,11 @@ function WhyCard({ point, index }: any) {
   );
 }
 
-export function WhyHR11Page({ onNavigate }: any) {
+export function WhyHR11Page() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-tertiary">
-      <PublicNav onNavigate={onNavigate} currentPage="why" />
+      <PublicNav />
 
       {/* Hero */}
       <section className="py-[72px] px-12 pb-14 border-b border-border-clr flex items-end justify-between flex-wrap gap-10">
@@ -159,7 +161,7 @@ export function WhyHR11Page({ onNavigate }: any) {
         </p>
         <div className="flex gap-3 justify-center">
           <Btn
-            onClick={() => onNavigate?.("register-company")}
+            onClick={() => navigate("/company-register")}
             style={{ fontSize: 15 }}
           >
             Start Free Trial →
@@ -167,7 +169,7 @@ export function WhyHR11Page({ onNavigate }: any) {
           <Btn
             variant="secondary"
             style={{ borderColor: "#fff", color: "#fff", fontSize: 15 }}
-            onClick={() => onNavigate?.("how")}
+            onClick={() => navigate("/how-it-works")}
           >
             See How It Works
           </Btn>

@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 
-export function AppShell({ children, currentPage, onNavigate }: any) {
+export function AppShell({ children, currentPage }: any) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-tertiary">
       <Sidebar
         currentPage={currentPage}
-        onNavigate={onNavigate}
         collapsed={collapsed}
       />
 
