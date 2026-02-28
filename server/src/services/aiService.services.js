@@ -2,6 +2,59 @@ import Groq from "groq-sdk";
 import mammoth from "mammoth";
 import { PDFParse } from "pdf-parse";
 
+function clampScore(value) {
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) return 0;
+  return Math.max(0, Math.min(100, Math.round(numeric)));
+}
+
+function normalizeScreeningResult(parsed = {}) {
+  const score = clampScore(parsed.score);
+  const skills = clampScore(parsed.scoreBreakdown?.skills);
+  const experience = clampScore(parsed.scoreBreakdown?.experience);
+  const education = clampScore(parsed.scoreBreakdown?.education);
+
+  return {
+    score,
+    scoreBreakdown: {
+      skills,
+      experience,
+      education,
+      overall: score,
+    },
+    reasoning:
+      typeof parsed.reasoning === "string"
+        ? parsed.reasoning.trim()
+        : "Screening completed with partial AI output.",
+  };
+}
+
+function parseGroqJson(raw) {
+  if (!raw || typeof raw !== "string") return null;
+
+  const trimmed = raw.trim();
+  const candidates = [
+    trimmed,
+    trimmed.replace(/```json|```/gi, "").trim(),
+  ];
+
+  const firstBrace = trimmed.indexOf("{");
+  const lastBrace = trimmed.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    candidates.push(trimmed.slice(firstBrace, lastBrace + 1));
+  }
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      // Continue trying alternative candidates
+    }
+  }
+
+  return null;
+}
+
 // Lazy client — only created when screenResume is first called so the server
 // boots without GROQ_API_KEY; callers get a clear error if key is missing.
 let _groq = null;
@@ -99,34 +152,56 @@ Respond ONLY with valid JSON — no markdown fences, no explanation outside the 
   "reasoning": "<2-3 sentences explaining the score>"
 }`;
 
+  const model = "llama-3.3-70b-versatile";
   const chat = await getGroq().chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model,
     messages: [{ role: "user", content: userPrompt }],
     max_tokens: 512,
     temperature: 0.2,
   });
 
-  const raw = chat.choices[0]?.message?.content || "{}";
-  const cleaned = raw.replace(/```json|```/g, "").trim();
+  let raw = chat.choices[0]?.message?.content || "";
+  let result = parseGroqJson(raw);
 
-  let result;
-  try {
-    result = JSON.parse(cleaned);
-  } catch {
-    throw new Error(`Groq returned non-JSON response: ${raw.slice(0, 200)}`);
+  // Retry once with a stricter instruction if the first output is not parseable JSON.
+  if (!result) {
+    const strictChat = await getGroq().chat.completions.create({
+      model,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Return ONLY valid JSON. No markdown fences, no prose, no extra keys.",
+        },
+        { role: "user", content: userPrompt },
+      ],
+      max_tokens: 512,
+      temperature: 0,
+    });
+
+    raw = strictChat.choices[0]?.message?.content || "";
+    result = parseGroqJson(raw);
   }
+
+  if (!result) {
+    console.warn(
+      `[screenResume] Groq output was not parseable JSON. Using safe fallback. Raw sample: ${raw.slice(0, 200)}`
+    );
+    result = {
+      score: 0,
+      scoreBreakdown: { skills: 0, experience: 0, education: 0 },
+      reasoning: "AI output was malformed. Please retry screening.",
+    };
+  }
+
+  const normalized = normalizeScreeningResult(result);
 
   return {
     jobTitle,
     jobDescription,
-    score: result.score ?? 0,
-    scoreBreakdown: {
-      skills: result.scoreBreakdown?.skills ?? 0,
-      experience: result.scoreBreakdown?.experience ?? 0,
-      education: result.scoreBreakdown?.education ?? 0,
-      overall: result.score ?? 0,
-    },
-    reasoning: result.reasoning ?? "",
+    score: normalized.score,
+    scoreBreakdown: normalized.scoreBreakdown,
+    reasoning: normalized.reasoning,
   };
 }
 
