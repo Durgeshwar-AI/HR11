@@ -11,6 +11,7 @@ import livekitRoutes from "./routes/livekit/livekit.route.js";
 import agentToolsRoutes from "./routes/agents/agentTools.route.js";
 import resumeRoutes from "./routes/agents/resume.route.js";
 import formsRoutes from "./routes/forms/forms.route.js";
+import resumeRoutes from "./routes/agents/resume.route.js";
 
 const app = express();
 
@@ -24,33 +25,16 @@ app.get("/", (req, res) => {
   res.json({ message: "AgenticHire API is running", status: "ok" });
 });
 
-// ── Auth ─────────────────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
-
-// ── HR — Job Management ──────────────────────────────────────────
 app.use("/api/jobs", jobsRoutes);
-
-// ── HR — Question Path Builder ───────────────────────────────────
-// Routes: POST/GET/PUT/DELETE /api/jobs/:jobId/questions[/:id]
-// Also: PUT /api/jobs/:jobId/reorder
 app.use("/api/jobs", questionsRoutes);
-
-// ── Interviews & Results ─────────────────────────────────────────
 app.use("/api/interviews", interviewsRoutes);
-
-// ── LiveKit Token ────────────────────────────────────────────────
 app.use("/api/interview", livekitRoutes);
-
-// ── Agent Tools (internal, called by LiveKit worker) ─────────────
 app.use("/api/agent", agentToolsRoutes);
-
-// ── Resume Screening (existing) ──────────────────────────────────
 app.use("/api/candidates", resumeRoutes);
-
-// ── Forms (existing) ─────────────────────────────────────────────
 app.use("/api/forms", formsRoutes);
+app.use("/api/ai", resumeRoutes);
 
-// ── Global error handler ─────────────────────────────────────────
 app.use((err, req, res, _next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({ error: "Internal server error" });

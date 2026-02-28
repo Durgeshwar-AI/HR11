@@ -11,10 +11,6 @@ const screeningResultSchema = new mongoose.Schema(
       education: Number,    // 0-100
       overall: Number,      // 0-100
     },
-    recommendation: {
-      type: String,
-      enum: ["strong_yes", "yes", "maybe", "no"],
-    },
     reasoning: String,
     screendAt: { type: Date, default: Date.now },
   },
@@ -23,27 +19,24 @@ const screeningResultSchema = new mongoose.Schema(
 
 const candidateSchema = new mongoose.Schema(
   {
-    // Resume file stored on Cloudinary — URL is public so Claude can fetch it anytime
+    name:{
+      type: String,
+      required: true,
+    },
+    email:{
+      type: String,
+      required: true,
+    },
+    phone:{
+      type: String,
+    },
     resume: {
-      url: { type: String, required: true },       // Cloudinary public URL
-      cloudinaryId: { type: String, required: true }, // For deletion if needed
+      url: { type: String, required: true },      
+      cloudinaryId: { type: String, required: true }, 
       originalName: String,
       mimeType: String,
     },
-
-    // Flexible HR form data — no fixed schema enforced here.
-    // Each HR team can submit whatever fields they collect (name, phone, LinkedIn, etc.)
-    // MongoDB stores it as-is in a Mixed type field.
-    formData: {
-      type: mongoose.Schema.Types.Mixed,
-      default: {},
-    },
-
-    // Track which HR/job pipeline this candidate came from
     jobId: { type: String, index: true },
-    source: String, // e.g. "linkedin", "referral", "careers_page"
-
-    // Screening results — array so a candidate can be screened against multiple JDs
     screeningResults: [screeningResultSchema],
 
     status: {
@@ -53,8 +46,8 @@ const candidateSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // adds createdAt, updatedAt
-    strict: false,    // allows extra top-level fields if an HR sends unexpected keys
+    timestamps: true, 
+    strict: false, 
   }
 );
 
