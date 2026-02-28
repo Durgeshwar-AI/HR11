@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppShell } from "../../assets/components/layout/AppShell";
 import { Card, SectionLabel } from "../../assets/components/shared/Card";
 import { Btn } from "../../assets/components/shared/Btn";
@@ -64,7 +65,8 @@ function Connector() {
   );
 }
 
-export function PipelineBuilder({ onNavigate }: any) {
+export function PipelineBuilder() {
+  const navigate = useNavigate();
   const [pipeline, setPipeline] = useState<any[]>([]);
   const [jobTitle, setJobTitle] = useState("");
   const [tab, setTab] = useState("builder");
@@ -96,7 +98,7 @@ export function PipelineBuilder({ onNavigate }: any) {
   };
 
   return (
-    <AppShell currentPage="pipeline" onNavigate={onNavigate}>
+    <AppShell currentPage="pipeline">
       {/* Header */}
       <div className="fade-up mb-7">
         <p className="font-body text-xs tracking-[0.15em] uppercase text-primary mb-1">
