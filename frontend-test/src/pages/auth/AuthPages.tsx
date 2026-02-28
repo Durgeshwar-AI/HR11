@@ -91,7 +91,8 @@ export function CompanyLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setError("");
     setLoading(true);
     try {
@@ -121,7 +122,7 @@ export function CompanyLogin() {
         </>
       }
     >
-      <div className="flex flex-col gap-4">
+      <form onSubmit={handleLogin} className="flex flex-col gap-4">
         <Input
           label="Work Email"
           type="email"
@@ -148,7 +149,7 @@ export function CompanyLogin() {
             {error}
           </div>
         )}
-        <Btn fullWidth onClick={handleLogin} disabled={loading}>
+        <Btn fullWidth type="submit" disabled={loading}>
           {loading ? "Signing in…" : "Sign In →"}
         </Btn>
         <OrDivider />
@@ -159,7 +160,7 @@ export function CompanyLogin() {
         >
           🔗 Continue with Google
         </Btn>
-      </div>
+      </form>
     </AuthShell>
   );
 }
@@ -178,7 +179,8 @@ export function CompanyRegister() {
   const set = (k: string) => (e: any) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const handleRegister = async () => {
+  const handleRegister = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setError("");
     setLoading(true);
     try {
@@ -208,7 +210,7 @@ export function CompanyRegister() {
         </>
       }
     >
-      <div className="flex flex-col gap-3.5">
+      <form onSubmit={handleRegister} className="flex flex-col gap-3.5">
         <Input
           label="Company Name"
           placeholder="TechCorp Inc."
@@ -247,7 +249,7 @@ export function CompanyRegister() {
             {error}
           </div>
         )}
-        <Btn fullWidth onClick={handleRegister} disabled={loading}>
+        <Btn fullWidth type="submit" disabled={loading}>
           {loading ? "Creating account…" : "Create Company Account →"}
         </Btn>
         <Btn
@@ -257,7 +259,7 @@ export function CompanyRegister() {
         >
           🔗 Register with Google
         </Btn>
-      </div>
+      </form>
     </AuthShell>
   );
 }
@@ -270,13 +272,14 @@ export function CandidateLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setError("");
     setLoading(true);
     try {
       const res = await authApi.candidateLogin({ email, password: pass });
       saveAuth(res.token, res.user);
-      navigate("/candidate-profile");
+      navigate("/recent-openings");
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {
@@ -300,7 +303,7 @@ export function CandidateLogin() {
         </>
       }
     >
-      <div className="flex flex-col gap-4">
+      <form onSubmit={handleLogin} className="flex flex-col gap-4">
         <Input
           label="Email"
           type="email"
@@ -317,7 +320,12 @@ export function CandidateLogin() {
           onChange={(e: any) => setPass(e.target.value)}
           required
         />
-        <Btn fullWidth onClick={handleLogin} disabled={loading}>
+        {error && (
+          <div className="text-xs text-red-600 font-body bg-red-50 border border-red-200 px-3 py-2">
+            {error}
+          </div>
+        )}
+        <Btn fullWidth type="submit" disabled={loading}>
           {loading ? "Signing in…" : "Sign In →"}
         </Btn>
         <OrDivider />
@@ -327,12 +335,7 @@ export function CandidateLogin() {
         <Btn fullWidth variant="secondary">
           💼 Continue with LinkedIn
         </Btn>
-        {error && (
-          <div className="text-xs text-red-600 font-body bg-red-50 border border-red-200 px-3 py-2">
-            {error}
-          </div>
-        )}
-      </div>
+      </form>
     </AuthShell>
   );
 }
@@ -346,13 +349,14 @@ export function CandidateRegister() {
   const set = (k: string) => (e: any) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const handleRegister = async () => {
+  const handleRegister = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setError("");
     setLoading(true);
     try {
       const res = await authApi.candidateRegister({ name: form.name, email: form.email, password: form.pass, role: form.role });
       saveAuth(res.token, res.user);
-      navigate("/candidate-profile");
+      navigate("/recent-openings");
     } catch (err: any) {
       setError(err.message || "Registration failed");
     } finally {
@@ -376,7 +380,7 @@ export function CandidateRegister() {
         </>
       }
     >
-      <div className="flex flex-col gap-3.5">
+      <form onSubmit={handleRegister} className="flex flex-col gap-3.5">
         <Input
           label="Full Name"
           placeholder="Arjun Mehta"
@@ -406,21 +410,21 @@ export function CandidateRegister() {
           onChange={set("pass")}
           required
         />
-        <Btn fullWidth onClick={handleRegister} disabled={loading}>
-          {loading ? "Creating account…" : "Create My Account →"}
-        </Btn>
         {error && (
           <div className="text-xs text-red-600 font-body bg-red-50 border border-red-200 px-3 py-2">
             {error}
           </div>
         )}
+        <Btn fullWidth type="submit" disabled={loading}>
+          {loading ? "Creating account…" : "Create My Account →"}
+        </Btn>
         <Btn fullWidth variant="secondary">
           🔗 Sign Up with Google
         </Btn>
         <Btn fullWidth variant="secondary">
           💼 Import from LinkedIn
         </Btn>
-      </div>
+      </form>
     </AuthShell>
   );
 }

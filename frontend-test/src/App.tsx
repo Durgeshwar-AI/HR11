@@ -13,6 +13,7 @@ import { HiringLeaderboard } from "./pages/company/HiringLeaderboard";
 import { PipelineBuilder } from "./pages/company/PipelineBuilder";
 // Candidate
 import { CandidateProfile } from "./pages/candidate/CandidateProfile";
+import { RecentOpenings } from "./pages/candidate/RecentOpenings";
 // Interview
 import { InterviewEntryPage } from "./pages/interview/InterviewEntryPage";
 import { InterviewPage } from "./pages/interview/InterviewPage";
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/leaderboard" element={<HiringLeaderboard />} />
         <Route path="/pipeline" element={<PipelineBuilder />} />
         <Route path="/candidate-profile" element={<CandidateProfile />} />
+        <Route path="/recent-openings" element={<RecentOpenings />} />
         <Route path="/interview-entry" element={<InterviewEntryPage />} />
         <Route path="/interview" element={<InterviewPage />} />
         {/* Round pages */}

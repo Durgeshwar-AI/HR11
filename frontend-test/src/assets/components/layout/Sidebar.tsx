@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { clearAuth } from "../../../services/api";
 
 const NAV_ITEMS = [
   { key: "dashboard", path: "/dashboard", icon: "⊞", label: "Dashboard" },
@@ -56,7 +57,10 @@ export function Sidebar({ currentPage, collapsed }: any) {
 
       {/* Logout */}
       <div className="p-4 border-t border-white/10">
-        <div className="flex items-center gap-3 py-2.5 px-1 cursor-pointer opacity-60">
+        <div
+          onClick={() => { clearAuth(); navigate("/"); }}
+          className="flex items-center gap-3 py-2.5 px-1 cursor-pointer opacity-60 hover:opacity-100 transition-opacity"
+        >
           <span>🚪</span>
           {!collapsed && (
             <span className="font-display font-bold text-xs tracking-[0.08em] uppercase text-white">
