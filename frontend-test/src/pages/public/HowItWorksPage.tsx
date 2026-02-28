@@ -7,19 +7,26 @@ import { HOW_IT_WORKS_STEPS } from "../../constants/data";
 function StepCard({ step, index, total }: any) {
   const isEven = index % 2 === 0;
   return (
-    <div className="fade-up grid grid-cols-[1fr_60px_1fr] items-center"
-      style={{ animationDelay: `${index * 0.1}s` }}>
+    <div
+      className="fade-up grid grid-cols-[1fr_60px_1fr] items-center"
+      style={{ animationDelay: `${index * 0.1}s` }}
+    >
       {/* Left — content if even, empty if odd */}
-      <div className={[
-        "p-8",
-        isEven ? "bg-surface border-2 border-secondary shadow-brutal" : "",
-      ].join(" ")}
-        style={{ gridColumn: isEven ? 1 : 3, gridRow: 1 }}>
+      <div
+        className={[
+          "p-8",
+          isEven ? "bg-surface border-2 border-secondary shadow-brutal" : "",
+        ].join(" ")}
+        style={{ gridColumn: isEven ? 1 : 3, gridRow: 1 }}
+      >
         {isEven && <StepContent step={step} />}
       </div>
 
       {/* Center — connector with number */}
-      <div className="flex flex-col items-center relative" style={{ gridColumn: 2, gridRow: 1 }}>
+      <div
+        className="flex flex-col items-center relative"
+        style={{ gridColumn: 2, gridRow: 1 }}
+      >
         <div className="w-12 h-12 bg-primary flex items-center justify-center font-display font-black text-base text-white z-[1] border-2 border-secondary shrink-0">
           {step.num}
         </div>
@@ -29,11 +36,13 @@ function StepCard({ step, index, total }: any) {
       </div>
 
       {/* Right — content if odd, empty if even */}
-      <div className={[
-        "p-8",
-        !isEven ? "bg-surface border-2 border-secondary shadow-brutal" : "",
-      ].join(" ")}
-        style={{ gridColumn: !isEven ? 3 : 1, gridRow: 1 }}>
+      <div
+        className={[
+          "p-8",
+          !isEven ? "bg-surface border-2 border-secondary shadow-brutal" : "",
+        ].join(" ")}
+        style={{ gridColumn: !isEven ? 3 : 1, gridRow: 1 }}
+      >
         {!isEven && <StepContent step={step} />}
       </div>
     </div>
@@ -58,25 +67,35 @@ function FAQItem({ q, a }: any) {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-2 border-secondary mb-2 overflow-hidden">
-      <button onClick={() => setOpen(o => !o)}
+      <button
+        onClick={() => setOpen((o) => !o)}
         className={[
           "w-full flex items-center justify-between py-4 px-5 border-none cursor-pointer transition-colors text-left",
           open ? "bg-secondary" : "bg-surface",
-        ].join(" ")}>
-        <span className={[
-          "font-display font-extrabold text-[15px] uppercase tracking-[0.02em]",
-          open ? "text-white" : "text-secondary",
-        ].join(" ")}>{q}</span>
-        <span className={[
-          "font-display font-black text-lg shrink-0 ml-3",
-          open ? "text-primary" : "text-secondary",
-        ].join(" ")}>
+        ].join(" ")}
+      >
+        <span
+          className={[
+            "font-display font-extrabold text-[15px] uppercase tracking-[0.02em]",
+            open ? "text-white" : "text-secondary",
+          ].join(" ")}
+        >
+          {q}
+        </span>
+        <span
+          className={[
+            "font-display font-black text-lg shrink-0 ml-3",
+            open ? "text-primary" : "text-secondary",
+          ].join(" ")}
+        >
           {open ? "−" : "+"}
         </span>
       </button>
       {open && (
         <div className="py-4 px-5 bg-surface-alt border-t border-border-clr">
-          <p className="font-body text-[13px] text-ink-light leading-relaxed">{a}</p>
+          <p className="font-body text-[13px] text-ink-light leading-relaxed">
+            {a}
+          </p>
         </div>
       )}
     </div>
@@ -94,21 +113,38 @@ export function HowItWorksPage({ onNavigate }: any) {
           End-to-End Pipeline
         </p>
         <h1 className="font-display font-black text-[clamp(3rem,7vw,6rem)] leading-[0.9] uppercase text-secondary tracking-tight mb-6">
-          HOW HR11<br /><span className="text-primary">WORKS</span>
+          HOW HR11
+          <br />
+          <span className="text-primary">WORKS</span>
         </h1>
         <p className="font-body text-[15px] text-ink-light max-w-[560px] mx-auto leading-relaxed">
-          From the moment a job goes live to the final hire decision —
-          every step is automated, auditable, and bias-free.
+          From the moment a job goes live to the final hire decision — every
+          step is automated, auditable, and bias-free.
         </p>
       </section>
 
-      <Ticker items={["DESIGN PIPELINE", "POST JOB", "AI SCREENS", "AGENTS DEBATE", "VOICE INTERVIEW", "LEADERBOARD", "ONE-CLICK HIRE"]} />
+      <Ticker
+        items={[
+          "DESIGN PIPELINE",
+          "POST JOB",
+          "AI SCREENS",
+          "AGENTS DEBATE",
+          "VOICE INTERVIEW",
+          "LEADERBOARD",
+          "ONE-CLICK HIRE",
+        ]}
+      />
 
       {/* Steps */}
       <section className="py-[72px] px-20 max-w-[1000px] mx-auto">
         <div className="flex flex-col gap-10">
           {HOW_IT_WORKS_STEPS.map((step: any, i: number) => (
-            <StepCard key={i} step={step} index={i} total={HOW_IT_WORKS_STEPS.length} />
+            <StepCard
+              key={i}
+              step={step}
+              index={i}
+              total={HOW_IT_WORKS_STEPS.length}
+            />
           ))}
         </div>
       </section>
@@ -120,17 +156,24 @@ export function HowItWorksPage({ onNavigate }: any) {
             POWERED BY
           </span>
           {[
-            { name: "LlamaParse",    icon: "🦙", desc: "Resume parsing" },
-            { name: "Vapi",          icon: "🎙️", desc: "Voice interviews" },
-            { name: "Multi-Agent",   icon: "🤖", desc: "AI debate engine" },
-            { name: "Google Calendar",icon:"🗓️", desc: "Auto scheduling" },
-            { name: "Streamlit",     icon: "📊", desc: "HR dashboard" },
-          ].map(t => (
-            <div key={t.name} className="flex items-center gap-2 bg-surface border-2 border-secondary py-2.5 px-4">
+            { name: "LlamaParse", icon: "🦙", desc: "Resume parsing" },
+            { name: "Vapi", icon: "🎙️", desc: "Voice interviews" },
+            { name: "Multi-Agent", icon: "🤖", desc: "AI debate engine" },
+            { name: "Google Calendar", icon: "🗓️", desc: "Auto scheduling" },
+            { name: "Streamlit", icon: "📊", desc: "HR dashboard" },
+          ].map((t) => (
+            <div
+              key={t.name}
+              className="flex items-center gap-2 bg-surface border-2 border-secondary py-2.5 px-4"
+            >
               <span className="text-lg">{t.icon}</span>
               <div>
-                <div className="font-display font-extrabold text-[13px] uppercase text-secondary">{t.name}</div>
-                <div className="font-body text-[10px] text-ink-faint">{t.desc}</div>
+                <div className="font-display font-extrabold text-[13px] uppercase text-secondary">
+                  {t.name}
+                </div>
+                <div className="font-body text-[10px] text-ink-faint">
+                  {t.desc}
+                </div>
               </div>
             </div>
           ))}
@@ -143,23 +186,49 @@ export function HowItWorksPage({ onNavigate }: any) {
           FREQUENTLY ASKED
         </h2>
         {[
-          { q: "Is the AI interview actually fair?", a: "Yes. Demographic data including name, gender, and location is redacted before any AI agent scores a candidate. Evaluation is based entirely on technical responses, project depth, and communication clarity." },
-          { q: "Can candidates game the system?", a: "Our anti-cheat layer analyses audio patterns, response consistency, and timing. It detects scripted reading, text-to-speech voices, and unusual pauses. Flagged sessions are escalated to human review." },
-          { q: "How long does the full process take?", a: "A typical 5-round pipeline from application to final shortlist takes 3–5 days, compared to the industry average of 28 days. Scheduling and scoring are fully automated." },
-          { q: "Do I need technical expertise to set up pipelines?", a: "No. The drag-and-drop Pipeline Builder requires no coding. Pick your rounds, order them, and deploy. Your AI pipeline goes live in under 5 minutes." },
-          { q: "What integrations are available?", a: "HR11 integrates with Google Calendar, Outlook, LinkedIn, major ATS platforms, and exposes a full REST API for custom integrations." },
-        ].map((f, i) => <FAQItem key={i} {...f} />)}
+          {
+            q: "Is the AI interview actually fair?",
+            a: "Yes. Demographic data including name, gender, and location is redacted before any AI agent scores a candidate. Evaluation is based entirely on technical responses, project depth, and communication clarity.",
+          },
+          {
+            q: "Can candidates game the system?",
+            a: "Our anti-cheat layer analyses audio patterns, response consistency, and timing. It detects scripted reading, text-to-speech voices, and unusual pauses. Flagged sessions are escalated to human review.",
+          },
+          {
+            q: "How long does the full process take?",
+            a: "A typical 5-round pipeline from application to final shortlist takes 3–5 days, compared to the industry average of 28 days. Scheduling and scoring are fully automated.",
+          },
+          {
+            q: "Do I need technical expertise to set up pipelines?",
+            a: "No. The drag-and-drop Pipeline Builder requires no coding. Pick your rounds, order them, and deploy. Your AI pipeline goes live in under 5 minutes.",
+          },
+          {
+            q: "What integrations are available?",
+            a: "HR11 integrates with Google Calendar, Outlook, LinkedIn, major ATS platforms, and exposes a full REST API for custom integrations.",
+          },
+        ].map((f, i) => (
+          <FAQItem key={i} {...f} />
+        ))}
       </section>
 
       {/* Bottom CTA */}
       <section className="bg-secondary py-16 px-12 text-center">
         <h2 className="font-display font-black text-[clamp(2rem,4vw,3.5rem)] uppercase text-white tracking-tight mb-6 leading-[0.9]">
-          YOUR PIPELINE.<br /><span className="text-primary">LIVE IN 5 MINUTES.</span>
+          YOUR PIPELINE.
+          <br />
+          <span className="text-primary">LIVE IN 5 MINUTES.</span>
         </h2>
         <div className="flex gap-3 justify-center">
-          <Btn onClick={() => onNavigate?.("register-company")}>Get Started Free →</Btn>
-          <Btn variant="secondary" style={{ borderColor: "rgba(255,255,255,0.33)", color: "#fff" }}
-            onClick={() => onNavigate?.("why")}>Why HR11</Btn>
+          <Btn onClick={() => onNavigate?.("register-company")}>
+            Get Started Free →
+          </Btn>
+          <Btn
+            variant="secondary"
+            style={{ borderColor: "rgba(255,255,255,0.33)", color: "#fff" }}
+            onClick={() => onNavigate?.("why")}
+          >
+            Why HR11
+          </Btn>
         </div>
       </section>
     </div>

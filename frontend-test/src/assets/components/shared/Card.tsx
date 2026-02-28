@@ -1,6 +1,12 @@
 import { useState } from "react";
 
-export function Card({ children, hover = false, shadow = false, style = {}, onClick }: any) {
+export function Card({
+  children,
+  hover = false,
+  shadow = false,
+  style = {},
+  onClick,
+}: any) {
   const [hov, setHov] = useState(false);
   return (
     <div
@@ -9,7 +15,9 @@ export function Card({ children, hover = false, shadow = false, style = {}, onCl
       onMouseLeave={() => setHov(false)}
       className={[
         "bg-surface border-2 rounded-none transition-all duration-150",
-        hover && hov ? "border-primary shadow-brutal-orange -translate-x-0.5 -translate-y-0.5" : "border-secondary",
+        hover && hov
+          ? "border-primary shadow-brutal-orange -translate-x-0.5 -translate-y-0.5"
+          : "border-secondary",
         shadow ? "shadow-brutal" : "",
         onClick ? "cursor-pointer" : "cursor-default",
       ].join(" ")}

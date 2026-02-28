@@ -4,13 +4,13 @@ import { Btn } from "../../assets/components/shared/Btn";
 import { Tag, StatusPill } from "../../assets/components/shared/Badges";
 
 const JOB = {
-  title:       "Senior Backend Engineer",
-  company:     "TechCorp Inc.",
-  round:       "AI Voice Interview",
-  roundNum:    4,
+  title: "Senior Backend Engineer",
+  company: "TechCorp Inc.",
+  round: "AI Voice Interview",
+  roundNum: 4,
   totalRounds: 5,
-  duration:    "20–30 minutes",
-  skills:      ["Node.js", "AWS", "System Design", "Databases"],
+  duration: "20–30 minutes",
+  skills: ["Node.js", "AWS", "System Design", "Databases"],
   interviewer: "HR11 AI — Adaptive Voice Agent",
   notes: [
     "Your microphone and camera will be accessed.",
@@ -26,19 +26,19 @@ export function InterviewEntryPage({ onNavigate }: any) {
 
   return (
     <div className="min-h-screen bg-tertiary">
-
       {/* Minimal nav */}
       <nav className="flex items-center justify-between px-10 h-[60px] bg-secondary border-b-2 border-secondary">
         <div className="font-display font-black text-xl text-white">
           HR<span className="text-primary">11</span>
-          <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5 tracking-[0.1em]">AI</span>
+          <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5 tracking-[0.1em]">
+            AI
+          </span>
         </div>
         <StatusPill status="live" />
       </nav>
 
       {/* Content */}
       <div className="max-w-[800px] mx-auto py-12 px-6">
-
         {/* Top label */}
         <div className="fade-up text-center mb-10">
           <div className="inline-flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-primary border border-primary/20 bg-primary/[0.06] px-3.5 py-1 mb-4">
@@ -54,20 +54,24 @@ export function InterviewEntryPage({ onNavigate }: any) {
         </div>
 
         <div className="grid grid-cols-[1.2fr_1fr] gap-5">
-
           {/* Left — job + round info */}
           <div className="flex flex-col gap-4">
-
             {/* Job card */}
             <Card>
               <div className="p-6">
                 <div className="border-l-4 border-primary pl-3.5 mb-5">
-                  <div className="font-display font-black text-[22px] uppercase text-secondary mb-1">{JOB.title}</div>
-                  <div className="font-body text-[13px] text-ink-light">{JOB.company}</div>
+                  <div className="font-display font-black text-[22px] uppercase text-secondary mb-1">
+                    {JOB.title}
+                  </div>
+                  <div className="font-body text-[13px] text-ink-light">
+                    {JOB.company}
+                  </div>
                 </div>
 
                 <div className="flex gap-2.5 mb-4 flex-wrap">
-                  {JOB.skills.map(s => <Tag key={s}>{s}</Tag>)}
+                  {JOB.skills.map((s) => (
+                    <Tag key={s}>{s}</Tag>
+                  ))}
                 </div>
 
                 {/* Round progress */}
@@ -82,8 +86,12 @@ export function InterviewEntryPage({ onNavigate }: any) {
                   </div>
                   {/* Progress bar */}
                   <div className="h-1.5 bg-border-clr w-full">
-                    <div className="h-full bg-primary transition-[width] duration-500"
-                      style={{ width: `${(JOB.roundNum / JOB.totalRounds) * 100}%` }} />
+                    <div
+                      className="h-full bg-primary transition-[width] duration-500"
+                      style={{
+                        width: `${(JOB.roundNum / JOB.totalRounds) * 100}%`,
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -96,16 +104,33 @@ export function InterviewEntryPage({ onNavigate }: any) {
                   Session Details
                 </div>
                 {[
-                  { icon: "⏱", label: "Duration",     val: JOB.duration },
-                  { icon: "🤖", label: "Interviewer",  val: JOB.interviewer },
-                  { icon: "🎙️", label: "Format",       val: "Real-time voice conversation" },
-                  { icon: "📊", label: "Evaluation",   val: "Technical depth + communication clarity" },
-                ].map(item => (
-                  <div key={item.label} className="flex gap-2.5 py-2 border-b border-border-clr">
-                    <span className="text-base shrink-0 w-6 text-center">{item.icon}</span>
+                  { icon: "⏱", label: "Duration", val: JOB.duration },
+                  { icon: "🤖", label: "Interviewer", val: JOB.interviewer },
+                  {
+                    icon: "🎙️",
+                    label: "Format",
+                    val: "Real-time voice conversation",
+                  },
+                  {
+                    icon: "📊",
+                    label: "Evaluation",
+                    val: "Technical depth + communication clarity",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex gap-2.5 py-2 border-b border-border-clr"
+                  >
+                    <span className="text-base shrink-0 w-6 text-center">
+                      {item.icon}
+                    </span>
                     <div>
-                      <div className="font-display font-bold text-[10px] tracking-[0.12em] uppercase text-ink-faint">{item.label}</div>
-                      <div className="font-body text-[13px] text-secondary mt-px">{item.val}</div>
+                      <div className="font-display font-bold text-[10px] tracking-[0.12em] uppercase text-ink-faint">
+                        {item.label}
+                      </div>
+                      <div className="font-body text-[13px] text-secondary mt-px">
+                        {item.val}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -126,7 +151,9 @@ export function InterviewEntryPage({ onNavigate }: any) {
                       <div className="w-[18px] h-[18px] bg-primary shrink-0 mt-px flex items-center justify-center font-display font-black text-[9px] text-white">
                         {i + 1}
                       </div>
-                      <p className="font-body text-xs text-ink-light leading-snug">{n}</p>
+                      <p className="font-body text-xs text-ink-light leading-snug">
+                        {n}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -146,14 +173,20 @@ export function InterviewEntryPage({ onNavigate }: any) {
                     micOk
                       ? "bg-success-bg border-success text-success"
                       : "bg-surface-alt border-border-clr text-secondary",
-                  ].join(" ")}>
+                  ].join(" ")}
+                >
                   {micOk ? "✓ Microphone Ready" : "🎙️ Test Microphone"}
                 </button>
                 {micOk && (
                   <div className="flex gap-[3px] items-end h-8 mt-2.5 justify-center">
-                    {[0,1,2,3,4,5,6].map(i => (
-                      <div key={i} className="w-1 bg-primary rounded-sm"
-                        style={{ animation: `waveBar 0.8s ease ${i * 0.1}s infinite` }} />
+                    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                      <div
+                        key={i}
+                        className="w-1 bg-primary rounded-sm"
+                        style={{
+                          animation: `waveBar 0.8s ease ${i * 0.1}s infinite`,
+                        }}
+                      />
                     ))}
                   </div>
                 )}
@@ -161,13 +194,19 @@ export function InterviewEntryPage({ onNavigate }: any) {
             </Card>
 
             {/* Start button */}
-            <Btn fullWidth onClick={() => onNavigate?.("interview")} disabled={!micOk}
-              style={{ padding: "18px", fontSize: 16 }}>
+            <Btn
+              fullWidth
+              onClick={() => onNavigate?.("interview")}
+              disabled={!micOk}
+              style={{ padding: "18px", fontSize: 16 }}
+            >
               {micOk ? "START INTERVIEW →" : "COMPLETE MIC CHECK FIRST"}
             </Btn>
 
             <p className="text-[11px] text-ink-faint font-body text-center leading-snug">
-              Once started, you cannot pause the session.<br />Ensure you're in a quiet environment.
+              Once started, you cannot pause the session.
+              <br />
+              Ensure you're in a quiet environment.
             </p>
           </div>
         </div>

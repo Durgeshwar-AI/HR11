@@ -56,7 +56,9 @@ export function ResumeScreening({ onNavigate }: any) {
     <AppShell currentPage="resume-screening" onNavigate={onNavigate}>
       <div className="max-w-[640px] mx-auto">
         <div className="fade-up mb-7">
-          <p className="font-body text-xs tracking-[0.15em] uppercase text-primary mb-1">Resume Screening</p>
+          <p className="font-body text-xs tracking-[0.15em] uppercase text-primary mb-1">
+            Resume Screening
+          </p>
           <h1 className="font-display font-black text-[clamp(1.8rem,3vw,2.4rem)] uppercase tracking-tight text-secondary">
             Upload &amp; Evaluate
           </h1>

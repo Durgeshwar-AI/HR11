@@ -6,7 +6,11 @@ export function AppShell({ children, currentPage, onNavigate }: any) {
 
   return (
     <div className="flex min-h-screen bg-tertiary">
-      <Sidebar currentPage={currentPage} onNavigate={onNavigate} collapsed={collapsed} />
+      <Sidebar
+        currentPage={currentPage}
+        onNavigate={onNavigate}
+        collapsed={collapsed}
+      />
 
       <div className="flex-1 flex flex-col overflow-auto">
         {/* Top bar */}
@@ -21,13 +25,17 @@ export function AppShell({ children, currentPage, onNavigate }: any) {
           <div className="flex items-center gap-5">
             <div className="font-body text-[13px] text-ink-light bg-surface-alt border border-border-clr py-1.5 px-3.5 flex items-center gap-2">
               <span>🔔</span>
-              <span className="font-display font-extrabold text-[10px] bg-primary text-white px-[5px] py-px">3</span>
+              <span className="font-display font-extrabold text-[10px] bg-primary text-white px-[5px] py-px">
+                3
+              </span>
             </div>
             <div className="flex items-center gap-2 bg-surface-alt border border-border-clr py-1.5 px-3.5 cursor-pointer">
               <div className="w-7 h-7 bg-primary text-white flex items-center justify-center font-display font-black text-xs">
                 HR
               </div>
-              <span className="font-body font-medium text-[13px] text-secondary">TechCorp Inc.</span>
+              <span className="font-body font-medium text-[13px] text-secondary">
+                TechCorp Inc.
+              </span>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const screeningResultSchema = new mongoose.Schema(
   {
@@ -58,4 +58,5 @@ const candidateSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Candidate", candidateSchema);
+const ScreeningCandidate = mongoose.model("ScreeningCandidate", candidateSchema);
+export default ScreeningCandidate;
