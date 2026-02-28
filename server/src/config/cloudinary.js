@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinaryStorage from "multer-storage-cloudinary";
 import multer from "multer";
 
 // Lazy config — reads env vars on first use, safe against ESM import hoisting.
@@ -31,7 +31,7 @@ let _multer = null;
 function getUpload() {
   if (!_multer) {
     ensureConfig();
-    const storage = new CloudinaryStorage({
+    const storage = cloudinaryStorage({
       cloudinary,
       params: {
         folder: "resumes",

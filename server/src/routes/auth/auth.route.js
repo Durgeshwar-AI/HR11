@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Candidate from "../../models/Candidate.model.js";
 import HRUser from "../../models/HRUser.model.js";
+import { authenticateHR } from "../../middleware/auth.js";
 
 const router = express.Router();
 
@@ -12,12 +13,16 @@ router.post("/hr/register", async (req, res) => {
     const { name, email, password, role, company } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ error: "name, email, and password are required" });
+      return res
+        .status(400)
+        .json({ error: "name, email, and password are required" });
     }
 
     const existing = await HRUser.findOne({ email });
     if (existing) {
-      return res.status(409).json({ error: "HR user with this email already exists" });
+      return res
+        .status(409)
+        .json({ error: "HR user with this email already exists" });
     }
 
     // First HR user auto-becomes admin
@@ -36,7 +41,7 @@ router.post("/hr/register", async (req, res) => {
     const token = jwt.sign(
       { id: hrUser._id, email: hrUser.email, role: "hr", hrRole: hrUser.role },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     res.status(201).json({
@@ -77,7 +82,7 @@ router.post("/hr/login", async (req, res) => {
     const token = jwt.sign(
       { id: hrUser._id, email: hrUser.email, role: "hr", hrRole: hrUser.role },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     res.json({
@@ -177,6 +182,44 @@ router.post("/candidate/login", async (req, res) => {
     });
   } catch (err) {
     console.error("Candidate login error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Link / unlink WhatsApp phone number ─────────────────────────
+// PATCH /api/auth/hr/whatsapp
+// Body: { whatsappPhone: "919876543210" }  (E.164 without the +)
+router.patch("/hr/whatsapp", authenticateHR, async (req, res) => {
+  try {
+    const { whatsappPhone } = req.body;
+
+    // Allow unlinking by passing null / empty string
+    const update = {
+      whatsappPhone: whatsappPhone
+        ? String(whatsappPhone).replace(/\D/g, "")
+        : null,
+    };
+
+    const hrUser = await HRUser.findByIdAndUpdate(req.hrUser.id, update, {
+      new: true,
+      select: "name email whatsappPhone",
+    });
+
+    if (!hrUser) return res.status(404).json({ error: "HR user not found" });
+
+    res.json({
+      message: whatsappPhone
+        ? "WhatsApp number linked successfully"
+        : "WhatsApp number unlinked",
+      user: hrUser,
+    });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({
+        error: "This WhatsApp number is already linked to another account",
+      });
+    }
+    console.error("WhatsApp link error:", err);
     res.status(500).json({ error: err.message });
   }
 });
