@@ -40,6 +40,15 @@ export default function App() {
         <Route path="/company-login" element={<CompanyLogin />} />
         <Route path="/company-register" element={<CompanyRegister />} />
         <Route path="/candidate-login" element={<CandidateLogin />} />
+        {/* App pages */}
+        <Route path="/dashboard" element={<CompanyDashboard />} />
+        <Route path="/leaderboard" element={<HiringLeaderboard />} />
+        <Route path="/pipeline" element={<PipelineBuilder />} />
+        <Route path="/candidate-profile" element={<CandidateProfile />} />
+        <Route path="/interview-entry" element={<InterviewEntryPage />} />
+        <Route path="/interview" element={<InterviewPage />} />
+        {/* catch-all -> home */}
+        <Route path="*" element={<RoleChoice />} />
       </Routes>
     </BrowserRouter>
   );

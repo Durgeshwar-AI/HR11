@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppShell } from "../../assets/components/layout/AppShell";
 import { Card, SectionLabel } from "../../assets/components/shared/Card";
 import {
@@ -88,7 +89,8 @@ function CandidateRow({ candidate, rank, onViewInterview }: any) {
   );
 }
 
-export function HiringLeaderboard({ onNavigate }: any) {
+export function HiringLeaderboard() {
+  const navigate = useNavigate();
   const [selectedOpening, setSelectedOpening] = useState(MOCK_OPENINGS[0]);
 
   const sorted = [...MOCK_CANDIDATES].sort(
@@ -96,7 +98,7 @@ export function HiringLeaderboard({ onNavigate }: any) {
   );
 
   return (
-    <AppShell currentPage="leaderboard" onNavigate={onNavigate}>
+    <AppShell currentPage="leaderboard">
       {/* Header */}
       <div className="fade-up mb-7">
         <div className="flex justify-between items-end flex-wrap gap-3">
@@ -108,7 +110,7 @@ export function HiringLeaderboard({ onNavigate }: any) {
               HIRING LEADERBOARD
             </h1>
           </div>
-          <Btn variant="secondary" onClick={() => onNavigate?.("pipeline")}>
+          <Btn variant="secondary" onClick={() => navigate("/pipeline")}>
             Edit Pipeline
           </Btn>
         </div>
@@ -221,7 +223,7 @@ export function HiringLeaderboard({ onNavigate }: any) {
               key={c.id}
               candidate={c}
               rank={i + 1}
-              onViewInterview={() => onNavigate?.("interview")}
+              onViewInterview={() => navigate("/interview")}
             />
           ))}
         </Card>

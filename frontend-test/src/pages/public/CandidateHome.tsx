@@ -3,8 +3,10 @@ import { Btn } from "../../assets/components/shared/Btn";
 import { Input } from "../../assets/components/shared/Input";
 import { OrDivider } from "../auth/AuthPages";
 import { PublicNav } from "../../assets/components/layout/PublicNav";
+import { useNavigate } from "react-router-dom";
 
-export function CandidateHome({ onNavigate }: any) {
+export function CandidateHome() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [loginForm, setLoginForm] = useState({ email: "", pass: "" });
   const [regForm, setRegForm] = useState({ name: "", email: "", pass: "", role: "" });
@@ -13,7 +15,7 @@ export function CandidateHome({ onNavigate }: any) {
 
   return (
     <div className="min-h-screen bg-tertiary flex flex-col">
-      <PublicNav onNavigate={onNavigate} currentPage="candidate-home" />
+      <PublicNav />
 
       <div className="flex flex-col items-center justify-center flex-1 px-6 py-12">
         <h1 className="font-display font-black text-[clamp(2rem,5vw,4rem)] uppercase tracking-tight text-secondary mb-6 text-center">
@@ -51,7 +53,9 @@ export function CandidateHome({ onNavigate }: any) {
                 onChange={setLogin("pass")}
                 required
               />
-              <Btn fullWidth onClick={() => onNavigate("candidate-profile")}>Sign In →</Btn>
+              <Btn fullWidth onClick={() => navigate("/candidate-profile")}>
+                Sign In →
+              </Btn>
               <OrDivider />
               <Btn fullWidth variant="secondary">🔗 Continue with Google</Btn>
               <Btn fullWidth variant="secondary">💼 Continue with LinkedIn</Btn>
@@ -64,7 +68,9 @@ export function CandidateHome({ onNavigate }: any) {
               <Input label="Email" type="email" placeholder="arjun@email.com" value={regForm.email} onChange={setReg("email")} required />
               <Input label="Desired Role" placeholder="e.g. Senior Backend Engineer" value={regForm.role} onChange={setReg("role")} />
               <Input label="Password" type="password" placeholder="Create a strong password" value={regForm.pass} onChange={setReg("pass")} required />
-              <Btn fullWidth onClick={() => onNavigate("candidate-profile")}>Create My Account →</Btn>
+              <Btn fullWidth onClick={() => navigate("/candidate-profile")}>
+                Create My Account →
+              </Btn>
               <Btn fullWidth variant="secondary">🔗 Sign Up with Google</Btn>
               <Btn fullWidth variant="secondary">💼 Import from LinkedIn</Btn>
             </div>

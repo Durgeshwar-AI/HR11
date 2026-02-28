@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { AppShell } from "../../assets/components/layout/AppShell";
 import { StatBox } from "../../assets/components/shared/StatBox";
 import { Card, SectionLabel } from "../../assets/components/shared/Card";
@@ -72,9 +73,10 @@ function ActivityFeed() {
   );
 }
 
-function OpeningCard({ opening, onNavigate }: any) {
+function OpeningCard({ opening }: any) {
+  const navigate = useNavigate();
   return (
-    <Card hover onClick={() => onNavigate?.("leaderboard")}>
+    <Card hover onClick={() => navigate("/leaderboard")}>
       <div className="px-5 py-[18px]">
         <div className="flex justify-between items-start mb-2.5">
           <div>
@@ -121,9 +123,10 @@ function OpeningCard({ opening, onNavigate }: any) {
   );
 }
 
-export function CompanyDashboard({ onNavigate }: any) {
+export function CompanyDashboard() {
+  const navigate = useNavigate();
   return (
-    <AppShell currentPage="dashboard" onNavigate={onNavigate}>
+    <AppShell currentPage="dashboard">
       {/* Page header */}
       <div className="fade-up mb-7">
         <div className="flex justify-between items-end flex-wrap gap-3">
@@ -135,7 +138,7 @@ export function CompanyDashboard({ onNavigate }: any) {
               COMPANY DASHBOARD
             </h1>
           </div>
-          <Btn onClick={() => onNavigate?.("pipeline")}>+ New Job Opening</Btn>
+          <Btn onClick={() => navigate("/pipeline")}>+ New Job Opening</Btn>
         </div>
       </div>
 
@@ -176,7 +179,7 @@ export function CompanyDashboard({ onNavigate }: any) {
           <SectionLabel>Active Job Openings</SectionLabel>
           <div className="flex flex-col gap-3">
             {MOCK_OPENINGS.map((o: any) => (
-              <OpeningCard key={o.id} opening={o} onNavigate={onNavigate} />
+              <OpeningCard key={o.id} opening={o} />
             ))}
           </div>
         </div>
@@ -188,7 +191,7 @@ export function CompanyDashboard({ onNavigate }: any) {
             <div className="flex justify-between items-center mb-4">
               <SectionLabel>Top Candidates</SectionLabel>
               <span
-                onClick={() => onNavigate?.("leaderboard")}
+                onClick={() => navigate("/leaderboard")}
                 className="text-xs text-primary cursor-pointer font-body font-semibold"
               >
                 View All →

@@ -32,23 +32,23 @@ async function extractResumeText(resumeUrl, mimeType) {
  * @param {string} mimeType     - MIME type of the resume file
  * @param {string} jobTitle     - Title of the role
  * @param {string} jobDescription - Full job description text
- * @param {object} formData     - Unstructured HR form data (provides extra candidate context)
+ * @param {string} name         - Candidate's name
+ * @param {string} email        - Candidate's email
  */
-async function screenResume({ resumeUrl, mimeType, jobTitle, jobDescription, formData }) {
-  // Try to extract text from PDF; fall back to sending URL for Claude to process
+async function screenResume({ resumeUrl, mimeType, jobTitle, jobDescription, name, email }) {
   let resumeText = null;
   let useUrl = false;
 
   try {
     resumeText = await extractResumeText(resumeUrl, mimeType);
     if (!resumeText) useUrl = true;
-  } catch {
+  } catch (err) {
     useUrl = true; // If extraction fails, let Claude fetch the URL
   }
 
   const formContext =
-    Object.keys(formData || {}).length > 0
-      ? `\n\nAdditional candidate information from HR form:\n${JSON.stringify(formData, null, 2)}`
+    name || email
+      ? `\n\nAdditional candidate information:\nName: ${name || "Unknown"}\nEmail: ${email || "Unknown"}`
       : "";
 
   const systemPrompt = `You are an expert technical recruiter and resume screener. 
@@ -73,7 +73,6 @@ Respond ONLY with this JSON structure:
     "experience": <0-100, relevance and years of experience>,
     "education": <0-100, education fit for the role>
   },
-  "recommendation": <"strong_yes" | "yes" | "maybe" | "no">,
   "reasoning": "<2-3 sentence explanation of the score and key factors>"
 }`;
 

@@ -4,10 +4,9 @@ export const ROUNDS = [
   { id:"coding_challenge",    label:"Coding Challenge",    icon:"💻", tag:"Technical",   duration:"1–2 hrs",   agents:["Code Eval","Anti-Cheat"] },
   { id:"ai_voice_interview",  label:"AI Voice Interview",  icon:"🎙️", tag:"Vapi",        duration:"20–30 min", agents:["Voice AI","Sentiment AI"] },
   { id:"technical_interview", label:"Technical Interview", icon:"⚙️", tag:"Human",       duration:"45–60 min", agents:["Scheduler","Feedback Bot"] },
-  { id:"hr_round",            label:"HR Round",            icon:"🤝", tag:"Human",       duration:"30 min",    agents:["HR Bot","Offer Gen"] },
   { id:"group_discussion",    label:"Group Discussion",    icon:"👥", tag:"Assessment",  duration:"45 min",    agents:["GD Mod","Leader Score"] },
   { id:"background_check",    label:"Background Check",    icon:"🔍", tag:"Verification",duration:"1–3 days",  agents:["Verify Bot","Risk AI"] },
-  { id:"final_offer",         label:"Offer & Onboarding",  icon:"🎉", tag:"Closing",     duration:"Instant",   agents:["Offer Gen","Onboard Bot"] },
+  { id:"custom_round",        label:"Custom Round",        icon:"🛠️", tag:"Custom",      duration:"—",           agents:["Your Tools"] },
 ];
 
 export const MOCK_CANDIDATES = [
@@ -21,10 +20,10 @@ export const MOCK_CANDIDATES = [
 ];
 
 export const MOCK_OPENINGS = [
-  { id:1, title:"Senior Backend Engineer",  department:"Engineering", applicants:47, shortlisted:8,  status:"active",   posted:"5 days ago",  pipeline:["resume_screening","aptitude_test","coding_challenge","technical_interview","hr_round"] },
-  { id:2, title:"Product Designer",         department:"Design",      applicants:31, shortlisted:5,  status:"active",   posted:"3 days ago",  pipeline:["resume_screening","ai_voice_interview","hr_round"] },
-  { id:3, title:"ML Engineer",              department:"AI/ML",       applicants:28, shortlisted:4,  status:"paused",   posted:"8 days ago",  pipeline:["resume_screening","coding_challenge","technical_interview","hr_round"] },
-  { id:4, title:"DevOps Lead",              department:"Infrastructure",applicants:19,shortlisted:3, status:"active",   posted:"1 day ago",   pipeline:["resume_screening","aptitude_test","technical_interview","background_check","hr_round"] },
+  { id:1, title:"Senior Backend Engineer",  department:"Engineering", applicants:47, shortlisted:8,  status:"active",   posted:"5 days ago",  pipeline:["resume_screening","aptitude_test","coding_challenge","technical_interview"] },
+  { id:2, title:"Product Designer",         department:"Design",      applicants:31, shortlisted:5,  status:"active",   posted:"3 days ago",  pipeline:["resume_screening","ai_voice_interview"] },
+  { id:3, title:"ML Engineer",              department:"AI/ML",       applicants:28, shortlisted:4,  status:"paused",   posted:"8 days ago",  pipeline:["resume_screening","coding_challenge","technical_interview"] },
+  { id:4, title:"DevOps Lead",              department:"Infrastructure",applicants:19,shortlisted:3, status:"active",   posted:"1 day ago",   pipeline:["resume_screening","aptitude_test","technical_interview","background_check"] },
 ];
 
 export const MOCK_STATS = {
