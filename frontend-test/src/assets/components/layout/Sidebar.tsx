@@ -1,4 +1,4 @@
-import { T } from "../../../../frontend-test/src/theme/tokens";
+import { T } from "../../../theme/tokens";
 
 const NAV_ITEMS = [
   { key: "dashboard",   icon: "⊞", label: "Dashboard" },
