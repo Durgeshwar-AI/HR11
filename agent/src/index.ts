@@ -11,10 +11,11 @@ import { config } from "dotenv";
 config();
 
 import { WorkerOptions, defineAgent, cli } from "@livekit/agents";
+import type { JobContext } from "@livekit/agents";
 import { createInterviewAgent } from "./agent.js";
 
 export default defineAgent({
-  entry: async (ctx) => {
+  entry: async (ctx: JobContext) => {
     // Wait for a participant (candidate) to connect
     await ctx.waitForParticipant();
     console.log(`[Agent] Participant joined room: ${ctx.room.name}`);

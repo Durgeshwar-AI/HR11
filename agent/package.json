@@ -10,8 +10,8 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@livekit/agents": "^0.4.0",
-    "@livekit/agents-plugin-google": "^0.2.0",
+    "@livekit/agents": "^1.0.48",
+    "@livekit/agents-plugin-google": "^1.0.48",
     "@google/generative-ai": "^0.21.0",
     "mongoose": "^9.2.3",
     "dotenv": "^17.3.1"
