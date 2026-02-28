@@ -1,6 +1,3 @@
-import { useState } from "react";
-
-// Auth
 import {
   CompanyLogin,
   CompanyRegister,
@@ -30,7 +27,7 @@ import { RoleChoice } from "./pages/public/RoleChoice.tsx";
 import { CandidateHome } from "./pages/public/CandidateHome.tsx";
 import { CompanyHome } from "./pages/public/CompanyHome.tsx";
 
-import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
+import {BrowserRouter, Routes, Route} from "react-router-dom";
 
 export default function App() {
 
