@@ -1,13 +1,9 @@
-import { config } from "dotenv";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 
 const app = express();
-config();
 
-// Middleware
-app.disable("x-powered-by");
 app.use(helmet());
 app.use(cors());
 
