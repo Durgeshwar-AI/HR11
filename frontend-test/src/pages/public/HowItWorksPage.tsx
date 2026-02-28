@@ -1,126 +1,102 @@
-import { T } from "../../theme/tokens";
+import { useState } from "react";
 import { PublicNav } from "../../assets/components/layout/PublicNav";
 import { Ticker } from "../../assets/components/layout/Ticker";
 import { Btn } from "../../assets/components/shared/Btn";
 import { HOW_IT_WORKS_STEPS } from "../../constants/data";
 
-function StepCard({ step, index, total }) {
+function StepCard({ step, index, total }: any) {
   const isEven = index % 2 === 0;
   return (
-    <div className="fade-up" style={{
-      display: "grid", gridTemplateColumns: "1fr 60px 1fr",
-      alignItems: "center", gap: 0,
-      animationDelay: `${index * 0.1}s`,
-    }}>
-      {/* Left — content if even, spacer if odd */}
-      <div style={{ padding: "32px", background: isEven ? T.surface : "transparent",
-        border: isEven ? `2px solid ${T.secondary}` : "none",
-        boxShadow: isEven ? T.shadow : "none",
-        gridColumn: isEven ? 1 : 3,
-        gridRow: 1,
-      }}>
+    <div className="fade-up grid grid-cols-[1fr_60px_1fr] items-center"
+      style={{ animationDelay: `${index * 0.1}s` }}>
+      {/* Left — content if even, empty if odd */}
+      <div className={[
+        "p-8",
+        isEven ? "bg-surface border-2 border-secondary shadow-brutal" : "",
+      ].join(" ")}
+        style={{ gridColumn: isEven ? 1 : 3, gridRow: 1 }}>
         {isEven && <StepContent step={step} />}
       </div>
 
       {/* Center — connector with number */}
-      <div style={{
-        display: "flex", flexDirection: "column", alignItems: "center",
-        gridColumn: 2, gridRow: 1, position: "relative",
-      }}>
-        <div style={{
-          width: 48, height: 48, background: T.primary,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 16,
-          color: "#fff", zIndex: 1, border: `2px solid ${T.secondary}`,
-          flexShrink: 0,
-        }}>{step.num}</div>
+      <div className="flex flex-col items-center relative" style={{ gridColumn: 2, gridRow: 1 }}>
+        <div className="w-12 h-12 bg-primary flex items-center justify-center font-display font-black text-base text-white z-[1] border-2 border-secondary shrink-0">
+          {step.num}
+        </div>
         {index < total - 1 && (
-          <div style={{ width: 2, height: 80, background: T.border, position: "absolute", top: 48 }} />
+          <div className="w-0.5 h-20 bg-border-clr absolute top-12" />
         )}
       </div>
 
-      {/* Right — content if odd, spacer if even */}
-      <div style={{
-        padding: "32px", background: !isEven ? T.surface : "transparent",
-        border: !isEven ? `2px solid ${T.secondary}` : "none",
-        boxShadow: !isEven ? T.shadow : "none",
-        gridColumn: !isEven ? 3 : 1,
-        gridRow: 1,
-      }}>
+      {/* Right — content if odd, empty if even */}
+      <div className={[
+        "p-8",
+        !isEven ? "bg-surface border-2 border-secondary shadow-brutal" : "",
+      ].join(" ")}
+        style={{ gridColumn: !isEven ? 3 : 1, gridRow: 1 }}>
         {!isEven && <StepContent step={step} />}
       </div>
     </div>
   );
 }
 
-function StepContent({ step }) {
+function StepContent({ step }: any) {
   return (
     <>
-      <span style={{ fontSize: 32, display: "block", marginBottom: 12 }}>{step.icon}</span>
-      <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 20,
-        textTransform: "uppercase", color: T.secondary, marginBottom: 8, lineHeight: 1.1 }}>
+      <span className="text-[32px] block mb-3">{step.icon}</span>
+      <div className="font-display font-black text-xl uppercase text-secondary mb-2 leading-tight">
         {step.title}
       </div>
-      <p style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkLight, lineHeight: 1.65 }}>
+      <p className="font-body text-[13px] text-ink-light leading-relaxed">
         {step.desc}
       </p>
     </>
   );
 }
 
-function FAQItem({ q, a }) {
+function FAQItem({ q, a }: any) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ border: `2px solid ${T.secondary}`, marginBottom: 8, overflow: "hidden" }}>
-      <button onClick={() => setOpen(o => !o)} style={{
-        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "16px 20px", background: open ? T.secondary : T.surface,
-        border: "none", cursor: "pointer", transition: T.transColor,
-        textAlign: "left",
-      }}>
-        <span style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 15,
-          textTransform: "uppercase", letterSpacing: "0.02em",
-          color: open ? "#fff" : T.secondary }}>{q}</span>
-        <span style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 18,
-          color: open ? T.primary : T.secondary, flexShrink: 0, marginLeft: 12 }}>
+    <div className="border-2 border-secondary mb-2 overflow-hidden">
+      <button onClick={() => setOpen(o => !o)}
+        className={[
+          "w-full flex items-center justify-between py-4 px-5 border-none cursor-pointer transition-colors text-left",
+          open ? "bg-secondary" : "bg-surface",
+        ].join(" ")}>
+        <span className={[
+          "font-display font-extrabold text-[15px] uppercase tracking-[0.02em]",
+          open ? "text-white" : "text-secondary",
+        ].join(" ")}>{q}</span>
+        <span className={[
+          "font-display font-black text-lg shrink-0 ml-3",
+          open ? "text-primary" : "text-secondary",
+        ].join(" ")}>
           {open ? "−" : "+"}
         </span>
       </button>
       {open && (
-        <div style={{ padding: "16px 20px", background: T.surfaceAlt,
-          borderTop: `1px solid ${T.border}` }}>
-          <p style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkLight, lineHeight: 1.65 }}>{a}</p>
+        <div className="py-4 px-5 bg-surface-alt border-t border-border-clr">
+          <p className="font-body text-[13px] text-ink-light leading-relaxed">{a}</p>
         </div>
       )}
     </div>
   );
 }
 
-// useState needed for FAQ
-import { useState } from "react";
-
-export function HowItWorksPage({ onNavigate }) {
+export function HowItWorksPage({ onNavigate }: any) {
   return (
-    <div style={{ minHeight: "100vh", background: T.tertiary }}>
+    <div className="min-h-screen bg-tertiary">
       <PublicNav onNavigate={onNavigate} currentPage="how" />
 
       {/* Hero */}
-      <section style={{
-        padding: "72px 48px 56px",
-        borderBottom: `1px solid ${T.border}`,
-        textAlign: "center",
-      }}>
-        <p style={{ fontFamily: T.fontBody, fontWeight: 500, fontSize: 11,
-          letterSpacing: "0.25em", textTransform: "uppercase", color: T.primary, marginBottom: 14 }}>
+      <section className="py-[72px] px-12 border-b border-border-clr text-center">
+        <p className="font-body font-medium text-[11px] tracking-[0.25em] uppercase text-primary mb-3.5">
           End-to-End Pipeline
         </p>
-        <h1 style={{ fontFamily: T.fontDisplay, fontWeight: 900,
-          fontSize: "clamp(3rem,7vw,6rem)", lineHeight: 0.9,
-          textTransform: "uppercase", color: T.secondary, letterSpacing: "-0.02em", marginBottom: 24 }}>
-          HOW HR11<br /><span style={{ color: T.primary }}>WORKS</span>
+        <h1 className="font-display font-black text-[clamp(3rem,7vw,6rem)] leading-[0.9] uppercase text-secondary tracking-tight mb-6">
+          HOW HR11<br /><span className="text-primary">WORKS</span>
         </h1>
-        <p style={{ fontFamily: T.fontBody, fontSize: 15, color: T.inkLight,
-          maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}>
+        <p className="font-body text-[15px] text-ink-light max-w-[560px] mx-auto leading-relaxed">
           From the moment a job goes live to the final hire decision —
           every step is automated, auditable, and bias-free.
         </p>
@@ -129,19 +105,18 @@ export function HowItWorksPage({ onNavigate }) {
       <Ticker items={["DESIGN PIPELINE", "POST JOB", "AI SCREENS", "AGENTS DEBATE", "VOICE INTERVIEW", "LEADERBOARD", "ONE-CLICK HIRE"]} />
 
       {/* Steps */}
-      <section style={{ padding: "72px 80px", maxWidth: 1000, margin: "0 auto" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
-          {HOW_IT_WORKS_STEPS.map((step, i) => (
+      <section className="py-[72px] px-20 max-w-[1000px] mx-auto">
+        <div className="flex flex-col gap-10">
+          {HOW_IT_WORKS_STEPS.map((step: any, i: number) => (
             <StepCard key={i} step={step} index={i} total={HOW_IT_WORKS_STEPS.length} />
           ))}
         </div>
       </section>
 
       {/* Tech stack strip */}
-      <section style={{ background: T.surfaceAlt, borderTop: `2px solid ${T.secondary}`, borderBottom: `2px solid ${T.secondary}`, padding: "40px 48px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 32, flexWrap: "wrap", justifyContent: "center" }}>
-          <span style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 11,
-            letterSpacing: "0.2em", textTransform: "uppercase", color: T.inkFaint }}>
+      <section className="bg-surface-alt border-y-2 border-secondary py-10 px-12">
+        <div className="flex items-center gap-8 flex-wrap justify-center">
+          <span className="font-display font-extrabold text-[11px] tracking-[0.2em] uppercase text-ink-faint">
             POWERED BY
           </span>
           {[
@@ -151,16 +126,11 @@ export function HowItWorksPage({ onNavigate }) {
             { name: "Google Calendar",icon:"🗓️", desc: "Auto scheduling" },
             { name: "Streamlit",     icon: "📊", desc: "HR dashboard" },
           ].map(t => (
-            <div key={t.name} style={{
-              display: "flex", alignItems: "center", gap: 8,
-              background: T.surface, border: `2px solid ${T.secondary}`,
-              padding: "10px 16px",
-            }}>
-              <span style={{ fontSize: 18 }}>{t.icon}</span>
+            <div key={t.name} className="flex items-center gap-2 bg-surface border-2 border-secondary py-2.5 px-4">
+              <span className="text-lg">{t.icon}</span>
               <div>
-                <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 13,
-                  textTransform: "uppercase", color: T.secondary }}>{t.name}</div>
-                <div style={{ fontFamily: T.fontBody, fontSize: 10, color: T.inkFaint }}>{t.desc}</div>
+                <div className="font-display font-extrabold text-[13px] uppercase text-secondary">{t.name}</div>
+                <div className="font-body text-[10px] text-ink-faint">{t.desc}</div>
               </div>
             </div>
           ))}
@@ -168,9 +138,8 @@ export function HowItWorksPage({ onNavigate }) {
       </section>
 
       {/* FAQ */}
-      <section style={{ padding: "64px 48px", maxWidth: 800, margin: "0 auto" }}>
-        <h2 style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: "clamp(1.6rem,3vw,2.4rem)",
-          textTransform: "uppercase", color: T.secondary, marginBottom: 28 }}>
+      <section className="py-16 px-12 max-w-[800px] mx-auto">
+        <h2 className="font-display font-black text-[clamp(1.6rem,3vw,2.4rem)] uppercase text-secondary mb-7">
           FREQUENTLY ASKED
         </h2>
         {[
@@ -183,15 +152,13 @@ export function HowItWorksPage({ onNavigate }) {
       </section>
 
       {/* Bottom CTA */}
-      <section style={{ background: T.secondary, padding: "64px 48px", textAlign: "center" }}>
-        <h2 style={{ fontFamily: T.fontDisplay, fontWeight: 900,
-          fontSize: "clamp(2rem,4vw,3.5rem)", textTransform: "uppercase",
-          color: "#fff", letterSpacing: "-0.02em", marginBottom: 24, lineHeight: 0.9 }}>
-          YOUR PIPELINE.<br /><span style={{ color: T.primary }}>LIVE IN 5 MINUTES.</span>
+      <section className="bg-secondary py-16 px-12 text-center">
+        <h2 className="font-display font-black text-[clamp(2rem,4vw,3.5rem)] uppercase text-white tracking-tight mb-6 leading-[0.9]">
+          YOUR PIPELINE.<br /><span className="text-primary">LIVE IN 5 MINUTES.</span>
         </h2>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+        <div className="flex gap-3 justify-center">
           <Btn onClick={() => onNavigate?.("register-company")}>Get Started Free →</Btn>
-          <Btn variant="secondary" style={{ borderColor: "#fff5", color: "#fff" }}
+          <Btn variant="secondary" style={{ borderColor: "rgba(255,255,255,0.33)", color: "#fff" }}
             onClick={() => onNavigate?.("why")}>Why HR11</Btn>
         </div>
       </section>

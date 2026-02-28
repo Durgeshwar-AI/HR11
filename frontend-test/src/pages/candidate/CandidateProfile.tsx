@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { T } from "../../theme/tokens";
 import { Card, SectionLabel, Divider } from "../../assets/components/shared/Card";
 import { Btn } from "../../assets/components/shared/Btn";
 import { Avatar } from "../../assets/components/shared/Avatar";
@@ -21,130 +20,117 @@ const CANDIDATE = {
   ],
 };
 
-function ApplicationCard({ app, onNavigate }) {
+function ApplicationCard({ app, onNavigate }: any) {
   return (
-    <Card hover style={{ padding: "16px 20px" }} onClick={() => onNavigate?.("interview-entry")}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+    <Card hover onClick={() => onNavigate?.("interview-entry")}>
+      <div className="flex justify-between items-start mb-2.5 px-5 py-4">
         <div>
-          <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 16,
-            textTransform: "uppercase", color: T.secondary, marginBottom: 3 }}>{app.role}</div>
-          <div style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkLight }}>{app.company}</div>
+          <div className="font-display font-extrabold text-base uppercase text-secondary mb-1">{app.role}</div>
+          <div className="font-body text-[13px] text-ink-light">{app.company}</div>
         </div>
         <ScoreBadge score={app.score} />
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div className="flex items-center gap-2.5 justify-between px-5 pb-4">
+        <div className="flex items-center gap-2">
           <StatusPill status={app.status} />
-          <span style={{ fontSize: 11, color: T.inkFaint, fontFamily: T.fontBody }}>📍 {app.round}</span>
+          <span className="text-[11px] text-ink-faint font-body">📍 {app.round}</span>
         </div>
-        <span style={{ fontSize: 11, color: T.inkFaint, fontFamily: T.fontBody }}>{app.date}</span>
+        <span className="text-[11px] text-ink-faint font-body">{app.date}</span>
       </div>
     </Card>
   );
 }
 
-export function CandidateProfile({ onNavigate }) {
+export function CandidateProfile({ onNavigate }: any) {
   const [activeTab, setActiveTab] = useState("applications");
 
   return (
-    <div style={{ minHeight: "100vh", background: T.tertiary }}>
+    <div className="min-h-screen bg-tertiary">
 
       {/* Minimal nav */}
-      <nav style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 40px", height: 60,
-        background: T.tertiary, borderBottom: `2px solid ${T.secondary}`,
-        position: "sticky", top: 0, zIndex: 10,
-      }}>
-        <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 20, color: T.secondary }}>
-          HR<span style={{ color: T.primary }}>11</span>
-          <span style={{ background: T.primary, color: "#fff", fontSize: 8, padding: "1px 5px", marginLeft: 6 }}>AI</span>
+      <nav className="flex items-center justify-between px-10 h-[60px] bg-tertiary border-b-2 border-secondary sticky top-0 z-10">
+        <div className="font-display font-black text-xl text-secondary">
+          HR<span className="text-primary">11</span>
+          <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5">AI</span>
         </div>
-        <div style={{ display: "flex", gap: 12 }}>
+        <div className="flex gap-3">
           <Btn size="sm" variant="secondary" onClick={() => onNavigate?.("login-candidate")}>Sign Out</Btn>
         </div>
       </nav>
 
-      <div style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }}>
+      <div className="max-w-[980px] mx-auto py-9 px-6">
+        <div className="grid grid-cols-[300px_1fr] gap-6 items-start">
 
           {/* Left — profile card */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <Card style={{ padding: "28px", textAlign: "center" }}>
-              <Avatar initials={CANDIDATE.avatar} size={80} style={{ margin: "0 auto 16px" }} />
-              <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 20,
-                textTransform: "uppercase", color: T.secondary, marginBottom: 4 }}>{CANDIDATE.name}</div>
-              <div style={{ fontFamily: T.fontBody, fontSize: 13, color: T.primary, fontWeight: 600, marginBottom: 4 }}>
-                {CANDIDATE.role}
-              </div>
-              <div style={{ fontFamily: T.fontBody, fontSize: 12, color: T.inkFaint, marginBottom: 16 }}>
-                📍 {CANDIDATE.location}
-              </div>
-              <Divider />
-              <div style={{ marginTop: 16, textAlign: "left", display: "flex", flexDirection: "column", gap: 8 }}>
-                {[["📧", CANDIDATE.email], ["📞", CANDIDATE.phone]].map(([icon, val]) => (
-                  <div key={val} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <span style={{ fontSize: 14 }}>{icon}</span>
-                    <span style={{ fontFamily: T.fontBody, fontSize: 12, color: T.inkLight }}>{val}</span>
-                  </div>
-                ))}
+          <div className="flex flex-col gap-4">
+            <Card>
+              <div className="p-7 text-center">
+                <Avatar initials={CANDIDATE.avatar} size={80} style={{ margin: "0 auto 16px" }} />
+                <div className="font-display font-black text-xl uppercase text-secondary mb-1">{CANDIDATE.name}</div>
+                <div className="font-body text-[13px] text-primary font-semibold mb-1">{CANDIDATE.role}</div>
+                <div className="font-body text-xs text-ink-faint mb-4">📍 {CANDIDATE.location}</div>
+                <Divider />
+                <div className="mt-4 text-left flex flex-col gap-2">
+                  {[["📧", CANDIDATE.email], ["📞", CANDIDATE.phone]].map(([icon, val]) => (
+                    <div key={val} className="flex gap-2 items-center">
+                      <span className="text-sm">{icon}</span>
+                      <span className="font-body text-xs text-ink-light">{val}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </Card>
 
             {/* Skills */}
-            <Card style={{ padding: "20px" }}>
-              <SectionLabel>Skills</SectionLabel>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {CANDIDATE.skills.map(s => <Tag key={s}>{s}</Tag>)}
+            <Card>
+              <div className="p-5">
+                <SectionLabel>Skills</SectionLabel>
+                <div className="flex flex-wrap gap-1.5">
+                  {CANDIDATE.skills.map((s: string) => <Tag key={s}>{s}</Tag>)}
+                </div>
               </div>
             </Card>
 
             {/* Quick stats */}
-            <Card style={{ padding: "20px" }}>
-              <SectionLabel>Stats</SectionLabel>
-              {[
-                { label: "Applications", val: CANDIDATE.applications.length },
-                { label: "Shortlisted",  val: CANDIDATE.applications.filter(a => a.status === "shortlisted").length },
-                { label: "Avg Score",    val: Math.round(CANDIDATE.applications.reduce((a,b)=>a+b.score,0)/CANDIDATE.applications.length) },
-              ].map(s => (
-                <div key={s.label} style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
-                  padding: "8px 0", borderBottom: `1px solid ${T.border}`,
-                }}>
-                  <span style={{ fontFamily: T.fontBody, fontSize: 12, color: T.inkLight }}>{s.label}</span>
-                  <span style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 18, color: T.secondary }}>{s.val}</span>
-                </div>
-              ))}
+            <Card>
+              <div className="p-5">
+                <SectionLabel>Stats</SectionLabel>
+                {[
+                  { label: "Applications", val: CANDIDATE.applications.length },
+                  { label: "Shortlisted",  val: CANDIDATE.applications.filter(a => a.status === "shortlisted").length },
+                  { label: "Avg Score",    val: Math.round(CANDIDATE.applications.reduce((a,b)=>a+b.score,0)/CANDIDATE.applications.length) },
+                ].map(s => (
+                  <div key={s.label} className="flex justify-between items-center py-2 border-b border-border-clr">
+                    <span className="font-body text-xs text-ink-light">{s.label}</span>
+                    <span className="font-display font-black text-lg text-secondary">{s.val}</span>
+                  </div>
+                ))}
+              </div>
             </Card>
           </div>
 
           {/* Right — tabs */}
           <div>
             {/* Tab bar */}
-            <div style={{ display: "flex", borderBottom: `2px solid ${T.secondary}`, marginBottom: 24 }}>
+            <div className="flex border-b-2 border-secondary mb-6">
               {[
                 { key: "applications", label: "My Applications" },
                 { key: "experience",   label: "Experience" },
                 { key: "resume",       label: "Resume" },
               ].map(t => (
-                <button key={t.key} onClick={() => setActiveTab(t.key)} style={{
-                  background: activeTab === t.key ? T.secondary : "transparent",
-                  border: "none", borderBottom: "none",
-                  color: activeTab === t.key ? "#fff" : T.secondary,
-                  padding: "12px 24px", cursor: "pointer",
-                  fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 12,
-                  letterSpacing: "0.1em", textTransform: "uppercase",
-                  transition: T.transColor,
-                }}>{t.label}</button>
+                <button key={t.key} onClick={() => setActiveTab(t.key)}
+                  className={[
+                    "border-none py-3 px-6 cursor-pointer font-display font-extrabold text-xs tracking-[0.1em] uppercase transition-colors",
+                    activeTab === t.key ? "bg-secondary text-white" : "bg-transparent text-secondary",
+                  ].join(" ")}>{t.label}</button>
               ))}
             </div>
 
             {/* Applications */}
             {activeTab === "applications" && (
-              <div className="fade-up" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <span style={{ fontFamily: T.fontDisplay, fontWeight: 700, fontSize: 11,
-                    letterSpacing: "0.15em", color: T.inkFaint, textTransform: "uppercase" }}>
+              <div className="fade-up flex flex-col gap-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-display font-bold text-[11px] tracking-[0.15em] text-ink-faint uppercase">
                     {CANDIDATE.applications.length} Active Applications
                   </span>
                   <Btn size="sm" onClick={() => onNavigate?.("interview-entry")}>Browse Jobs</Btn>
@@ -157,25 +143,24 @@ export function CandidateProfile({ onNavigate }) {
 
             {/* Experience */}
             {activeTab === "experience" && (
-              <div className="fade-up" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <div style={{ fontFamily: T.fontBody, fontSize: 14, color: T.inkLight, lineHeight: 1.6,
-                  padding: "0 0 16px", borderBottom: `1px solid ${T.border}` }}>
+              <div className="fade-up flex flex-col gap-4">
+                <div className="font-body text-sm text-ink-light leading-relaxed pb-4 border-b border-border-clr">
                   {CANDIDATE.bio}
                 </div>
                 {CANDIDATE.experience.map((e, i) => (
-                  <Card key={i} style={{ padding: "20px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                      <div>
-                        <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 17,
-                          textTransform: "uppercase", color: T.secondary }}>{e.role}</div>
-                        <div style={{ fontFamily: T.fontBody, fontSize: 13, color: T.primary, fontWeight: 600 }}>{e.company}</div>
+                  <Card key={i}>
+                    <div className="p-5">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <div className="font-display font-extrabold text-[17px] uppercase text-secondary">{e.role}</div>
+                          <div className="font-body text-[13px] text-primary font-semibold">{e.company}</div>
+                        </div>
+                        <span className="font-body text-xs text-ink-faint bg-surface-alt border border-border-clr px-2 py-[3px]">
+                          {e.period}
+                        </span>
                       </div>
-                      <span style={{ fontFamily: T.fontBody, fontSize: 12, color: T.inkFaint,
-                        background: T.surfaceAlt, border: `1px solid ${T.border}`, padding: "3px 8px" }}>
-                        {e.period}
-                      </span>
+                      <p className="font-body text-[13px] text-ink-light leading-relaxed">{e.desc}</p>
                     </div>
-                    <p style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkLight, lineHeight: 1.6 }}>{e.desc}</p>
                   </Card>
                 ))}
               </div>
@@ -184,18 +169,19 @@ export function CandidateProfile({ onNavigate }) {
             {/* Resume */}
             {activeTab === "resume" && (
               <div className="fade-up">
-                <Card style={{ padding: "40px", textAlign: "center" }}>
-                  <div style={{ fontSize: 52, marginBottom: 16 }}>📄</div>
-                  <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 22,
-                    textTransform: "uppercase", color: T.secondary, marginBottom: 8 }}>
-                    Arjun_Mehta_Resume.pdf
-                  </div>
-                  <p style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkLight, marginBottom: 24 }}>
-                    Parsed and indexed by LlamaParse · Last updated 3 days ago
-                  </p>
-                  <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                    <Btn variant="secondary">Download PDF</Btn>
-                    <Btn>Upload New Resume</Btn>
+                <Card>
+                  <div className="p-10 text-center">
+                    <div className="text-[52px] mb-4">📄</div>
+                    <div className="font-display font-black text-[22px] uppercase text-secondary mb-2">
+                      Arjun_Mehta_Resume.pdf
+                    </div>
+                    <p className="font-body text-[13px] text-ink-light mb-6">
+                      Parsed and indexed by LlamaParse · Last updated 3 days ago
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <Btn variant="secondary">Download PDF</Btn>
+                      <Btn>Upload New Resume</Btn>
+                    </div>
                   </div>
                 </Card>
               </div>

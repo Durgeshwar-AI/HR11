@@ -1,64 +1,45 @@
-import { T } from "../../../theme/tokens";
-
 const NAV_ITEMS = [
-  { key: "dashboard",   icon: "⊞", label: "Dashboard" },
-  { key: "openings",    icon: "📋", label: "Job Openings" },
-  { key: "pipeline",    icon: "⚙️", label: "Pipeline Builder" },
+  { key: "dashboard", icon: "⊞", label: "Dashboard" },
+  { key: "openings", icon: "📋", label: "Job Openings" },
+  { key: "pipeline", icon: "⚙️", label: "Pipeline Builder" },
   { key: "resume-screening", icon: "📄", label: "Resume Screening" },
-]
-export function Sidebar({ currentPage, onNavigate, collapsed }) {
-  const w = collapsed ? 60 : 220;
+];
 
+export function Sidebar({ currentPage, onNavigate, collapsed }: any) {
   return (
-    <aside style={{
-      width: w, minHeight: "100vh",
-      background: T.secondary, color: "#fff",
-      borderRight: `2px solid ${T.secondary}`,
-      display: "flex", flexDirection: "column",
-      flexShrink: 0, transition: "width 0.2s ease",
-      position: "sticky", top: 0, alignSelf: "flex-start",
-    }}>
+    <aside
+      className="min-h-screen bg-secondary text-white border-r-2 border-secondary flex flex-col shrink-0 sticky top-0 self-start transition-[width] duration-200"
+      style={{ width: collapsed ? 60 : 220 }}
+    >
       {/* Logo */}
-      <div style={{
-        height: 62, display: "flex", alignItems: "center",
-        padding: collapsed ? "0 16px" : "0 20px",
-        borderBottom: "1px solid rgba(255,255,255,0.1)",
-        gap: 8,
-      }}>
-        <span style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 20, color: "#fff" }}>
-          HR<span style={{ color: T.primary }}>11</span>
+      <div className={`h-[62px] flex items-center gap-2 border-b border-white/10 ${collapsed ? "px-4" : "px-5"}`}>
+        <span className="font-display font-black text-xl text-white">
+          HR<span className="text-primary">11</span>
         </span>
         {!collapsed && (
-          <span style={{ background: T.primary, color: "#fff", fontSize: 8, fontWeight: 800,
-            padding: "1px 5px", letterSpacing: "0.1em" }}>AI</span>
+          <span className="bg-primary text-white text-[8px] font-extrabold px-[5px] py-px tracking-[0.1em]">AI</span>
         )}
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: "16px 0" }}>
-        {NAV_ITEMS.map(item => {
+      <nav className="flex-1 py-4">
+        {NAV_ITEMS.map((item) => {
           const active = currentPage === item.key;
           return (
-            <div key={item.key} onClick={() => onNavigate?.(item.key)}
-              style={{
-                display: "flex", alignItems: "center",
-                gap: 12, padding: collapsed ? "12px 16px" : "12px 20px",
-                cursor: "pointer",
-                background: active ? T.primary : "transparent",
-                borderLeft: active ? `3px solid #fff` : "3px solid transparent",
-                transition: T.transBase,
-                fontSize: 18,
-              }}
-              onMouseEnter={e => { if (!active) e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
-              onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
+            <div
+              key={item.key}
+              onClick={() => onNavigate?.(item.key)}
+              className={[
+                "flex items-center gap-3 cursor-pointer text-lg transition-all duration-150",
+                collapsed ? "py-3 px-4" : "py-3 px-5",
+                active ? "bg-primary border-l-[3px] border-white" : "border-l-[3px] border-transparent hover:bg-white/[0.08]",
+              ].join(" ")}
             >
-              <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+              <span className="text-base shrink-0">{item.icon}</span>
               {!collapsed && (
-                <span style={{
-                  fontFamily: T.fontDisplay, fontWeight: 700,
-                  fontSize: 13, letterSpacing: "0.06em",
-                  textTransform: "uppercase", color: "#fff",
-                }}>{item.label}</span>
+                <span className="font-display font-bold text-[13px] tracking-[0.06em] uppercase text-white">
+                  {item.label}
+                </span>
               )}
             </div>
           );
@@ -66,15 +47,11 @@ export function Sidebar({ currentPage, onNavigate, collapsed }) {
       </nav>
 
       {/* Logout */}
-      <div style={{ padding: "16px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 12,
-          padding: "10px 4px", cursor: "pointer", opacity: 0.6,
-        }}>
+      <div className="p-4 border-t border-white/10">
+        <div className="flex items-center gap-3 py-2.5 px-1 cursor-pointer opacity-60">
           <span>🚪</span>
           {!collapsed && (
-            <span style={{ fontFamily: T.fontDisplay, fontWeight: 700,
-              fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "#fff" }}>
+            <span className="font-display font-bold text-xs tracking-[0.08em] uppercase text-white">
               Logout
             </span>
           )}

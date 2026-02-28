@@ -1,62 +1,39 @@
 import { useState } from "react";
-import { T } from "../../../theme/tokens";
 import { Sidebar } from "./Sidebar";
 
-export function AppShell({ children, currentPage, onNavigate }) {
+export function AppShell({ children, currentPage, onNavigate }: any) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: T.tertiary }}>
+    <div className="flex min-h-screen bg-tertiary">
       <Sidebar currentPage={currentPage} onNavigate={onNavigate} collapsed={collapsed} />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "auto" }}>
+      <div className="flex-1 flex flex-col overflow-auto">
         {/* Top bar */}
-        <div style={{
-          height: 62, display: "flex", alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 32px",
-          background: T.surface,
-          borderBottom: `2px solid ${T.secondary}`,
-          flexShrink: 0,
-        }}>
+        <div className="h-[62px] flex items-center justify-between px-8 bg-surface border-b-2 border-secondary shrink-0">
           <button
-            onClick={() => setCollapsed(c => !c)}
-            style={{
-              background: "transparent", border: `2px solid ${T.secondary}`,
-              width: 36, height: 36, cursor: "pointer", fontSize: 14,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: T.fontDisplay,
-            }}>☰</button>
+            onClick={() => setCollapsed((c: boolean) => !c)}
+            className="bg-transparent border-2 border-secondary w-9 h-9 cursor-pointer text-sm flex items-center justify-center font-display"
+          >
+            ☰
+          </button>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <div style={{
-              fontFamily: T.fontBody, fontSize: 13, color: T.inkLight,
-              background: T.surfaceAlt, border: `1px solid ${T.border}`,
-              padding: "6px 14px", display: "flex", alignItems: "center", gap: 8,
-            }}>
+          <div className="flex items-center gap-5">
+            <div className="font-body text-[13px] text-ink-light bg-surface-alt border border-border-clr py-1.5 px-3.5 flex items-center gap-2">
               <span>🔔</span>
-              <span style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 10,
-                background: T.primary, color: "#fff", padding: "1px 5px" }}>3</span>
+              <span className="font-display font-extrabold text-[10px] bg-primary text-white px-[5px] py-px">3</span>
             </div>
-            <div style={{
-              display: "flex", alignItems: "center", gap: 8,
-              background: T.surfaceAlt, border: `1px solid ${T.border}`,
-              padding: "6px 14px", cursor: "pointer",
-            }}>
-              <div style={{ width: 28, height: 28, background: T.primary, color: "#fff",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 12 }}>HR</div>
-              <span style={{ fontFamily: T.fontBody, fontWeight: 500, fontSize: 13, color: T.secondary }}>
-                TechCorp Inc.
-              </span>
+            <div className="flex items-center gap-2 bg-surface-alt border border-border-clr py-1.5 px-3.5 cursor-pointer">
+              <div className="w-7 h-7 bg-primary text-white flex items-center justify-center font-display font-black text-xs">
+                HR
+              </div>
+              <span className="font-body font-medium text-[13px] text-secondary">TechCorp Inc.</span>
             </div>
           </div>
         </div>
 
         {/* Page content */}
-        <main style={{ flex: 1, padding: "32px" }}>
-          {children}
-        </main>
+        <main className="flex-1 p-8">{children}</main>
       </div>
     </div>
   );

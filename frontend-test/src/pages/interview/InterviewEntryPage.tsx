@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { T } from "../../theme/tokens";
 import { Card } from "../../assets/components/shared/Card";
 import { Btn } from "../../assets/components/shared/Btn";
 import { Tag, StatusPill } from "../../assets/components/shared/Badges";
@@ -22,161 +21,143 @@ const JOB = {
   ],
 };
 
-export function InterviewEntryPage({ onNavigate }) {
-  const [ready, setReady] = useState(false);
+export function InterviewEntryPage({ onNavigate }: any) {
   const [micOk, setMicOk] = useState(false);
 
   return (
-    <div style={{ minHeight: "100vh", background: T.tertiary }}>
+    <div className="min-h-screen bg-tertiary">
 
       {/* Minimal nav */}
-      <nav style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 40px", height: 60,
-        background: T.secondary, borderBottom: `2px solid ${T.secondary}`,
-      }}>
-        <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 20, color: "#fff" }}>
-          HR<span style={{ color: T.primary }}>11</span>
-          <span style={{ background: T.primary, color: "#fff", fontSize: 8, padding: "1px 5px", marginLeft: 6, letterSpacing: "0.1em" }}>AI</span>
+      <nav className="flex items-center justify-between px-10 h-[60px] bg-secondary border-b-2 border-secondary">
+        <div className="font-display font-black text-xl text-white">
+          HR<span className="text-primary">11</span>
+          <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5 tracking-[0.1em]">AI</span>
         </div>
         <StatusPill status="live" />
       </nav>
 
       {/* Content */}
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "48px 24px" }}>
+      <div className="max-w-[800px] mx-auto py-12 px-6">
 
         {/* Top label */}
-        <div className="fade-up" style={{ textAlign: "center", marginBottom: 40 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8,
-            fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase",
-            color: T.primary, border: `1px solid ${T.primary}33`,
-            background: `${T.primary}10`, padding: "4px 14px", marginBottom: 16 }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.primary,
-              animation: "pulse 1.5s infinite" }} />
+        <div className="fade-up text-center mb-10">
+          <div className="inline-flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-primary border border-primary/20 bg-primary/[0.06] px-3.5 py-1 mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             Interview Waiting Room
           </div>
-          <h1 style={{ fontFamily: T.fontDisplay, fontWeight: 900,
-            fontSize: "clamp(2rem,4vw,3rem)", textTransform: "uppercase",
-            letterSpacing: "-0.01em", color: T.secondary, lineHeight: 1, marginBottom: 8 }}>
+          <h1 className="font-display font-black text-[clamp(2rem,4vw,3rem)] uppercase tracking-tight text-secondary leading-none mb-2">
             READY TO BEGIN?
           </h1>
-          <p style={{ fontFamily: T.fontBody, fontSize: 14, color: T.inkLight }}>
+          <p className="font-body text-sm text-ink-light">
             Review the details below before starting your interview
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20 }}>
+        <div className="grid grid-cols-[1.2fr_1fr] gap-5">
 
           {/* Left — job + round info */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="flex flex-col gap-4">
 
             {/* Job card */}
-            <Card style={{ padding: "24px" }}>
-              <div style={{ borderLeft: `4px solid ${T.primary}`, paddingLeft: 14, marginBottom: 20 }}>
-                <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 22,
-                  textTransform: "uppercase", color: T.secondary, marginBottom: 4 }}>{JOB.title}</div>
-                <div style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkLight }}>{JOB.company}</div>
-              </div>
-
-              <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
-                {JOB.skills.map(s => <Tag key={s}>{s}</Tag>)}
-              </div>
-
-              {/* Round progress */}
-              <div style={{ background: T.surfaceAlt, border: `1px solid ${T.border}`, padding: "12px 14px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <span style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 12,
-                    letterSpacing: "0.15em", textTransform: "uppercase", color: T.secondary }}>
-                    Round {JOB.roundNum} of {JOB.totalRounds}
-                  </span>
-                  <span style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 14, color: T.primary }}>
-                    {JOB.round}
-                  </span>
+            <Card>
+              <div className="p-6">
+                <div className="border-l-4 border-primary pl-3.5 mb-5">
+                  <div className="font-display font-black text-[22px] uppercase text-secondary mb-1">{JOB.title}</div>
+                  <div className="font-body text-[13px] text-ink-light">{JOB.company}</div>
                 </div>
-                {/* Progress bar */}
-                <div style={{ height: 6, background: T.border, width: "100%" }}>
-                  <div style={{ height: "100%", background: T.primary, width: `${(JOB.roundNum / JOB.totalRounds) * 100}%`, transition: "width 0.5s" }} />
+
+                <div className="flex gap-2.5 mb-4 flex-wrap">
+                  {JOB.skills.map(s => <Tag key={s}>{s}</Tag>)}
+                </div>
+
+                {/* Round progress */}
+                <div className="bg-surface-alt border border-border-clr p-3 px-3.5">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-display font-extrabold text-xs tracking-[0.15em] uppercase text-secondary">
+                      Round {JOB.roundNum} of {JOB.totalRounds}
+                    </span>
+                    <span className="font-display font-black text-sm text-primary">
+                      {JOB.round}
+                    </span>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="h-1.5 bg-border-clr w-full">
+                    <div className="h-full bg-primary transition-[width] duration-500"
+                      style={{ width: `${(JOB.roundNum / JOB.totalRounds) * 100}%` }} />
+                  </div>
                 </div>
               </div>
             </Card>
 
             {/* Interview details */}
-            <Card style={{ padding: "20px" }}>
-              <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 13,
-                letterSpacing: "0.15em", textTransform: "uppercase", color: T.secondary, marginBottom: 14 }}>
-                Session Details
-              </div>
-              {[
-                { icon: "⏱", label: "Duration",     val: JOB.duration },
-                { icon: "🤖", label: "Interviewer",  val: JOB.interviewer },
-                { icon: "🎙️", label: "Format",       val: "Real-time voice conversation" },
-                { icon: "📊", label: "Evaluation",   val: "Technical depth + communication clarity" },
-              ].map(item => (
-                <div key={item.label} style={{
-                  display: "flex", gap: 10, padding: "8px 0",
-                  borderBottom: `1px solid ${T.border}`,
-                }}>
-                  <span style={{ fontSize: 16, flexShrink: 0, width: 24, textAlign: "center" }}>{item.icon}</span>
-                  <div>
-                    <div style={{ fontFamily: T.fontDisplay, fontWeight: 700, fontSize: 10,
-                      letterSpacing: "0.12em", textTransform: "uppercase", color: T.inkFaint }}>{item.label}</div>
-                    <div style={{ fontFamily: T.fontBody, fontSize: 13, color: T.secondary, marginTop: 1 }}>{item.val}</div>
-                  </div>
+            <Card>
+              <div className="p-5">
+                <div className="font-display font-extrabold text-[13px] tracking-[0.15em] uppercase text-secondary mb-3.5">
+                  Session Details
                 </div>
-              ))}
-            </Card>
-          </div>
-
-          {/* Right — checklist + start */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <Card style={{ padding: "20px" }}>
-              <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 13,
-                letterSpacing: "0.15em", textTransform: "uppercase", color: T.secondary, marginBottom: 14 }}>
-                Before You Start
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {JOB.notes.map((n, i) => (
-                  <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <div style={{ width: 18, height: 18, background: T.primary, flexShrink: 0, marginTop: 1,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 9, color: "#fff" }}>
-                      {i + 1}
+                {[
+                  { icon: "⏱", label: "Duration",     val: JOB.duration },
+                  { icon: "🤖", label: "Interviewer",  val: JOB.interviewer },
+                  { icon: "🎙️", label: "Format",       val: "Real-time voice conversation" },
+                  { icon: "📊", label: "Evaluation",   val: "Technical depth + communication clarity" },
+                ].map(item => (
+                  <div key={item.label} className="flex gap-2.5 py-2 border-b border-border-clr">
+                    <span className="text-base shrink-0 w-6 text-center">{item.icon}</span>
+                    <div>
+                      <div className="font-display font-bold text-[10px] tracking-[0.12em] uppercase text-ink-faint">{item.label}</div>
+                      <div className="font-body text-[13px] text-secondary mt-px">{item.val}</div>
                     </div>
-                    <p style={{ fontFamily: T.fontBody, fontSize: 12, color: T.inkLight, lineHeight: 1.5 }}>{n}</p>
                   </div>
                 ))}
               </div>
             </Card>
+          </div>
 
-            {/* Mic check */}
-            <Card style={{ padding: "20px" }}>
-              <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 13,
-                letterSpacing: "0.15em", textTransform: "uppercase", color: T.secondary, marginBottom: 12 }}>
-                Mic Check
-              </div>
-              <button
-                onClick={() => setMicOk(true)}
-                style={{
-                  width: "100%", padding: "12px",
-                  background: micOk ? T.successBg : T.surfaceAlt,
-                  border: `2px solid ${micOk ? T.success : T.border}`,
-                  cursor: "pointer", fontFamily: T.fontDisplay, fontWeight: 800,
-                  fontSize: 13, letterSpacing: "0.1em", textTransform: "uppercase",
-                  color: micOk ? T.success : T.secondary, transition: T.transColor,
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                }}>
-                {micOk ? "✓ Microphone Ready" : "🎙️ Test Microphone"}
-              </button>
-              {micOk && (
-                <div style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 32, marginTop: 10, justifyContent: "center" }}>
-                  {[0,1,2,3,4,5,6].map(i => (
-                    <div key={i} style={{
-                      width: 4, background: T.primary, borderRadius: 2,
-                      animation: `waveBar 0.8s ease ${i * 0.1}s infinite`,
-                    }} />
+          {/* Right — checklist + start */}
+          <div className="flex flex-col gap-4">
+            <Card>
+              <div className="p-5">
+                <div className="font-display font-extrabold text-[13px] tracking-[0.15em] uppercase text-secondary mb-3.5">
+                  Before You Start
+                </div>
+                <div className="flex flex-col gap-2">
+                  {JOB.notes.map((n, i) => (
+                    <div key={i} className="flex gap-2.5 items-start">
+                      <div className="w-[18px] h-[18px] bg-primary shrink-0 mt-px flex items-center justify-center font-display font-black text-[9px] text-white">
+                        {i + 1}
+                      </div>
+                      <p className="font-body text-xs text-ink-light leading-snug">{n}</p>
+                    </div>
                   ))}
                 </div>
-              )}
+              </div>
+            </Card>
+
+            {/* Mic check */}
+            <Card>
+              <div className="p-5">
+                <div className="font-display font-extrabold text-[13px] tracking-[0.15em] uppercase text-secondary mb-3">
+                  Mic Check
+                </div>
+                <button
+                  onClick={() => setMicOk(true)}
+                  className={[
+                    "w-full py-3 border-2 cursor-pointer font-display font-extrabold text-[13px] tracking-[0.1em] uppercase transition-colors flex items-center justify-center gap-2",
+                    micOk
+                      ? "bg-success-bg border-success text-success"
+                      : "bg-surface-alt border-border-clr text-secondary",
+                  ].join(" ")}>
+                  {micOk ? "✓ Microphone Ready" : "🎙️ Test Microphone"}
+                </button>
+                {micOk && (
+                  <div className="flex gap-[3px] items-end h-8 mt-2.5 justify-center">
+                    {[0,1,2,3,4,5,6].map(i => (
+                      <div key={i} className="w-1 bg-primary rounded-sm"
+                        style={{ animation: `waveBar 0.8s ease ${i * 0.1}s infinite` }} />
+                    ))}
+                  </div>
+                )}
+              </div>
             </Card>
 
             {/* Start button */}
@@ -185,7 +166,7 @@ export function InterviewEntryPage({ onNavigate }) {
               {micOk ? "START INTERVIEW →" : "COMPLETE MIC CHECK FIRST"}
             </Btn>
 
-            <p style={{ fontSize: 11, color: T.inkFaint, fontFamily: T.fontBody, textAlign: "center", lineHeight: 1.5 }}>
+            <p className="text-[11px] text-ink-faint font-body text-center leading-snug">
               Once started, you cannot pause the session.<br />Ensure you're in a quiet environment.
             </p>
           </div>

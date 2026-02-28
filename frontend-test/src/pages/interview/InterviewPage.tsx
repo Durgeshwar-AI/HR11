@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { T } from "../../theme/tokens";
 import { Btn } from "../../assets/components/shared/Btn";
 
 const TRANSCRIPT = [
@@ -10,23 +9,20 @@ const TRANSCRIPT = [
   { role: "ai",        text: "That's a solid reasoning. One follow-up — how did you handle the scenario where a Redis node goes down during peak traffic? Did you implement any failover strategy?" },
 ];
 
-function VoiceWave({ active }) {
+function VoiceWave({ active }: any) {
   return (
-    <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 40, justifyContent: "center" }}>
+    <div className="flex gap-1 items-end h-10 justify-center">
       {Array.from({ length: 9 }).map((_, i) => (
-        <div key={i} style={{
-          width: 4, borderRadius: 2,
-          background: active ? T.primary : T.border,
-          animation: active ? `waveBar 0.6s ease ${i * 0.07}s infinite` : "none",
-          height: active ? undefined : 8,
-          minHeight: 4,
-        }} />
+        <div key={i}
+          className={["w-1 rounded-sm min-h-[4px]", active ? "bg-primary" : "bg-border-clr"].join(" ")}
+          style={active ? { animation: `waveBar 0.6s ease ${i * 0.07}s infinite` } : { height: 8 }}
+        />
       ))}
     </div>
   );
 }
 
-export function InterviewPage({ onNavigate }) {
+export function InterviewPage({ onNavigate }: any) {
   const [elapsed,     setElapsed]     = useState(0);
   const [aiTalking,   setAiTalking]   = useState(true);
   const [userTalking, setUserTalking] = useState(false);
@@ -35,7 +31,7 @@ export function InterviewPage({ onNavigate }) {
   const [muted,       setMuted]       = useState(false);
   const [ended,       setEnded]       = useState(false);
   const [showReport,  setShowReport]  = useState(false);
-  const chatRef = useRef(null);
+  const chatRef = useRef<HTMLDivElement>(null);
 
   /* Timer */
   useEffect(() => {
@@ -64,70 +60,51 @@ export function InterviewPage({ onNavigate }) {
     chatRef.current?.scrollTo({ top: 9999, behavior: "smooth" });
   }, [messages]);
 
-  const fmt = s => `${String(Math.floor(s / 60)).padStart(2,"0")}:${String(s % 60).padStart(2,"0")}`;
+  const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2,"0")}:${String(s % 60).padStart(2,"0")}`;
 
   if (showReport) return <ReportView onNavigate={onNavigate} />;
 
   return (
-    <div style={{ minHeight: "100vh", background: T.secondary, display: "flex", flexDirection: "column" }}>
+    <div className="min-h-screen bg-secondary flex flex-col">
 
       {/* Top bar */}
-      <div style={{
-        height: 60, background: T.secondary,
-        borderBottom: "1px solid rgba(255,255,255,0.1)",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 32px", flexShrink: 0,
-      }}>
-        <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 20, color: "#fff" }}>
-          HR<span style={{ color: T.primary }}>11</span>
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: T.fontBody, marginLeft: 12, fontWeight: 400 }}>
+      <div className="h-[60px] bg-secondary border-b border-white/10 flex items-center justify-between px-8 shrink-0">
+        <div className="font-display font-black text-xl text-white">
+          HR<span className="text-primary">11</span>
+          <span className="text-[11px] text-white/50 font-body ml-3 font-normal">
             AI Voice Interview · Senior Backend Engineer
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <div className="flex items-center gap-5">
           {/* Live badge */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: T.primary,
-              animation: "pulse 1.5s infinite" }} />
-            <span style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 11,
-              color: T.primary, letterSpacing: "0.15em" }}>LIVE</span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="font-display font-extrabold text-[11px] text-primary tracking-[0.15em]">LIVE</span>
           </div>
           {/* Timer */}
-          <div style={{ fontFamily: T.fontMono, fontSize: 16, color: "#fff",
-            background: "rgba(255,255,255,0.08)", padding: "6px 14px",
-            border: "1px solid rgba(255,255,255,0.1)" }}>
+          <div className="font-mono text-base text-white bg-white/[0.08] py-1.5 px-3.5 border border-white/10">
             {fmt(elapsed)}
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 360px", overflow: "hidden" }}>
+      <div className="flex-1 grid grid-cols-[1fr_360px] overflow-hidden">
 
         {/* Left — AI agent + controls */}
-        <div style={{
-          display: "flex", flexDirection: "column", alignItems: "center",
-          justifyContent: "center", padding: "40px", gap: 32,
-          borderRight: "1px solid rgba(255,255,255,0.08)",
-        }}>
+        <div className="flex flex-col items-center justify-center p-10 gap-8 border-r border-white/[0.08]">
 
           {/* AI avatar */}
-          <div style={{ textAlign: "center" }}>
-            <div style={{
-              width: 120, height: 120, margin: "0 auto 20px",
-              background: aiTalking ? T.primary : "rgba(255,255,255,0.08)",
-              border: `3px solid ${aiTalking ? T.primary : "rgba(255,255,255,0.15)"}`,
-              borderRadius: "50%",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 52,
-              boxShadow: aiTalking ? `0 0 40px ${T.primary}44` : "none",
-              transition: T.transBase,
-            }}>🤖</div>
-            <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 18,
-              color: "#fff", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 4 }}>
+          <div className="text-center">
+            <div className={[
+              "w-[120px] h-[120px] mx-auto mb-5 rounded-full flex items-center justify-center text-[52px] transition-all duration-200",
+              aiTalking ? "bg-primary border-[3px] border-primary shadow-[0_0_40px_rgba(232,82,26,0.27)]"
+                        : "bg-white/[0.08] border-[3px] border-white/[0.15]",
+            ].join(" ")}>🤖</div>
+            <div className="font-display font-black text-lg text-white tracking-[0.05em] uppercase mb-1">
               HR11 AI Interviewer
             </div>
-            <div style={{ fontFamily: T.fontBody, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+            <div className="font-body text-xs text-white/40">
               {aiTalking ? "Speaking…" : "Listening…"}
             </div>
           </div>
@@ -136,118 +113,79 @@ export function InterviewPage({ onNavigate }) {
           <VoiceWave active={aiTalking} />
 
           {/* Divider */}
-          <div style={{ width: 200, height: 1, background: "rgba(255,255,255,0.08)" }} />
+          <div className="w-[200px] h-px bg-white/[0.08]" />
 
           {/* Candidate status */}
-          <div style={{ textAlign: "center" }}>
-            <div style={{
-              width: 80, height: 80, margin: "0 auto 12px",
-              background: userTalking ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.05)",
-              border: `2px solid ${userTalking ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.1)"}`,
-              borderRadius: "50%",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 24, color: "#fff",
-              boxShadow: userTalking ? "0 0 24px rgba(255,255,255,0.15)" : "none",
-              transition: T.transBase,
-            }}>AM</div>
-            <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 14,
-              color: "#fff", textTransform: "uppercase", marginBottom: 4 }}>Arjun Mehta</div>
+          <div className="text-center">
+            <div className={[
+              "w-20 h-20 mx-auto mb-3 rounded-full flex items-center justify-center font-display font-black text-2xl text-white transition-all duration-200",
+              userTalking
+                ? "bg-white/[0.15] border-2 border-white/50 shadow-[0_0_24px_rgba(255,255,255,0.15)]"
+                : "bg-white/[0.05] border-2 border-white/10",
+            ].join(" ")}>AM</div>
+            <div className="font-display font-extrabold text-sm text-white uppercase mb-1">Arjun Mehta</div>
             <VoiceWave active={userTalking && !muted} />
           </div>
 
           {/* Controls */}
-          <div style={{ display: "flex", gap: 12 }}>
+          <div className="flex gap-3">
             <button
               onClick={() => setMuted(m => !m)}
-              style={{
-                width: 52, height: 52,
-                background: muted ? T.dangerBg : "rgba(255,255,255,0.08)",
-                border: `2px solid ${muted ? T.danger : "rgba(255,255,255,0.2)"}`,
-                borderRadius: "50%", cursor: "pointer", fontSize: 20,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                transition: T.transBase,
-              }}>
+              className={[
+                "w-[52px] h-[52px] rounded-full cursor-pointer text-xl flex items-center justify-center transition-all duration-200",
+                muted ? "bg-danger-bg border-2 border-danger" : "bg-white/[0.08] border-2 border-white/20",
+              ].join(" ")}>
               {muted ? "🔇" : "🎙️"}
             </button>
 
             <button
               onClick={() => { setEnded(true); setShowReport(true); }}
-              style={{
-                padding: "0 24px", height: 52,
-                background: T.danger, border: `2px solid ${T.danger}`,
-                color: "#fff", cursor: "pointer",
-                fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 13,
-                letterSpacing: "0.1em", textTransform: "uppercase",
-              }}>
+              className="px-6 h-[52px] bg-danger border-2 border-danger text-white cursor-pointer font-display font-extrabold text-[13px] tracking-[0.1em] uppercase">
               End Interview
             </button>
           </div>
 
           {/* Anti-cheat indicator */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 8,
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            padding: "8px 16px", fontSize: 11,
-          }}>
-            <span style={{ color: T.primary }}>🔒</span>
-            <span style={{ fontFamily: T.fontBody, color: "rgba(255,255,255,0.35)", fontSize: 11 }}>
-              Anti-cheat monitoring active
-            </span>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.success, marginLeft: 4 }} />
+          <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] py-2 px-4 text-[11px]">
+            <span className="text-primary">🔒</span>
+            <span className="font-body text-white/[0.35] text-[11px]">Anti-cheat monitoring active</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-success ml-1" />
           </div>
         </div>
 
         {/* Right — transcript */}
-        <div style={{
-          display: "flex", flexDirection: "column",
-          background: "rgba(255,255,255,0.03)",
-        }}>
-          <div style={{
-            padding: "14px 20px",
-            borderBottom: "1px solid rgba(255,255,255,0.08)",
-          }}>
-            <span style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 11,
-              color: "rgba(255,255,255,0.5)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
+        <div className="flex flex-col bg-white/[0.03]">
+          <div className="py-3.5 px-5 border-b border-white/[0.08]">
+            <span className="font-display font-extrabold text-[11px] text-white/50 tracking-[0.15em] uppercase">
               Live Transcript
             </span>
           </div>
 
-          <div ref={chatRef} style={{ flex: 1, overflowY: "auto", padding: "20px 16px",
-            display: "flex", flexDirection: "column", gap: 16 }}>
+          <div ref={chatRef} className="flex-1 overflow-y-auto py-5 px-4 flex flex-col gap-4">
             {messages.map((msg, i) => (
-              <div key={i} className="pop-in" style={{
-                display: "flex", flexDirection: "column",
-                alignItems: msg.role === "ai" ? "flex-start" : "flex-end",
-              }}>
-                <div style={{
-                  fontSize: 9, fontFamily: T.fontDisplay, fontWeight: 800,
-                  letterSpacing: "0.15em", textTransform: "uppercase",
-                  color: msg.role === "ai" ? T.primary : "rgba(255,255,255,0.4)",
-                  marginBottom: 5,
-                }}>
+              <div key={i} className={["pop-in flex flex-col", msg.role === "ai" ? "items-start" : "items-end"].join(" ")}>
+                <div className={[
+                  "text-[9px] font-display font-extrabold tracking-[0.15em] uppercase mb-1.5",
+                  msg.role === "ai" ? "text-primary" : "text-white/40",
+                ].join(" ")}>
                   {msg.role === "ai" ? "HR11 AI" : "Arjun Mehta"}
                 </div>
-                <div style={{
-                  maxWidth: "90%", padding: "10px 14px",
-                  background: msg.role === "ai" ? "rgba(255,255,255,0.07)" : `${T.primary}22`,
-                  border: `1px solid ${msg.role === "ai" ? "rgba(255,255,255,0.08)" : `${T.primary}44`}`,
-                  fontFamily: T.fontBody, fontSize: 12.5, lineHeight: 1.6,
-                  color: msg.role === "ai" ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.75)",
-                }}>
+                <div className={[
+                  "max-w-[90%] py-2.5 px-3.5 font-body text-[12.5px] leading-relaxed",
+                  msg.role === "ai"
+                    ? "bg-white/[0.07] border border-white/[0.08] text-white/[0.85]"
+                    : "bg-primary/[0.13] border border-primary/[0.27] text-white/75",
+                ].join(" ")}>
                   {msg.text}
                 </div>
               </div>
             ))}
             {/* Typing indicator */}
             {aiTalking && msgIdx < TRANSCRIPT.length - 1 && (
-              <div style={{ display: "flex", gap: 4, padding: "8px 4px" }}>
+              <div className="flex gap-1 py-2 px-1">
                 {[0,1,2].map(i => (
-                  <div key={i} style={{
-                    width: 6, height: 6, borderRadius: "50%",
-                    background: T.primary, opacity: 0.5,
-                    animation: `pulse 0.8s ease ${i*0.2}s infinite`,
-                  }} />
+                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary opacity-50"
+                    style={{ animation: `pulse 0.8s ease ${i * 0.2}s infinite` }} />
                 ))}
               </div>
             )}
@@ -259,7 +197,7 @@ export function InterviewPage({ onNavigate }) {
 }
 
 /* ─── Post-Interview Report ─── */
-function ReportView({ onNavigate }) {
+function ReportView({ onNavigate }: any) {
   const scores = [
     { label: "Technical Depth",          score: 88 },
     { label: "Communication Clarity",    score: 82 },
@@ -269,47 +207,41 @@ function ReportView({ onNavigate }) {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: T.tertiary, padding: "48px 24px" }}>
-      <div style={{ maxWidth: 720, margin: "0 auto" }}>
-        <div className="fade-up" style={{ textAlign: "center", marginBottom: 40 }}>
-          <div style={{ fontSize: 56, marginBottom: 12 }}>✅</div>
-          <h1 style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: "clamp(2rem,4vw,3rem)",
-            textTransform: "uppercase", letterSpacing: "-0.01em", color: T.secondary, marginBottom: 8 }}>
+    <div className="min-h-screen bg-tertiary py-12 px-6">
+      <div className="max-w-[720px] mx-auto">
+        <div className="fade-up text-center mb-10">
+          <div className="text-[56px] mb-3">✅</div>
+          <h1 className="font-display font-black text-[clamp(2rem,4vw,3rem)] uppercase tracking-tight text-secondary mb-2 leading-none">
             INTERVIEW COMPLETE
           </h1>
-          <p style={{ fontFamily: T.fontBody, fontSize: 14, color: T.inkLight }}>
+          <p className="font-body text-sm text-ink-light">
             Your session has been analysed. Here's your performance summary.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <div className="grid grid-cols-2 gap-5">
           {/* Overall score */}
-          <div style={{
-            background: T.primary, border: `2px solid ${T.secondary}`,
-            padding: "28px", textAlign: "center",
-            boxShadow: T.shadow,
-          }}>
-            <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 72,
-              color: "#fff", lineHeight: 1 }}>88</div>
-            <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 13,
-              color: "rgba(255,255,255,0.8)", letterSpacing: "0.15em", textTransform: "uppercase", marginTop: 8 }}>
+          <div className="bg-primary border-2 border-secondary p-7 text-center shadow-brutal">
+            <div className="font-display font-black text-[72px] text-white leading-none">88</div>
+            <div className="font-display font-extrabold text-[13px] text-white/80 tracking-[0.15em] uppercase mt-2">
               Overall Score
             </div>
-            <div style={{ fontFamily: T.fontBody, fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>
+            <div className="font-body text-xs text-white/60 mt-1">
               Top 8% of candidates
             </div>
           </div>
 
           {/* Category scores */}
-          <div style={{ background: T.surface, border: `2px solid ${T.secondary}`, padding: "20px" }}>
+          <div className="bg-surface border-2 border-secondary p-5">
             {scores.map(s => (
-              <div key={s.label} style={{ marginBottom: 10 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-                  <span style={{ fontFamily: T.fontBody, fontSize: 12, color: T.secondary }}>{s.label}</span>
-                  <span style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 14, color: T.secondary }}>{s.score}</span>
+              <div key={s.label} className="mb-2.5">
+                <div className="flex justify-between mb-0.5">
+                  <span className="font-body text-xs text-secondary">{s.label}</span>
+                  <span className="font-display font-black text-sm text-secondary">{s.score}</span>
                 </div>
-                <div style={{ height: 5, background: T.border }}>
-                  <div style={{ height: "100%", background: s.score >= 90 ? T.success : T.primary, width: `${s.score}%`, transition: "width 1s" }} />
+                <div className="h-[5px] bg-border-clr">
+                  <div className={["h-full transition-[width] duration-1000", s.score >= 90 ? "bg-success" : "bg-primary"].join(" ")}
+                    style={{ width: `${s.score}%` }} />
                 </div>
               </div>
             ))}
@@ -317,29 +249,27 @@ function ReportView({ onNavigate }) {
         </div>
 
         {/* Flags */}
-        <div style={{ background: T.surface, border: `2px solid ${T.secondary}`, padding: "20px", marginTop: 20 }}>
-          <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 13, letterSpacing: "0.15em",
-            textTransform: "uppercase", color: T.secondary, marginBottom: 14 }}>Anti-Cheat & Flags</div>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div className="bg-surface border-2 border-secondary p-5 mt-5">
+          <div className="font-display font-extrabold text-[13px] tracking-[0.15em] uppercase text-secondary mb-3.5">
+            Anti-Cheat &amp; Flags
+          </div>
+          <div className="flex gap-3 flex-wrap">
             {[
               { icon: "✅", text: "No scripted reading detected",      ok: true },
               { icon: "✅", text: "No external audio source detected", ok: true },
               { icon: "⚠️", text: "1 long pause on Redis question",   ok: false },
             ].map((f, i) => (
-              <div key={i} style={{
-                display: "flex", alignItems: "center", gap: 7,
-                background: f.ok ? T.successBg : T.warningBg,
-                border: `1px solid ${f.ok ? T.success : T.warning}`,
-                padding: "6px 12px", fontSize: 12, fontFamily: T.fontBody,
-                color: f.ok ? T.success : T.warning,
-              }}>
+              <div key={i} className={[
+                "flex items-center gap-2 py-1.5 px-3 text-xs font-body border",
+                f.ok ? "bg-success-bg border-success text-success" : "bg-warning-bg border-warning text-warning",
+              ].join(" ")}>
                 <span>{f.icon}</span> {f.text}
               </div>
             ))}
           </div>
         </div>
 
-        <div style={{ marginTop: 24, display: "flex", gap: 12, justifyContent: "center" }}>
+        <div className="mt-6 flex gap-3 justify-center">
           <Btn variant="secondary" onClick={() => onNavigate?.("candidate-profile")}>Back to Profile</Btn>
           <Btn onClick={() => onNavigate?.("interview-entry")}>View Full Report</Btn>
         </div>

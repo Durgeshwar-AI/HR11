@@ -1,50 +1,47 @@
-import { T } from "../../theme/tokens";
-
-export function Tag({ children, color }) {
-  const c = color || T.secondary;
+export function Tag({ children, color }: any) {
+  const c = color || "#1A1A1A";
   return (
-    <span style={{
-      fontSize: 9, fontFamily: T.fontBody, fontWeight: 600,
-      letterSpacing: "0.12em", textTransform: "uppercase",
-      color: c, border: `1px solid ${c}44`,
-      background: `${c}12`, padding: "2px 8px",
-    }}>{children}</span>
+    <span
+      className="text-[9px] font-body font-semibold tracking-[0.12em] uppercase py-[2px] px-2"
+      style={{ color: c, border: `1px solid ${c}44`, background: `${c}12` }}
+    >
+      {children}
+    </span>
   );
 }
 
-export function StatusPill({ status }) {
-  const map = {
-    active:      { label: "ACTIVE",      bg: T.successBg, color: T.success,  border: T.success },
-    paused:      { label: "PAUSED",      bg: T.warningBg, color: T.warning,  border: T.warning },
-    closed:      { label: "CLOSED",      bg: T.surfaceAlt,color: T.inkFaint, border: T.border },
-    shortlisted: { label: "SHORTLISTED", bg: "#E8F0FF",   color: "#1A3AFF",  border: "#1A3AFF" },
-    in_progress: { label: "IN PROGRESS", bg: T.warningBg, color: T.warning,  border: T.warning },
-    pending:     { label: "PENDING",     bg: T.surfaceAlt,color: T.inkFaint, border: T.border },
-    rejected:    { label: "REJECTED",    bg: T.dangerBg,  color: T.danger,   border: T.danger },
-    hired:       { label: "HIRED",       bg: T.successBg, color: T.success,  border: T.success },
-    live:        { label: "● LIVE",      bg: T.dangerBg,  color: T.danger,   border: T.danger },
-  };
-  const s = map[status] || map.pending;
+const STATUS_MAP: Record<string, { label: string; bg: string; color: string; border: string }> = {
+  active:      { label: "ACTIVE",      bg: "#EAF5EA", color: "#2A7A2A", border: "#2A7A2A" },
+  paused:      { label: "PAUSED",      bg: "#FFF8E8", color: "#C07800", border: "#C07800" },
+  closed:      { label: "CLOSED",      bg: "#EDE8DF", color: "#B0A898", border: "#D5CFC4" },
+  shortlisted: { label: "SHORTLISTED", bg: "#E8F0FF", color: "#1A3AFF", border: "#1A3AFF" },
+  in_progress: { label: "IN PROGRESS", bg: "#FFF8E8", color: "#C07800", border: "#C07800" },
+  pending:     { label: "PENDING",     bg: "#EDE8DF", color: "#B0A898", border: "#D5CFC4" },
+  rejected:    { label: "REJECTED",    bg: "#FFF0F0", color: "#B22222", border: "#B22222" },
+  hired:       { label: "HIRED",       bg: "#EAF5EA", color: "#2A7A2A", border: "#2A7A2A" },
+  live:        { label: "● LIVE",      bg: "#FFF0F0", color: "#B22222", border: "#B22222" },
+};
+
+export function StatusPill({ status }: any) {
+  const s = STATUS_MAP[status] || STATUS_MAP.pending;
   return (
-    <span style={{
-      fontSize: 9, fontFamily: T.fontDisplay, fontWeight: 800,
-      letterSpacing: "0.15em", textTransform: "uppercase",
-      color: s.color, background: s.bg,
-      border: `1px solid ${s.border}`,
-      padding: "3px 8px",
-    }}>{s.label}</span>
+    <span
+      className="text-[9px] font-display font-extrabold tracking-[0.15em] uppercase py-[3px] px-2"
+      style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}
+    >
+      {s.label}
+    </span>
   );
 }
 
-export function ScoreBadge({ score }) {
-  const color = score >= 90 ? T.success : score >= 75 ? T.warning : T.danger;
+export function ScoreBadge({ score }: any) {
+  const color = score >= 90 ? "#2A7A2A" : score >= 75 ? "#C07800" : "#B22222";
   return (
-    <div style={{
-      width: 44, height: 44, flexShrink: 0,
-      background: `${color}15`, border: `2px solid ${color}`,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 16,
-      color,
-    }}>{score}</div>
+    <div
+      className="w-11 h-11 shrink-0 flex items-center justify-center font-display font-black text-base"
+      style={{ background: `${color}15`, border: `2px solid ${color}`, color }}
+    >
+      {score}
+    </div>
   );
 }

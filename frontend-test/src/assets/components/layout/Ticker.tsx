@@ -1,24 +1,15 @@
-import { T } from "../../../theme/tokens";
-
-export function Ticker({ items }) {
+export function Ticker({ items }: any) {
   const all = [...items, ...items];
   return (
-    <div style={{
-      background: T.secondary, overflow: "hidden",
-      padding: "9px 0", whiteSpace: "nowrap",
-      borderTop: `1px solid ${T.secondary}`,
-      borderBottom: `1px solid ${T.secondary}`,
-    }}>
-      <div style={{ display: "inline-flex", animation: "marquee 22s linear infinite" }}>
-        {all.map((item, i) => (
-          <span key={i} style={{
-            fontFamily: T.fontDisplay, fontWeight: 900,
-            fontSize: 13, color: "#fff",
-            letterSpacing: "0.15em", textTransform: "uppercase",
-            marginRight: 48,
-          }}>
+    <div className="bg-secondary overflow-hidden py-[9px] whitespace-nowrap border-y border-secondary">
+      <div className="inline-flex animate-marquee">
+        {all.map((item: string, i: number) => (
+          <span
+            key={i}
+            className="font-display font-black text-[13px] text-white tracking-[0.15em] uppercase mr-12"
+          >
             {item}
-            <span style={{ color: T.primary, marginLeft: 48 }}>◆</span>
+            <span className="text-primary ml-12">◆</span>
           </span>
         ))}
       </div>

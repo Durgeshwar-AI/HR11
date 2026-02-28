@@ -1,41 +1,36 @@
 import { useState } from "react";
-import { T } from "../../../theme/tokens";
 
-export function Card({ children, hover = false, shadow = false, style = {}, onClick }) {
+export function Card({ children, hover = false, shadow = false, style = {}, onClick }: any) {
   const [hov, setHov] = useState(false);
   return (
     <div
       onClick={onClick}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
-      style={{
-        background: T.surface,
-        border: `2px solid ${hover && hov ? T.primary : T.secondary}`,
-        borderRadius: 0,
-        transition: T.transBase,
-        boxShadow: shadow || (hover && hov) ? (hover && hov ? T.shadowOrange : T.shadow) : "none",
-        transform: hover && hov ? "translate(-2px,-2px)" : "translate(0,0)",
-        cursor: onClick ? "pointer" : "default",
-        ...style,
-      }}
+      className={[
+        "bg-surface border-2 rounded-none transition-all duration-150",
+        hover && hov ? "border-primary shadow-brutal-orange -translate-x-0.5 -translate-y-0.5" : "border-secondary",
+        shadow ? "shadow-brutal" : "",
+        onClick ? "cursor-pointer" : "cursor-default",
+      ].join(" ")}
+      style={style}
     >
       {children}
     </div>
   );
 }
 
-export function SectionLabel({ children }) {
+export function SectionLabel({ children }: any) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-      <span style={{
-        fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 11,
-        letterSpacing: "0.2em", color: T.inkFaint, textTransform: "uppercase",
-      }}>{children}</span>
-      <div style={{ flex: 1, height: 2, background: T.secondary }} />
+    <div className="flex items-center gap-3 mb-4">
+      <span className="font-display font-black text-[11px] tracking-[0.2em] text-ink-faint uppercase">
+        {children}
+      </span>
+      <div className="flex-1 h-0.5 bg-secondary" />
     </div>
   );
 }
 
 export function Divider() {
-  return <div style={{ height: 1, background: T.border, width: "100%" }} />;
+  return <div className="h-px bg-border-clr w-full" />;
 }

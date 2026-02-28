@@ -1,67 +1,48 @@
-import { T } from "../../theme/tokens";
-import { PublicNav } from "../../../../frontend-test/src/assets/components/layout/PublicNav";
-import { Ticker } from "../../../../frontend-test/src/assets/components/layout/Ticker";
-import { Btn } from "../../../../frontend-test/src/assets/components/shared/Btn";
-import { WHY_POINTS } from "../../../../frontend-test/src/constants/data";
+import { PublicNav } from "../../assets/components/layout/PublicNav";
+import { Ticker } from "../../assets/components/layout/Ticker";
+import { Btn } from "../../assets/components/shared/Btn";
+import { WHY_POINTS } from "../../constants/data";
 
-function WhyCard({ point, index }) {
+function WhyCard({ point, index }: any) {
   return (
-    <div className="fade-up" style={{
-      background: T.surface, border: `2px solid ${T.secondary}`,
-      padding: "28px 24px",
-      transition: T.transBase,
-      animationDelay: `${index * 0.08}s`,
-    }}
-    onMouseEnter={e => { e.currentTarget.style.boxShadow = T.shadowOrange; e.currentTarget.style.transform = "translate(-2px,-2px)"; }}
-    onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translate(0,0)"; }}
-    >
-      <div style={{ fontSize: 36, marginBottom: 14 }}>{point.icon}</div>
-      <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 20,
-        textTransform: "uppercase", color: T.secondary, marginBottom: 10, lineHeight: 1.1 }}>
+    <div className="fade-up bg-surface border-2 border-secondary p-7 transition-all duration-200 hover:shadow-brutal-orange hover:-translate-x-0.5 hover:-translate-y-0.5"
+      style={{ animationDelay: `${index * 0.08}s` }}>
+      <div className="text-4xl mb-3.5">{point.icon}</div>
+      <div className="font-display font-black text-xl uppercase text-secondary mb-2.5 leading-tight">
         {point.title}
       </div>
-      <p style={{ fontFamily: T.fontBody, fontSize: 13, color: T.inkLight, lineHeight: 1.65 }}>
+      <p className="font-body text-[13px] text-ink-light leading-relaxed">
         {point.desc}
       </p>
     </div>
   );
 }
 
-export function WhyHR11Page({ onNavigate }) {
+export function WhyHR11Page({ onNavigate }: any) {
   return (
-    <div style={{ minHeight: "100vh", background: T.tertiary }}>
+    <div className="min-h-screen bg-tertiary">
       <PublicNav onNavigate={onNavigate} currentPage="why" />
 
       {/* Hero */}
-      <section style={{
-        padding: "72px 48px 56px",
-        borderBottom: `1px solid ${T.border}`,
-        display: "flex", alignItems: "flex-end", justifyContent: "space-between",
-        flexWrap: "wrap", gap: 40,
-      }}>
+      <section className="py-[72px] px-12 pb-14 border-b border-border-clr flex items-end justify-between flex-wrap gap-10">
         <div>
-          <p style={{ fontFamily: T.fontBody, fontWeight: 500, fontSize: 11,
-            letterSpacing: "0.25em", textTransform: "uppercase", color: T.primary, marginBottom: 14 }}>
+          <p className="font-body font-medium text-[11px] tracking-[0.25em] uppercase text-primary mb-3.5">
             The Case for Autonomous Hiring
           </p>
-          <h1 style={{ fontFamily: T.fontDisplay, fontWeight: 900,
-            fontSize: "clamp(3rem,7vw,6.5rem)", lineHeight: 0.88,
-            textTransform: "uppercase", color: T.secondary, letterSpacing: "-0.02em" }}>
-            TRADITIONAL<br />HIRING IS<br /><span style={{ color: T.primary }}>BROKEN.</span>
+          <h1 className="font-display font-black text-[clamp(3rem,7vw,6.5rem)] leading-[0.88] uppercase text-secondary tracking-tight">
+            TRADITIONAL<br />HIRING IS<br /><span className="text-primary">BROKEN.</span>
           </h1>
         </div>
-        <div style={{ maxWidth: 380 }}>
-          <p style={{ fontFamily: T.fontBody, fontSize: 15, color: T.inkLight,
-            lineHeight: 1.7, borderLeft: `3px solid ${T.primary}`, paddingLeft: 16, marginBottom: 24 }}>
+        <div className="max-w-[380px]">
+          <p className="font-body text-[15px] text-ink-light leading-relaxed border-l-[3px] border-primary pl-4 mb-6">
             The average hire takes 28 days and involves 14 hours of manual screening per role.
             HR11 replaces that with an autonomous pipeline that runs 24/7 — with zero bias.
           </p>
-          <div style={{ display: "flex", gap: 24 }}>
+          <div className="flex gap-6">
             {[["28d→14d","Time to Hire"],["100%","Bias Removed"],["10×","More Candidates"]].map(([val,lbl]) => (
-              <div key={lbl} style={{ borderLeft: `3px solid ${T.primary}`, paddingLeft: 10 }}>
-                <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 22, color: T.secondary }}>{val}</div>
-                <div style={{ fontFamily: T.fontDisplay, fontWeight: 700, fontSize: 9,
-                  letterSpacing: "0.15em", textTransform: "uppercase", color: T.inkFaint }}>{lbl}</div>
+              <div key={lbl} className="border-l-[3px] border-primary pl-2.5">
+                <div className="font-display font-black text-[22px] text-secondary">{val}</div>
+                <div className="font-display font-bold text-[9px] tracking-[0.15em] uppercase text-ink-faint">{lbl}</div>
               </div>
             ))}
           </div>
@@ -71,35 +52,31 @@ export function WhyHR11Page({ onNavigate }) {
       <Ticker items={["10× FASTER", "ZERO BIAS", "VOICE AI", "ANTI-CHEAT", "AUTO SCHEDULE", "FULL REPORTS"]} />
 
       {/* Why points grid */}
-      <section style={{ padding: "64px 48px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 40 }}>
-          <h2 style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: "clamp(1.6rem,3vw,2.4rem)",
-            textTransform: "uppercase", letterSpacing: "-0.01em", color: T.secondary }}>
+      <section className="py-16 px-12">
+        <div className="flex items-center gap-4 mb-10">
+          <h2 className="font-display font-black text-[clamp(1.6rem,3vw,2.4rem)] uppercase tracking-tight text-secondary">
             SIX REASONS COMPANIES SWITCH
           </h2>
-          <div style={{ flex: 1, height: 2, background: T.secondary }} />
+          <div className="flex-1 h-0.5 bg-secondary" />
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 16 }}>
-          {WHY_POINTS.map((p, i) => <WhyCard key={i} point={p} index={i} />)}
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
+          {WHY_POINTS.map((p: any, i: number) => <WhyCard key={i} point={p} index={i} />)}
         </div>
       </section>
 
       {/* Comparison table */}
-      <section style={{ padding: "0 48px 72px" }}>
-        <h2 style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: "clamp(1.6rem,3vw,2.4rem)",
-          textTransform: "uppercase", letterSpacing: "-0.01em", color: T.secondary, marginBottom: 28 }}>
+      <section className="px-12 pb-[72px]">
+        <h2 className="font-display font-black text-[clamp(1.6rem,3vw,2.4rem)] uppercase tracking-tight text-secondary mb-7">
           HR11 VS TRADITIONAL HIRING
         </h2>
-        <div style={{ border: `2px solid ${T.secondary}`, overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: T.secondary }}>
+        <div className="border-2 border-secondary overflow-hidden">
+          <div className="grid grid-cols-3 bg-secondary">
             {["", "Traditional Hiring", "HR11 AI"].map((h, i) => (
-              <div key={i} style={{
-                padding: "14px 20px",
-                fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 13,
-                letterSpacing: "0.12em", textTransform: "uppercase",
-                color: i === 2 ? T.primary : "#fff",
-                borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.1)" : "none",
-              }}>{h}</div>
+              <div key={i} className={[
+                "py-3.5 px-5 font-display font-extrabold text-[13px] tracking-[0.12em] uppercase",
+                i === 2 ? "text-primary" : "text-white",
+                i > 0 ? "border-l border-white/10" : "",
+              ].join(" ")}>{h}</div>
             ))}
           </div>
           {[
@@ -110,19 +87,17 @@ export function WhyHR11Page({ onNavigate }) {
             ["Scales with volume",       "No",            "Yes — unlimited"],
             ["Interview scheduling",     "Back-and-forth","Auto calendar sync"],
           ].map(([metric, trad, ai], i) => (
-            <div key={i} style={{
-              display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
-              borderTop: `1px solid ${T.border}`,
-              background: i % 2 === 0 ? T.surface : T.surfaceAlt,
-            }}>
+            <div key={i} className={[
+              "grid grid-cols-3 border-t border-border-clr",
+              i % 2 === 0 ? "bg-surface" : "bg-surface-alt",
+            ].join(" ")}>
               {[metric, trad, ai].map((val, j) => (
-                <div key={j} style={{
-                  padding: "13px 20px",
-                  fontFamily: j === 0 ? T.fontBody : T.fontDisplay,
-                  fontWeight: j === 0 ? 500 : 800, fontSize: 13,
-                  color: j === 2 ? T.primary : T.secondary,
-                  borderLeft: j > 0 ? `1px solid ${T.border}` : "none",
-                }}>{val}</div>
+                <div key={j} className={[
+                  "py-3 px-5 text-[13px]",
+                  j === 0 ? "font-body font-medium text-secondary" : "font-display font-extrabold",
+                  j === 2 ? "text-primary" : j === 1 ? "text-secondary" : "",
+                  j > 0 ? "border-l border-border-clr" : "",
+                ].join(" ")}>{val}</div>
               ))}
             </div>
           ))}
@@ -130,19 +105,14 @@ export function WhyHR11Page({ onNavigate }) {
       </section>
 
       {/* CTA */}
-      <section style={{
-        background: T.secondary, padding: "72px 48px", textAlign: "center",
-      }}>
-        <h2 style={{ fontFamily: T.fontDisplay, fontWeight: 900,
-          fontSize: "clamp(2rem,5vw,4rem)", textTransform: "uppercase",
-          letterSpacing: "-0.02em", color: "#fff", marginBottom: 16, lineHeight: 0.9 }}>
-          READY TO<br /><span style={{ color: T.primary }}>TRANSFORM</span><br />YOUR HIRING?
+      <section className="bg-secondary py-[72px] px-12 text-center">
+        <h2 className="font-display font-black text-[clamp(2rem,5vw,4rem)] uppercase tracking-tight text-white mb-4 leading-[0.9]">
+          READY TO<br /><span className="text-primary">TRANSFORM</span><br />YOUR HIRING?
         </h2>
-        <p style={{ fontFamily: T.fontBody, fontSize: 14, color: "rgba(255,255,255,0.5)",
-          marginBottom: 32, maxWidth: 400, margin: "0 auto 32px" }}>
+        <p className="font-body text-sm text-white/50 max-w-[400px] mx-auto mb-8">
           Join 1,000+ companies hiring smarter with HR11.
         </p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+        <div className="flex gap-3 justify-center">
           <Btn onClick={() => onNavigate?.("register-company")} style={{ fontSize: 15 }}>
             Start Free Trial →
           </Btn>

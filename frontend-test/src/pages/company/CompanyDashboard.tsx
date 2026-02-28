@@ -1,4 +1,3 @@
-import { T } from "../../theme/tokens";
 import { AppShell } from "../../assets/components/layout/AppShell";
 import { StatBox } from "../../assets/components/shared/StatBox";
 import { Card, SectionLabel } from "../../assets/components/shared/Card";
@@ -16,24 +15,21 @@ function ActivityFeed() {
     { time: "5 hrs ago",  icon: "🔍", text: "Background check cleared for Rohan Das" },
   ];
   return (
-    <Card style={{ padding: 0, overflow: "hidden" }}>
-      <div style={{ background: T.secondary, padding: "12px 20px" }}>
-        <span style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 12,
-          color: "#fff", letterSpacing: "0.15em", textTransform: "uppercase" }}>
+    <Card>
+      <div className="bg-secondary px-5 py-3">
+        <span className="font-display font-extrabold text-xs text-white tracking-[0.15em] uppercase">
           Live Activity Feed
         </span>
       </div>
       {items.map((item, i) => (
-        <div key={i} style={{
-          display: "flex", alignItems: "flex-start", gap: 12,
-          padding: "14px 20px", borderBottom: i < items.length - 1 ? `1px solid ${T.border}` : "none",
-        }}>
-          <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontFamily: T.fontBody, fontSize: 13, color: T.secondary, lineHeight: 1.4 }}>
-              {item.text}
-            </p>
-            <span style={{ fontSize: 11, color: T.inkFaint, fontFamily: T.fontBody }}>{item.time}</span>
+        <div key={i} className={[
+          "flex items-start gap-3 px-5 py-3.5",
+          i < items.length - 1 ? "border-b border-border-clr" : "",
+        ].join(" ")}>
+          <span className="text-base shrink-0 mt-px">{item.icon}</span>
+          <div className="flex-1">
+            <p className="font-body text-[13px] text-secondary leading-snug">{item.text}</p>
+            <span className="text-[11px] text-ink-faint font-body">{item.time}</span>
           </div>
         </div>
       ))}
@@ -41,67 +37,55 @@ function ActivityFeed() {
   );
 }
 
-function OpeningCard({ opening, onNavigate }) {
+function OpeningCard({ opening, onNavigate }: any) {
   return (
-    <Card hover style={{ padding: "18px 20px" }} onClick={() => onNavigate?.("leaderboard")}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-        <div>
-          <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 17,
-            textTransform: "uppercase", color: T.secondary, marginBottom: 4 }}>
-            {opening.title}
+    <Card hover onClick={() => onNavigate?.("leaderboard")}>
+      <div className="px-5 py-[18px]">
+        <div className="flex justify-between items-start mb-2.5">
+          <div>
+            <div className="font-display font-extrabold text-[17px] uppercase text-secondary mb-1">{opening.title}</div>
+            <Tag>{opening.department}</Tag>
           </div>
-          <Tag>{opening.department}</Tag>
+          <StatusPill status={opening.status} />
         </div>
-        <StatusPill status={opening.status} />
-      </div>
-      <div style={{ display: "flex", gap: 20, marginBottom: 14 }}>
-        {[
-          { label: "Applicants",   val: opening.applicants },
-          { label: "Shortlisted",  val: opening.shortlisted },
-          { label: "Posted",       val: opening.posted },
-        ].map(s => (
-          <div key={s.label}>
-            <div style={{ fontFamily: T.fontDisplay, fontWeight: 900, fontSize: 20, color: T.secondary }}>{s.val}</div>
-            <div style={{ fontFamily: T.fontDisplay, fontWeight: 700, fontSize: 9,
-              letterSpacing: "0.15em", textTransform: "uppercase", color: T.inkFaint }}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-        {opening.pipeline.slice(0, 4).map((r, i) => (
-          <span key={r} style={{
-            fontSize: 9, fontFamily: T.fontBody, fontWeight: 600,
-            letterSpacing: "0.1em", textTransform: "uppercase",
-            color: T.inkLight, background: T.surfaceAlt,
-            border: `1px solid ${T.border}`, padding: "2px 7px",
-          }}>
-            {String(i + 1).padStart(2, "0")} {r.replace(/_/g, " ")}
-          </span>
-        ))}
-        {opening.pipeline.length > 4 && (
-          <span style={{ fontSize: 9, color: T.inkFaint, fontFamily: T.fontBody, padding: "2px 4px" }}>
-            +{opening.pipeline.length - 4} more
-          </span>
-        )}
+        <div className="flex gap-5 mb-3.5">
+          {[
+            { label: "Applicants",  val: opening.applicants },
+            { label: "Shortlisted", val: opening.shortlisted },
+            { label: "Posted",      val: opening.posted },
+          ].map((s: any) => (
+            <div key={s.label}>
+              <div className="font-display font-black text-xl text-secondary">{s.val}</div>
+              <div className="font-display font-bold text-[9px] tracking-[0.15em] uppercase text-ink-faint">{s.label}</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-1.5 flex-wrap">
+          {opening.pipeline.slice(0, 4).map((r: string, i: number) => (
+            <span key={r} className="text-[9px] font-body font-semibold tracking-[0.1em] uppercase text-ink-light bg-surface-alt border border-border-clr px-[7px] py-[2px]">
+              {String(i + 1).padStart(2, "0")} {r.replace(/_/g, " ")}
+            </span>
+          ))}
+          {opening.pipeline.length > 4 && (
+            <span className="text-[9px] text-ink-faint font-body px-1 py-[2px]">
+              +{opening.pipeline.length - 4} more
+            </span>
+          )}
+        </div>
       </div>
     </Card>
   );
 }
 
-export function CompanyDashboard({ onNavigate }) {
+export function CompanyDashboard({ onNavigate }: any) {
   return (
     <AppShell currentPage="dashboard" onNavigate={onNavigate}>
       {/* Page header */}
-      <div className="fade-up" style={{ marginBottom: 28 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+      <div className="fade-up mb-7">
+        <div className="flex justify-between items-end flex-wrap gap-3">
           <div>
-            <p style={{ fontFamily: T.fontBody, fontSize: 12, letterSpacing: "0.15em",
-              textTransform: "uppercase", color: T.primary, marginBottom: 4 }}>
-              Good morning, HR Team
-            </p>
-            <h1 style={{ fontFamily: T.fontDisplay, fontWeight: 900,
-              fontSize: "clamp(1.8rem,3vw,2.8rem)", textTransform: "uppercase",
-              letterSpacing: "-0.01em", lineHeight: 1 }}>
+            <p className="font-body text-xs tracking-[0.15em] uppercase text-primary mb-1">Good morning, HR Team</p>
+            <h1 className="font-display font-black text-[clamp(1.8rem,3vw,2.8rem)] uppercase tracking-tight leading-none">
               COMPANY DASHBOARD
             </h1>
           </div>
@@ -110,7 +94,7 @@ export function CompanyDashboard({ onNavigate }) {
       </div>
 
       {/* Stats row */}
-      <div className="fade-up" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 16, marginBottom: 28 }}>
+      <div className="fade-up grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4 mb-7">
         <StatBox label="Total Applicants" value={MOCK_STATS.totalApplicants} sub="Across all openings" accent />
         <StatBox label="Active Openings"  value={MOCK_STATS.activeOpenings}  sub="3 closing soon" />
         <StatBox label="Shortlisted"       value={MOCK_STATS.shortlisted}      sub="Ready for review" />
@@ -119,42 +103,38 @@ export function CompanyDashboard({ onNavigate }) {
       </div>
 
       {/* Main grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 28 }}>
+      <div className="grid grid-cols-2 gap-6 mb-7">
         {/* Job Openings */}
         <div>
           <SectionLabel>Active Job Openings</SectionLabel>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {MOCK_OPENINGS.map(o => (
+          <div className="flex flex-col gap-3">
+            {MOCK_OPENINGS.map((o: any) => (
               <OpeningCard key={o.id} opening={o} onNavigate={onNavigate} />
             ))}
           </div>
         </div>
 
         {/* Right column */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div className="flex flex-col gap-6">
           {/* Recent candidates */}
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div className="flex justify-between items-center mb-4">
               <SectionLabel>Top Candidates</SectionLabel>
-              <span onClick={() => onNavigate?.("leaderboard")} style={{ fontSize: 12,
-                color: T.primary, cursor: "pointer", fontFamily: T.fontBody, fontWeight: 600 }}>
+              <span onClick={() => onNavigate?.("leaderboard")}
+                className="text-xs text-primary cursor-pointer font-body font-semibold">
                 View All →
               </span>
             </div>
-            <Card style={{ padding: 0, overflow: "hidden" }}>
-              {MOCK_CANDIDATES.slice(0, 5).map((c, i) => (
-                <div key={c.id} style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "12px 16px", borderBottom: i < 4 ? `1px solid ${T.border}` : "none",
-                }}>
+            <Card>
+              {MOCK_CANDIDATES.slice(0, 5).map((c: any, i: number) => (
+                <div key={c.id} className={[
+                  "flex items-center gap-3 px-4 py-3",
+                  i < 4 ? "border-b border-border-clr" : "",
+                ].join(" ")}>
                   <Avatar initials={c.avatar} size={36} rank={i + 1} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: T.fontDisplay, fontWeight: 800, fontSize: 14,
-                      textTransform: "uppercase", color: T.secondary }}>{c.name}</div>
-                    <div style={{ fontSize: 11, color: T.inkFaint, fontFamily: T.fontBody,
-                      whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {c.round}
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-display font-extrabold text-sm uppercase text-secondary">{c.name}</div>
+                    <div className="text-[11px] text-ink-faint font-body truncate">{c.round}</div>
                   </div>
                   <ScoreBadge score={c.score} />
                   <StatusPill status={c.status} />

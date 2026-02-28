@@ -1,26 +1,16 @@
-import { T } from "../../theme/tokens";
-
-export function Avatar({ initials, size = 40, bg, rank }) {
-  const bgColor = bg || T.primary;
+export function Avatar({ initials, size = 40, bg, rank, style = {} }: any) {
   return (
-    <div style={{ position: "relative", flexShrink: 0 }}>
-      <div style={{
-        width: size, height: size,
-        background: bgColor, color: "#fff",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: T.fontDisplay, fontWeight: 900,
-        fontSize: size * 0.35,
-        letterSpacing: "0.04em",
-        flexShrink: 0,
-      }}>{initials}</div>
+    <div className="relative shrink-0" style={style}>
+      <div
+        className="flex items-center justify-center font-display font-black tracking-wide text-white shrink-0"
+        style={{ width: size, height: size, background: bg || "#E8521A", fontSize: size * 0.35 }}
+      >
+        {initials}
+      </div>
       {rank && (
-        <div style={{
-          position: "absolute", top: -6, right: -6,
-          width: 18, height: 18, background: T.primary,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontFamily: T.fontDisplay, fontWeight: 900,
-          fontSize: 9, color: "#fff",
-        }}>{rank}</div>
+        <div className="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] bg-primary flex items-center justify-center font-display font-black text-[9px] text-white">
+          {rank}
+        </div>
       )}
     </div>
   );
