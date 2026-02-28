@@ -28,7 +28,7 @@ export async function callGeminiStandard(prompt) {
     throw new Error("Gemini SDK not available");
   }
 
-  const modelName = process.env.GEMINI_EVAL_MODEL || "gemini-1.5-pro";
+  const modelName = process.env.GEMINI_EVAL_MODEL || "gemini-2.0-flash";
   const model = ai.getGenerativeModel({ model: modelName });
 
   const result = await model.generateContent(prompt);

@@ -9,7 +9,7 @@ const NO_AUTH_MODE = process.env.DISABLE_AUTH !== "false";
  */
 export function authenticateCandidate(req, res, next) {
   if (NO_AUTH_MODE) {
-    req.candidate = { id: "local-candidate", email: "local-candidate@test.dev" };
+    req.candidate = { id: "000000000000000000000002", email: "local-candidate@test.dev" };
     return next();
   }
 
@@ -40,7 +40,8 @@ export function authenticateCandidate(req, res, next) {
  */
 export function authenticateHR(req, res, next) {
   if (NO_AUTH_MODE) {
-    req.hrUser = { id: "local-hr", email: "local-hr@test.dev", role: "admin" };
+    // Use a fixed valid ObjectId placeholder so model refs don't fail
+    req.hrUser = { id: "000000000000000000000001", email: "local-hr@test.dev", role: "admin" };
     return next();
   }
 

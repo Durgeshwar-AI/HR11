@@ -8,7 +8,7 @@ const JobRoleSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "HRUser",
-      required: true,
+      required: false,
     },
     status: {
       type: String,

@@ -1,109 +1,132 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const pdf = require("pdf-parse");
+import Groq from "groq-sdk";
+import mammoth from "mammoth";
+import { PDFParse } from "pdf-parse";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-/**
- * Fetch and extract plain text from a resume URL (PDF or DOCX).
- * The URL is a public Cloudinary link — accessible by Claude and our server.
- */
-async function extractResumeText(resumeUrl, mimeType) {
-  const response = await fetch(resumeUrl);
-  if (!response.ok) throw new Error(`Failed to fetch resume: ${response.statusText}`);
-
-  const buffer = await response.buffer();
-
-  if (mimeType === "application/pdf") {
-    const data = await pdf(buffer);
-    return data.text;
+// Lazy client — only created when screenResume is first called so the server
+// boots without GROQ_API_KEY; callers get a clear error if key is missing.
+let _groq = null;
+function getGroq() {
+  if (!_groq) {
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error(
+        "GROQ_API_KEY is not set. Add it to your .env file. " +
+        "Get a free key at https://console.groq.com/keys"
+      );
+    }
+    _groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
-
-  // For DOCX — send as base64 document to Claude directly
-  return null; // signals to use base64 path
+  return _groq;
 }
 
 /**
- * Score a candidate's resume against a job description using Claude.
- * Returns structured scoring data.
- *
- * @param {string} resumeUrl    - Public Cloudinary URL of the resume
- * @param {string} mimeType     - MIME type of the resume file
- * @param {string} jobTitle     - Title of the role
- * @param {string} jobDescription - Full job description text
- * @param {string} name         - Candidate's name
- * @param {string} email        - Candidate's email
+ * Fetch resume from URL and extract plain text.
+ * Supports PDF (via pdf-parse) and DOCX (via mammoth).
  */
-async function screenResume({ resumeUrl, mimeType, jobTitle, jobDescription, name, email }) {
-  let resumeText = null;
-  let useUrl = false;
+async function extractResumeText(resumeUrl, mimeType) {
+  const response = await fetch(resumeUrl);
+  if (!response.ok)
+    throw new Error(`Failed to fetch resume: ${response.statusText}`);
 
-  try {
-    resumeText = await extractResumeText(resumeUrl, mimeType);
-    if (!resumeText) useUrl = true;
-  } catch (err) {
-    useUrl = true; // If extraction fails, let Claude fetch the URL
+  // Use arrayBuffer (native Fetch API) then convert to Node Buffer
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  const type = (mimeType || "").toLowerCase();
+
+  if (type.includes("pdf")) {
+    const parser = new PDFParse({ data: buffer });
+    const data = await parser.getText();
+    await parser.destroy();
+    return data.text?.trim() || "";
   }
 
-  const formContext =
+  if (
+    type.includes("docx") ||
+    type.includes("openxmlformats") ||
+    type.includes("wordprocessingml")
+  ) {
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value?.trim() || "";
+  }
+
+  // Plain text fallback
+  return buffer.toString("utf-8").trim();
+}
+
+/**
+ * Screen a resume against a job description using Groq (Llama 3.3 70B — free).
+ *
+ * @param {string} resumeUrl       - Public Cloudinary URL of the resume file
+ * @param {string} mimeType        - MIME type of the uploaded file
+ * @param {string} jobTitle        - Job title
+ * @param {string} jobDescription  - Full job description
+ * @param {string} [name]          - Candidate name (optional)
+ * @param {string} [email]         - Candidate email (optional)
+ */
+async function screenResume({ resumeUrl, mimeType, jobTitle, jobDescription, name, email }) {
+  // Extract resume text — fall back to URL hint if extraction fails
+  let resumeText = "";
+  try {
+    resumeText = await extractResumeText(resumeUrl, mimeType);
+  } catch (err) {
+    console.warn("[screenResume] Text extraction failed, proceeding with URL hint:", err.message);
+  }
+
+  const candidateInfo =
     name || email
-      ? `\n\nAdditional candidate information:\nName: ${name || "Unknown"}\nEmail: ${email || "Unknown"}`
+      ? `\nCandidate Name: ${name || "Unknown"}\nCandidate Email: ${email || "Unknown"}`
       : "";
 
-  const systemPrompt = `You are an expert technical recruiter and resume screener. 
-Your job is to objectively score a candidate's resume against a job description.
-Always respond with valid JSON only — no markdown, no explanation outside the JSON.`;
-
-  const userPrompt = `Score this candidate's resume against the job description below.
+  const userPrompt = `You are an expert technical recruiter. Score the following resume against the job description.
 
 JOB TITLE: ${jobTitle}
 
 JOB DESCRIPTION:
 ${jobDescription}
-${formContext}
+${candidateInfo}
 
-${resumeText ? `RESUME TEXT:\n${resumeText}` : `RESUME URL: ${resumeUrl}\nPlease fetch and analyze the resume from the URL above.`}
+RESUME TEXT:
+${resumeText || "(Resume text could not be extracted — base judgment on any available context)"}
 
-Respond ONLY with this JSON structure:
+Respond ONLY with valid JSON — no markdown fences, no explanation outside the JSON:
 {
-  "score": <overall 0-100>,
+  "score": <integer 0-100, overall match>,
   "scoreBreakdown": {
-    "skills": <0-100, how well technical/soft skills match>,
-    "experience": <0-100, relevance and years of experience>,
-    "education": <0-100, education fit for the role>
+    "skills": <integer 0-100>,
+    "experience": <integer 0-100>,
+    "education": <integer 0-100>
   },
-  "reasoning": "<2-3 sentence explanation of the score and key factors>"
+  "reasoning": "<2-3 sentences explaining the score>"
 }`;
 
-  const messages = [{ role: "user", content: userPrompt }];
-
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 1024,
-    system: systemPrompt,
-    messages,
+  const chat = await getGroq().chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{ role: "user", content: userPrompt }],
+    max_tokens: 512,
+    temperature: 0.2,
   });
 
-  const raw = response.content
-    .filter((b) => b.type === "text")
-    .map((b) => b.text)
-    .join("");
-
-  // Strip any accidental markdown fences
+  const raw = chat.choices[0]?.message?.content || "{}";
   const cleaned = raw.replace(/```json|```/g, "").trim();
-  const result = JSON.parse(cleaned);
+
+  let result;
+  try {
+    result = JSON.parse(cleaned);
+  } catch {
+    throw new Error(`Groq returned non-JSON response: ${raw.slice(0, 200)}`);
+  }
 
   return {
     jobTitle,
     jobDescription,
-    score: result.score,
+    score: result.score ?? 0,
     scoreBreakdown: {
-      ...result.scoreBreakdown,
-      overall: result.score,
+      skills: result.scoreBreakdown?.skills ?? 0,
+      experience: result.scoreBreakdown?.experience ?? 0,
+      education: result.scoreBreakdown?.education ?? 0,
+      overall: result.score ?? 0,
     },
-    recommendation: result.recommendation,
-    reasoning: result.reasoning,
+    reasoning: result.reasoning ?? "",
   };
 }
 

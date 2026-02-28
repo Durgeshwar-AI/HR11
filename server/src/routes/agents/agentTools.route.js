@@ -3,6 +3,7 @@ import { authenticateAgent } from "../../middleware/auth.js";
 import Candidate from "../../models/Candidate.model.js";
 import Question from "../../models/Question.model.js";
 import Interview from "../../models/Interview.model.js";
+import { processEvaluation } from "../../workers/evaluationWorker.js";
 
 const router = express.Router();
 
@@ -86,20 +87,10 @@ router.post("/conclude", authenticateAgent, async (req, res) => {
       completedAt: new Date(),
     });
 
-    // Enqueue evaluation job (if BullMQ is available)
-    try {
-      const { getEvaluationQueue } = await import(
-        "../../workers/evaluationQueue.js"
-      );
-      const queue = getEvaluationQueue();
-      if (queue) {
-        await queue.add("evaluate", { interviewId });
-      }
-    } catch {
-      console.warn(
-        "BullMQ not available — evaluation must be triggered manually"
-      );
-    }
+    // Fire-and-forget evaluation (runs in-process, no Redis needed)
+    processEvaluation(interviewId).catch((err) =>
+      console.error(`[evaluationWorker] Error evaluating ${interviewId}:`, err.message)
+    );
 
     res.json({ success: true });
   } catch (err) {

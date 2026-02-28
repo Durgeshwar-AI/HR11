@@ -2,27 +2,16 @@ import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// Store resumes in a dedicated Cloudinary folder as raw files (PDF/DOCX)
-// resource_type: "raw" ensures non-image files are stored and served correctly
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "resumes",
-    resource_type: "raw",
-    // Preserve original filename so it's human-readable in Cloudinary dashboard
-    public_id: (req, file) => {
-      const timestamp = Date.now();
-      const name = file.originalname.replace(/\.[^/.]+$/, "").replace(/\s+/g, "_");
-      return `${name}_${timestamp}`;
-    },
-  },
-});
+// Lazy config — reads env vars on first use, safe against ESM import hoisting.
+function ensureConfig() {
+  if (!cloudinary.config().cloud_name) {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+  }
+}
 
 // Only allow PDF and DOCX
 const fileFilter = (req, file, cb) => {
@@ -37,10 +26,33 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+// Lazy storage + multer — created on first request so env vars are loaded.
+let _multer = null;
+function getUpload() {
+  if (!_multer) {
+    ensureConfig();
+    const storage = new CloudinaryStorage({
+      cloudinary,
+      params: {
+        folder: "resumes",
+        resource_type: "raw",
+        public_id: (req, file) => {
+          const timestamp = Date.now();
+          const name = file.originalname.replace(/\.[^/.]+$/, "").replace(/\s+/g, "_");
+          return `${name}_${timestamp}`;
+        },
+      },
+    });
+    _multer = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
+  }
+  return _multer;
+}
+
+// Proxy so callers can do `upload.single("resume")` unchanged.
+const upload = new Proxy({}, {
+  get(_, method) {
+    return (...args) => getUpload()[method](...args);
+  },
 });
 
 export { cloudinary, upload };

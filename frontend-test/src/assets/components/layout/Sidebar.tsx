@@ -1,11 +1,13 @@
+import { useNavigate, useLocation } from "react-router-dom";
+
 const NAV_ITEMS = [
-  { key: "dashboard", icon: "⊞", label: "Dashboard" },
-  { key: "openings", icon: "📋", label: "Job Openings" },
-  { key: "pipeline", icon: "⚙️", label: "Pipeline Builder" },
-  { key: "resume-screening", icon: "📄", label: "Resume Screening" },
+  { key: "dashboard", path: "/dashboard", icon: "⊞", label: "Dashboard" },
+  { key: "pipeline", path: "/pipeline", icon: "⚙️", label: "Pipeline Builder" },
+  { key: "leaderboard", path: "/leaderboard", icon: "📋", label: "Leaderboard" },
 ];
 
-export function Sidebar({ currentPage, onNavigate, collapsed }: any) {
+export function Sidebar({ currentPage, collapsed }: any) {
+  const navigate = useNavigate();
   return (
     <aside
       className="min-h-screen bg-secondary text-white border-r-2 border-secondary flex flex-col shrink-0 sticky top-0 self-start transition-[width] duration-200"
@@ -32,7 +34,7 @@ export function Sidebar({ currentPage, onNavigate, collapsed }: any) {
           return (
             <div
               key={item.key}
-              onClick={() => onNavigate?.(item.key)}
+              onClick={() => navigate(item.path)}
               className={[
                 "flex items-center gap-3 cursor-pointer text-lg transition-all duration-150",
                 collapsed ? "py-3 px-4" : "py-3 px-5",
