@@ -16,6 +16,7 @@ const JobRoleSchema = new mongoose.Schema(
       default: "Draft",
     },
     totalSteps: { type: Number, default: 0 }, // Auto-computed from Question count
+    totalRounds: { type: Number, default: 2, min: 0 }, // How many interview rounds remain after screening
 
     // ── Screening deadline & auto-rejection ──────────────────────
     submissionDeadline: { type: Date, default: null }, // After this date, no new resumes accepted

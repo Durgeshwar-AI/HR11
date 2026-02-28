@@ -8,7 +8,14 @@ const router = express.Router();
 // ─── Create new job role ─────────────────────────────────────────
 router.post("/", authenticateHR, async (req, res) => {
   try {
-    const { title, description, skills, submissionDeadline, topN } = req.body;
+    const {
+      title,
+      description,
+      skills,
+      submissionDeadline,
+      topN,
+      totalRounds,
+    } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: "title is required" });
@@ -23,6 +30,7 @@ router.post("/", authenticateHR, async (req, res) => {
         submissionDeadline: new Date(submissionDeadline),
       }),
       ...(topN && { topN: Number(topN) }),
+      ...(totalRounds !== undefined && { totalRounds: Number(totalRounds) }),
     });
 
     res.status(201).json(jobRole);
@@ -71,8 +79,15 @@ router.get("/:id", authenticateHR, async (req, res) => {
 // ─── Update job role metadata ────────────────────────────────────
 router.put("/:id", authenticateHR, async (req, res) => {
   try {
-    const { title, description, skills, status, submissionDeadline, topN } =
-      req.body;
+    const {
+      title,
+      description,
+      skills,
+      status,
+      submissionDeadline,
+      topN,
+      totalRounds,
+    } = req.body;
 
     const update = { title, description, skills, status };
     if (submissionDeadline !== undefined)
@@ -80,6 +95,7 @@ router.put("/:id", authenticateHR, async (req, res) => {
         ? new Date(submissionDeadline)
         : null;
     if (topN !== undefined) update.topN = Number(topN);
+    if (totalRounds !== undefined) update.totalRounds = Number(totalRounds);
 
     const job = await JobRole.findByIdAndUpdate(req.params.id, update, {
       new: true,
