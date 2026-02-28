@@ -281,6 +281,87 @@ export const interviewSessionApi = {
     }),
 };
 
+/* ─── Candidate Portal ─────────────────────────────────────────── */
+
+export interface ActiveJob {
+  id: string;
+  title: string;
+  description: string;
+  skills: string[];
+  company: string;
+  totalRounds: number;
+  pipeline: string[];
+  deadline: string | null;
+  createdAt: string;
+}
+
+export interface RoundProgress {
+  roundNumber: number;
+  roundName: string;
+  stageType: string | null;
+  score: number | null;
+  passed: boolean | null;
+  status: "Pending" | "InProgress" | "Completed" | "Skipped";
+}
+
+export interface ApplicationProgress {
+  status: "Pending" | "InProgress" | "Completed";
+  rounds: RoundProgress[];
+  candidateScore: number;
+  rank: number | null;
+}
+
+export interface MyApplication {
+  jobId: string;
+  jobTitle: string;
+  jobDescription: string;
+  jobSkills: string[];
+  jobStatus: string;
+  totalRounds: number;
+  pipeline: { stageType: string; stageName: string; order: number }[];
+  screeningScore: number | null;
+  screeningStatus: string;
+  appliedAt: string;
+  progress: ApplicationProgress | null;
+}
+
+export interface CandidateMe {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  skills: string[];
+  resumeUrl: string;
+  resumeSummary: string | null;
+  appliedJobs: { _id: string; title: string; description?: string; skills?: string[]; status?: string; totalRounds?: number }[];
+  createdAt: string;
+}
+
+export const candidateApi = {
+  /** Public — no auth required */
+  activeJobs: () => request<ActiveJob[]>("/candidate/jobs/active"),
+
+  /** Get logged-in candidate profile */
+  me: () => request<CandidateMe>("/candidate/me"),
+
+  /** Update candidate profile */
+  updateProfile: (data: { name?: string; phone?: string; skills?: string[] }) =>
+    request<CandidateMe>("/candidate/me", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  /** Get all my applications with progress */
+  myApplications: () =>
+    request<{ applications: MyApplication[] }>("/candidate/my-applications"),
+
+  /** Get my progress for a specific job */
+  myProgress: (jobId: string) =>
+    request<{ progress: ApplicationProgress | null }>(
+      `/candidate/my-progress/${jobId}`,
+    ),
+};
+
 /* ─── Token helpers ───────────────────────────────────────────── */
 
 export function saveAuth(token: string, user: StoredUser) {

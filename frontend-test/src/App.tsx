@@ -27,15 +27,14 @@ import { RoleChoice } from "./pages/public/RoleChoice.tsx";
 import { CandidateHome } from "./pages/public/CandidateHome.tsx";
 import { CompanyHome } from "./pages/public/CompanyHome.tsx";
 
-import {BrowserRouter, Routes, Route} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 export default function App() {
-
-
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public */}
+        {/* ── Public ── */}
         <Route path="/" element={<RoleChoice />} />
         <Route path="/why-hr11" element={<WhyHR11Page />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
@@ -45,21 +44,26 @@ export default function App() {
         <Route path="/company-register" element={<CompanyRegister />} />
         <Route path="/candidate-login" element={<CandidateLogin />} />
         <Route path="/candidate-register" element={<CandidateRegister />} />
-        {/* App pages */}
-        <Route path="/dashboard" element={<CompanyDashboard />} />
-        <Route path="/leaderboard" element={<HiringLeaderboard />} />
-        <Route path="/pipeline" element={<PipelineBuilder />} />
-        <Route path="/candidate-profile" element={<CandidateProfile />} />
-        <Route path="/recent-openings" element={<RecentOpenings />} />
-        <Route path="/interview-entry" element={<InterviewEntryPage />} />
-        <Route path="/interview" element={<InterviewPage />} />
-        {/* Round pages */}
-        <Route path="/round/resume-screening" element={<ResumeScreeningRound />} />
-        <Route path="/round/aptitude-test" element={<AptitudeTestRound />} />
-        <Route path="/round/coding-challenge" element={<CodingChallengeRound />} />
-        <Route path="/round/ai-interview" element={<AIInterviewRound />} />
-        <Route path="/round/technical-interview" element={<TechnicalInterviewRound />} />
-        {/* catch-all -> home */}
+
+        {/* ── Company (HR) ── */}
+        <Route path="/dashboard" element={<ProtectedRoute role="hr"><CompanyDashboard /></ProtectedRoute>} />
+        <Route path="/leaderboard" element={<ProtectedRoute role="hr"><HiringLeaderboard /></ProtectedRoute>} />
+        <Route path="/pipeline" element={<ProtectedRoute role="hr"><PipelineBuilder /></ProtectedRoute>} />
+
+        {/* ── Candidate ── */}
+        <Route path="/candidate-profile" element={<ProtectedRoute role="candidate"><CandidateProfile /></ProtectedRoute>} />
+        <Route path="/recent-openings" element={<ProtectedRoute role="candidate"><RecentOpenings /></ProtectedRoute>} />
+        <Route path="/interview-entry" element={<ProtectedRoute role="candidate"><InterviewEntryPage /></ProtectedRoute>} />
+        <Route path="/interview" element={<ProtectedRoute role="candidate"><InterviewPage /></ProtectedRoute>} />
+
+        {/* ── Round pages (candidate) ── */}
+        <Route path="/round/resume-screening" element={<ProtectedRoute role="candidate"><ResumeScreeningRound /></ProtectedRoute>} />
+        <Route path="/round/aptitude-test" element={<ProtectedRoute role="candidate"><AptitudeTestRound /></ProtectedRoute>} />
+        <Route path="/round/coding-challenge" element={<ProtectedRoute role="candidate"><CodingChallengeRound /></ProtectedRoute>} />
+        <Route path="/round/ai-interview" element={<ProtectedRoute role="candidate"><AIInterviewRound /></ProtectedRoute>} />
+        <Route path="/round/technical-interview" element={<ProtectedRoute role="candidate"><TechnicalInterviewRound /></ProtectedRoute>} />
+
+        {/* catch-all → role selection */}
         <Route path="*" element={<RoleChoice />} />
       </Routes>
     </BrowserRouter>

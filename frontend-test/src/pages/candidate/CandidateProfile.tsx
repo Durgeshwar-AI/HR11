@@ -1,89 +1,147 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getStoredUser, clearAuth, isLoggedIn } from "../../services/api";
-import { loadPipeline, getDefaultPipeline, type PipelineRound } from "../../services/pipeline";
+import {
+  getStoredUser,
+  saveAuth,
+  clearAuth,
+  candidateApi,
+  type CandidateMe,
+  type MyApplication,
+} from "../../services/api";
 import { Card, SectionLabel, Divider } from "../../assets/components/shared/Card";
 import { Btn } from "../../assets/components/shared/Btn";
 import { Tag } from "../../assets/components/shared/Badges";
 import { Avatar } from "../../assets/components/shared/Avatar";
 
 /* ------------------------------------------------------------------ */
-/*  Types & defaults                                                   */
+/*  Stage-type → path mapping for "Continue" buttons                   */
 /* ------------------------------------------------------------------ */
-const DEFAULT_SKILLS = ["JavaScript", "React", "Node.js", "Python", "SQL"];
+const STAGE_PATHS: Record<string, string> = {
+  resume_screening: "/round/resume-screening",
+  aptitude_test: "/round/aptitude-test",
+  coding_challenge: "/round/coding-challenge",
+  ai_voice_interview: "/interview-entry",
+  technical_interview: "/round/technical-interview",
+};
+
+const STAGE_ICONS: Record<string, string> = {
+  resume_screening: "📄",
+  aptitude_test: "🧠",
+  coding_challenge: "💻",
+  ai_voice_interview: "🎙️",
+  technical_interview: "🔧",
+};
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 export function CandidateProfile() {
   const navigate = useNavigate();
-  const loggedIn = isLoggedIn();
-  const user = getStoredUser();
+  const storedUser = getStoredUser();
 
-  const name = typeof user?.name === "string" ? user.name : "Candidate";
-  const email = typeof user?.email === "string" ? user.email : "";
-  const role = typeof user?.role === "string" ? user.role : "Job Seeker";
-  const initials = name
+  /* ── Backend state ─────────────────────────────────────── */
+  const [profile, setProfile] = useState<CandidateMe | null>(null);
+  const [applications, setApplications] = useState<MyApplication[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  /* ── Editable fields ────────────────────────────────────── */
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+
+  /* ── Derived user info (fallback to localStorage until API loads) */
+  const displayName = editName || profile?.name || (typeof storedUser?.name === "string" ? storedUser.name : "Candidate");
+  const email = profile?.email ?? (typeof storedUser?.email === "string" ? storedUser.email : "");
+  const role = typeof storedUser?.role === "string" && storedUser.role !== "candidate" ? storedUser.role : "Job Seeker";
+  const initials = displayName
     .split(" ")
     .map((w: string) => w[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
 
-  /* Photo state */
+  /* ── Avatar file (local preview only) ───────────────────── */
   const fileRef = useRef<HTMLInputElement>(null);
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPhotoUrl(url);
-    }
+    if (file) setAvatarPreview(URL.createObjectURL(file));
   };
 
-  /* Skills state (editable) */
-  const [skills, setSkills] = useState<string[]>(DEFAULT_SKILLS);
+  /* ── Skills ─────────────────────────────────────────────── */
+  const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
+
   const addSkill = () => {
     const trimmed = newSkill.trim();
-    if (trimmed && !skills.includes(trimmed) && skills.length < 5) {
+    if (trimmed && !skills.includes(trimmed) && skills.length < 8) {
       setSkills([...skills, trimmed]);
       setNewSkill("");
     }
   };
   const removeSkill = (s: string) => setSkills(skills.filter((x) => x !== s));
 
-  /* Resume state */
+  /* ── Resume state ───────────────────────────────────────── */
   const resumeRef = useRef<HTMLInputElement>(null);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-
   const handleResume = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) setResumeFile(file);
   };
 
-  /* Pipeline progress (persisted in localStorage) */
-  const [pipeline, setPipeline] = useState<PipelineRound[]>(loadPipeline);
-  const hasApplication = pipeline.some((r) => r.status !== "locked");
+  /* ── Fetch profile + applications from backend ─────────── */
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [me, apps] = await Promise.all([
+        candidateApi.me().catch(() => null),
+        candidateApi.myApplications().catch(() => ({ applications: [] })),
+      ]);
+      if (me) {
+        setProfile(me);
+        setEditName(me.name);
+        setEditPhone(me.phone || "");
+        if (me.skills.length > 0) setSkills(me.skills);
+      }
+      setApplications(apps.applications);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  /* Determine the "continue" round — the first non-completed round */
-  const currentRound = pipeline.find((r) => r.status === "current");
-  const nextLockedIdx = pipeline.findIndex((r) => r.status === "locked");
-  const allDone = pipeline.every((r) => r.status === "completed");
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  /* Start a new application — marks round 1 as current */
-  const startApplication = () => {
-    const fresh = getDefaultPipeline();
-    fresh[0].status = "current";
-    localStorage.setItem("hr11_pipeline_progress", JSON.stringify(fresh));
-    setPipeline(fresh);
-    navigate(fresh[0].path);
-  };
-
-  /* Continue to the current round */
-  const continueApplication = () => {
-    if (currentRound) navigate(currentRound.path);
+  /* ── Save profile to backend ───────────────────────────── */
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    setSaveMsg(null);
+    try {
+      const updated = await candidateApi.updateProfile({
+        name: editName.trim() || undefined,
+        phone: editPhone.trim(),
+        skills,
+      });
+      setProfile(updated);
+      // Sync localStorage user name
+      const stored = getStoredUser();
+      if (stored) {
+        saveAuth(localStorage.getItem("hr11_token") || "", { ...stored, name: updated.name });
+      }
+      setSaveMsg("Profile saved!");
+      setTimeout(() => setSaveMsg(null), 3000);
+    } catch (err) {
+      setSaveMsg(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* Sign out */
@@ -92,14 +150,24 @@ export function CandidateProfile() {
     navigate("/");
   };
 
-  useEffect(() => {
-    if (!loggedIn) {
-      navigate("/candidate-login");
-    }
-  }, [loggedIn, navigate]);
+  /* ── Helpers for application cards ─────────────────────── */
+  const getNextRound = (app: MyApplication) => {
+    if (!app.progress) return null;
+    const next = app.progress.rounds.find((r) => r.status === "Pending" || r.status === "InProgress");
+    return next || null;
+  };
 
-  if (!loggedIn) return null;
+  const getCompletedCount = (app: MyApplication) => {
+    if (!app.progress) return 0;
+    return app.progress.rounds.filter((r) => r.status === "Completed").length;
+  };
 
+  const getRoundPath = (app: MyApplication, round: { stageType: string | null }) => {
+    const base = STAGE_PATHS[round.stageType || ""] || "/recent-openings";
+    return `${base}?jobId=${app.jobId}`;
+  };
+
+  /* ────────────────────────────────────────────────────────── */
   return (
     <div className="min-h-screen bg-tertiary">
       {/* ── Top Nav ──────────────────────────────────────────── */}
@@ -109,9 +177,7 @@ export function CandidateProfile() {
           className="font-display font-black text-xl text-secondary cursor-pointer select-none"
         >
           HR<span className="text-primary">11</span>
-          <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5">
-            AI
-          </span>
+          <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5">AI</span>
         </div>
         <div className="flex items-center gap-3">
           <Btn size="sm" variant="ghost" onClick={() => navigate("/recent-openings")}>
@@ -123,316 +189,344 @@ export function CandidateProfile() {
         </div>
       </nav>
 
-      <div className="max-w-[980px] mx-auto py-9 px-6">
-        <div className="grid md:grid-cols-[300px_1fr] gap-6 items-start fade-up">
-          {/* ── Left Column: Photo + Info ───────────────────── */}
-          <div className="flex flex-col gap-4">
-            {/* Photo + Name Card */}
-            <Card>
-              <div className="p-7 flex flex-col items-center text-center">
-                {/* Avatar / Photo */}
-                <div
-                  className="relative group cursor-pointer mb-4"
-                  onClick={() => fileRef.current?.click()}
-                >
-                  {photoUrl ? (
-                    <img
-                      src={photoUrl}
-                      alt={name}
-                      className="w-[80px] h-[80px] object-cover border-2 border-secondary"
-                    />
-                  ) : (
-                    <Avatar initials={initials} size={80} />
-                  )}
-                  {/* overlay */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                    <span className="text-white text-[10px] font-display font-extrabold tracking-[0.1em] uppercase">
-                      Change
-                    </span>
-                  </div>
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handlePhoto}
-                  />
-                </div>
-
-                <div className="font-display font-black text-xl uppercase text-secondary mb-1">
-                  {name}
-                </div>
-                <div className="font-body text-[13px] text-primary font-semibold mb-1">
-                  {role}
-                </div>
-                {email && (
-                  <>
-                    <Divider />
-                    <div className="mt-3 flex gap-2 items-center">
-                      <span className="text-sm">📧</span>
-                      <span className="font-body text-xs text-ink-light">
-                        {email}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </Card>
-
-            {/* ── Top 5 Skills ──────────────────────────────── */}
-            <Card>
-              <div className="p-5">
-                <SectionLabel>Top 5 Skills</SectionLabel>
-                <div className="flex flex-wrap gap-1.5 mt-1">
-                  {skills.map((s) => (
-                    <span
-                      key={s}
-                      className="group inline-flex items-center gap-1.5"
-                    >
-                      <Tag>{s}</Tag>
-                      <button
-                        onClick={() => removeSkill(s)}
-                        className="text-ink-faint hover:text-danger transition font-bold text-xs leading-none"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                {skills.length < 5 && (
-                  <div className="flex gap-2 mt-3">
-                    <input
-                      type="text"
-                      placeholder="Add a skill…"
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addSkill()}
-                      className="flex-1 text-xs font-body border-2 border-secondary rounded-none px-3 py-1.5 bg-surface text-secondary placeholder:text-ink-faint focus:outline-none focus:border-primary transition"
-                    />
-                    <Btn size="sm" onClick={addSkill}>
-                      Add
-                    </Btn>
-                  </div>
-                )}
-                {skills.length >= 5 && (
-                  <p className="text-[11px] text-ink-faint font-body mt-2">
-                    Maximum 5 skills. Remove one to add another.
-                  </p>
-                )}
-              </div>
-            </Card>
+      <div className="max-w-[1020px] mx-auto py-9 px-6">
+        {/* ── Loading state ─────────────────────────────────── */}
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
           </div>
+        )}
 
-          {/* ── Right Column: Pipeline + Resume + Actions ── */}
-          <div className="flex flex-col gap-4">
-            {/* ── Application Pipeline ──────────────────────── */}
-            <Card>
-              <div className="bg-secondary px-5 py-3">
-                <span className="font-display font-extrabold text-xs text-white tracking-[0.15em] uppercase">
-                  My Application Pipeline
-                </span>
-              </div>
-              <div className="p-5">
-                {!hasApplication ? (
-                  <div className="text-center py-6">
-                    <div className="text-[40px] mb-3">🚀</div>
-                    <div className="font-display font-extrabold text-sm uppercase text-secondary mb-1">
-                      No Active Application
+        {/* ── Error state ───────────────────────────────────── */}
+        {error && !loading && (
+          <div className="text-center py-10">
+            <div className="text-4xl mb-3">⚠️</div>
+            <p className="font-body text-sm text-danger mb-3">{error}</p>
+            <Btn size="sm" onClick={fetchData}>Retry</Btn>
+          </div>
+        )}
+
+        {!loading && (
+          <div className="grid md:grid-cols-[300px_1fr] gap-6 items-start fade-up">
+            {/* ── Left Column: Photo + Info ───────────────────── */}
+            <div className="flex flex-col gap-4">
+              {/* Photo + Name Card */}
+              <Card>
+                <div className="p-7 flex flex-col items-center text-center">
+                  <div
+                    className="relative group cursor-pointer mb-4"
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt={displayName} className="w-[80px] h-[80px] object-cover border-2 border-secondary" />
+                    ) : (
+                      <Avatar initials={initials} size={80} />
+                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                      <span className="text-white text-[10px] font-display font-extrabold tracking-[0.1em] uppercase">Change</span>
                     </div>
-                    <p className="font-body text-xs text-ink-faint mb-4">
-                      Browse openings and apply to start your pipeline.
-                    </p>
-                    <Btn size="sm" onClick={() => navigate("/recent-openings")}>
-                      Browse Openings →
-                    </Btn>
+                    <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                   </div>
-                ) : (
-                  <>
-                    {/* Round list */}
-                    <div className="flex flex-col gap-0.5">
-                      {pipeline.map((round, idx) => {
-                        const isCompleted = round.status === "completed";
-                        const isCurrent = round.status === "current";
-                        const isLocked = round.status === "locked";
+
+                  {/* Editable name */}
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Your name"
+                    className="w-full text-center font-display font-black text-xl uppercase text-secondary bg-transparent border-b-2 border-transparent hover:border-border-clr focus:border-primary outline-none transition mb-1 px-1 py-0.5"
+                  />
+                  <div className="font-body text-[13px] text-primary font-semibold mb-1">{role}</div>
+
+                  {email && (
+                    <>
+                      <Divider />
+                      <div className="mt-3 flex gap-2 items-center">
+                        <span className="text-sm">📧</span>
+                        <span className="font-body text-xs text-ink-light">{email}</span>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Editable phone */}
+                  <div className="mt-2 flex gap-2 items-center w-full">
+                    <span className="text-sm">📱</span>
+                    <input
+                      type="tel"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      placeholder="Phone number"
+                      className="flex-1 text-xs font-body text-ink-light bg-transparent border-b border-transparent hover:border-border-clr focus:border-primary outline-none transition px-1 py-0.5"
+                    />
+                  </div>
+
+                  {/* Save button */}
+                  <div className="mt-4 w-full">
+                    <Btn fullWidth size="sm" onClick={handleSaveProfile} disabled={saving}>
+                      {saving ? "Saving…" : "💾 Save Profile"}
+                    </Btn>
+                    {saveMsg && (
+                      <p className={`font-body text-[11px] mt-1.5 ${saveMsg.includes("saved") ? "text-[#1A8917]" : "text-danger"}`}>
+                        {saveMsg}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* ── Stats ── */}
+                  <div className="mt-4 grid grid-cols-2 gap-3 w-full">
+                    <div className="bg-surface-alt border border-border-clr p-3 text-center">
+                      <div className="font-display font-black text-2xl text-primary">{applications.length}</div>
+                      <div className="font-body text-[10px] text-ink-faint uppercase tracking-wider">Applications</div>
+                    </div>
+                    <div className="bg-surface-alt border border-border-clr p-3 text-center">
+                      <div className="font-display font-black text-2xl text-[#1A8917]">
+                        {applications.filter((a) => a.progress?.status === "Completed").length}
+                      </div>
+                      <div className="font-body text-[10px] text-ink-faint uppercase tracking-wider">Completed</div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* ── Skills ──────────────────────────────────── */}
+              <Card>
+                <div className="p-5">
+                  <SectionLabel>Skills</SectionLabel>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {skills.map((s) => (
+                      <span key={s} className="group inline-flex items-center gap-1.5">
+                        <Tag>{s}</Tag>
+                        <button onClick={() => removeSkill(s)} className="text-ink-faint hover:text-danger transition font-bold text-xs leading-none">×</button>
+                      </span>
+                    ))}
+                    {skills.length === 0 && (
+                      <p className="text-[11px] text-ink-faint font-body">No skills yet. Add some below.</p>
+                    )}
+                  </div>
+                  {skills.length < 8 && (
+                    <div className="flex gap-2 mt-3">
+                      <input
+                        type="text"
+                        placeholder="Add a skill…"
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && addSkill()}
+                        className="flex-1 text-xs font-body border-2 border-secondary rounded-none px-3 py-1.5 bg-surface text-secondary placeholder:text-ink-faint focus:outline-none focus:border-primary transition"
+                      />
+                      <Btn size="sm" onClick={addSkill}>Add</Btn>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* ── Resume ──────────────────────────────────── */}
+              <Card>
+                <div className="p-5">
+                  <SectionLabel>Resume</SectionLabel>
+
+                  {/* Show saved resume from backend URL */}
+                  {profile?.resumeUrl ? (
+                    <div className="flex flex-col items-center text-center mt-3">
+                      <div className="text-[40px] mb-2">📄</div>
+                      <div className="font-display font-black text-sm uppercase text-secondary mb-1">Resume Uploaded</div>
+                      <a
+                        href={profile.resumeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-body text-xs text-primary underline hover:text-primary/80 transition"
+                      >
+                        View Resume ↗
+                      </a>
+                      <div className="flex gap-2 mt-3">
+                        <Btn size="sm" onClick={() => resumeRef.current?.click()}>Replace</Btn>
+                      </div>
+                    </div>
+                  ) : resumeFile ? (
+                    <div className="flex flex-col items-center text-center mt-3">
+                      <div className="text-[40px] mb-2">📄</div>
+                      <div className="font-display font-black text-sm uppercase text-secondary">{resumeFile.name}</div>
+                      <p className="font-body text-[10px] text-ink-faint mt-1">{(resumeFile.size / 1024).toFixed(1)} KB</p>
+                      <div className="flex gap-2 mt-3">
+                        <Btn variant="secondary" size="sm" onClick={() => { setResumeFile(null); if (resumeRef.current) resumeRef.current.value = ""; }}>Remove</Btn>
+                        <Btn size="sm" onClick={() => resumeRef.current?.click()}>Replace</Btn>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="border-2 border-dashed border-border-clr p-6 text-center cursor-pointer hover:border-primary hover:bg-surface-warm transition mt-3"
+                      onClick={() => resumeRef.current?.click()}
+                    >
+                      <div className="text-[40px] mb-2">📎</div>
+                      <div className="font-display font-black text-xs uppercase text-secondary mb-1">Upload Resume</div>
+                      <p className="font-body text-[10px] text-ink-faint">PDF, DOC, or DOCX · Max 5MB</p>
+                    </div>
+                  )}
+                  <input ref={resumeRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleResume} />
+
+                  {profile?.resumeSummary && (
+                    <div className="mt-4 bg-surface-alt border border-border-clr p-3">
+                      <div className="font-display font-extrabold text-[10px] tracking-[0.12em] uppercase text-ink-faint mb-1">AI Summary</div>
+                      <p className="font-body text-xs text-ink-light leading-relaxed">{profile.resumeSummary}</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {/* ── Right Column: Applications + Quick Actions ─── */}
+            <div className="flex flex-col gap-4">
+              {/* ── My Applications ─────────────────────────── */}
+              <Card>
+                <div className="bg-secondary px-5 py-3 flex items-center justify-between">
+                  <span className="font-display font-extrabold text-xs text-white tracking-[0.15em] uppercase">
+                    My Applications
+                  </span>
+                  <span className="font-display font-black text-xs text-primary">
+                    {applications.length}
+                  </span>
+                </div>
+                <div className="p-5">
+                  {applications.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="text-[48px] mb-3">🚀</div>
+                      <div className="font-display font-extrabold text-sm uppercase text-secondary mb-1">No Applications Yet</div>
+                      <p className="font-body text-xs text-ink-faint mb-4">Browse openings and apply to get started.</p>
+                      <Btn size="sm" onClick={() => navigate("/recent-openings")}>Browse Openings →</Btn>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      {applications.map((app) => {
+                        const completed = getCompletedCount(app);
+                        const total = app.totalRounds || app.progress?.rounds.length || 0;
+                        const nextRound = getNextRound(app);
+                        const allDone = app.progress?.status === "Completed";
+                        const pct = total > 0 ? (completed / total) * 100 : 0;
+
                         return (
-                          <div key={round.key}>
-                            <div
-                              onClick={() => {
-                                if (isCurrent) navigate(round.path);
-                                else if (isCompleted) navigate(round.path);
-                              }}
-                              className={[
-                                "flex items-center gap-3 px-3 py-2.5 border-2 transition-all",
-                                isCurrent
-                                  ? "border-primary bg-primary/[0.06] cursor-pointer"
-                                  : isCompleted
-                                    ? "border-[#1A8917]/30 bg-[#f0fdf0] cursor-pointer"
-                                    : "border-border-clr bg-surface-alt opacity-50 cursor-not-allowed",
-                              ].join(" ")}
-                            >
-                              {/* Step number */}
-                              <div
-                                className={[
-                                  "w-7 h-7 flex items-center justify-center shrink-0 font-display font-black text-xs border-2",
-                                  isCompleted
-                                    ? "bg-[#1A8917] border-[#1A8917] text-white"
-                                    : isCurrent
-                                      ? "bg-primary border-primary text-white"
-                                      : "bg-surface border-secondary text-ink-faint",
-                                ].join(" ")}
-                              >
-                                {isCompleted ? "✓" : idx + 1}
-                              </div>
-
-                              {/* Icon + label */}
-                              <span className="text-base shrink-0">{round.icon}</span>
-                              <div className="flex-1 min-w-0">
-                                <div className={[
-                                  "font-display font-extrabold text-xs uppercase tracking-[0.05em]",
-                                  isCompleted ? "text-[#1A8917]" : isCurrent ? "text-primary" : "text-ink-faint",
-                                ].join(" ")}>
-                                  {round.label}
+                          <div key={app.jobId} className="border-2 border-secondary bg-surface p-4">
+                            {/* Job header */}
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <div className="font-display font-black text-base uppercase text-secondary leading-tight">
+                                  {app.jobTitle}
                                 </div>
-                                <div className="text-[10px] font-body text-ink-faint">
-                                  {isCompleted ? "Completed" : isCurrent ? "In progress — tap to continue" : "Locked"}
+                                <div className="font-body text-[11px] text-ink-faint mt-0.5">
+                                  Applied {new Date(app.appliedAt).toLocaleDateString()}
+                                  {app.screeningScore !== null && (
+                                    <> · Screening: <strong className="text-primary">{app.screeningScore}%</strong></>
+                                  )}
                                 </div>
                               </div>
-
-                              {/* Arrow for current */}
-                              {isCurrent && (
-                                <span className="text-primary font-display font-black text-sm">→</span>
-                              )}
+                              <div className={[
+                                "px-2 py-0.5 font-display font-extrabold text-[9px] tracking-[0.1em] uppercase border",
+                                allDone
+                                  ? "border-[#1A8917] text-[#1A8917] bg-[#f0fdf0]"
+                                  : app.screeningStatus === "rejected"
+                                    ? "border-red-400 text-red-600 bg-red-50"
+                                    : "border-primary text-primary bg-primary/[0.06]",
+                              ].join(" ")}>
+                                {allDone ? "Completed" : app.screeningStatus === "rejected" ? "Rejected" : "In Progress"}
+                              </div>
                             </div>
 
-                            {/* Connector line */}
-                            {idx < pipeline.length - 1 && (
-                              <div className="flex justify-start pl-[22px]">
-                                <div className={[
-                                  "w-0.5 h-3",
-                                  isCompleted ? "bg-[#1A8917]" : "bg-border-clr",
-                                ].join(" ")} />
+                            {/* Skills */}
+                            {app.jobSkills.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-3">
+                                {app.jobSkills.slice(0, 5).map((s) => (
+                                  <Tag key={s}>{s}</Tag>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Pipeline rounds */}
+                            {app.progress && app.progress.rounds.length > 0 && (
+                              <div className="mb-3">
+                                <div className="flex gap-1 items-center">
+                                  {app.progress.rounds.map((round, idx) => {
+                                    const isComp = round.status === "Completed";
+                                    const isActive = round.status === "InProgress" || round.status === "Pending";
+                                    const icon = STAGE_ICONS[round.stageType || ""] || "📋";
+                                    return (
+                                      <div key={idx} className="flex items-center">
+                                        <div
+                                          title={round.roundName || `Round ${round.roundNumber}`}
+                                          className={[
+                                            "w-8 h-8 flex items-center justify-center text-sm border-2 transition-all",
+                                            isComp
+                                              ? "bg-[#1A8917] border-[#1A8917] text-white"
+                                              : isActive
+                                                ? "bg-primary/10 border-primary text-primary"
+                                                : "bg-surface-alt border-border-clr text-ink-faint opacity-50",
+                                          ].join(" ")}
+                                        >
+                                          {isComp ? "✓" : icon}
+                                        </div>
+                                        {idx < app.progress!.rounds.length - 1 && (
+                                          <div className={["w-4 h-0.5 shrink-0", isComp ? "bg-[#1A8917]" : "bg-border-clr"].join(" ")} />
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                {/* Progress bar */}
+                                <div className="mt-2">
+                                  <div className="flex justify-between text-[9px] font-display font-bold uppercase tracking-[0.1em] text-ink-faint mb-0.5">
+                                    <span>{completed}/{total} rounds</span>
+                                    {app.progress!.candidateScore != null && <span>Score: {app.progress!.candidateScore}</span>}
+                                  </div>
+                                  <div className="h-1.5 bg-surface-alt border border-border-clr">
+                                    <div
+                                      className={["h-full transition-all duration-500", allDone ? "bg-[#1A8917]" : "bg-primary"].join(" ")}
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* CTA */}
+                            {!allDone && nextRound && app.screeningStatus !== "rejected" && (
+                              <Btn
+                                fullWidth
+                                size="sm"
+                                onClick={() => navigate(getRoundPath(app, nextRound))}
+                              >
+                                Continue: {nextRound.roundName || `Round ${nextRound.roundNumber}`} →
+                              </Btn>
+                            )}
+                            {allDone && (
+                              <div className="bg-[#f0fdf0] border border-[#1A8917]/30 p-2.5 text-center">
+                                <span className="font-display font-extrabold text-xs text-[#1A8917] uppercase">
+                                  🎉 All Rounds Complete — Results Under Review
+                                </span>
                               </div>
                             )}
                           </div>
                         );
                       })}
                     </div>
+                  )}
+                </div>
+              </Card>
 
-                    {/* Progress bar */}
-                    <div className="mt-4">
-                      <div className="flex justify-between text-[10px] font-display font-bold uppercase tracking-[0.1em] text-ink-faint mb-1">
-                        <span>Progress</span>
-                        <span>{pipeline.filter((r) => r.status === "completed").length}/{pipeline.length} rounds</span>
-                      </div>
-                      <div className="h-2 bg-surface-alt border border-border-clr">
-                        <div
-                          className={[
-                            "h-full transition-all duration-500",
-                            allDone ? "bg-[#1A8917]" : "bg-primary",
-                          ].join(" ")}
-                          style={{
-                            width: `${(pipeline.filter((r) => r.status === "completed").length / pipeline.length) * 100}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* CTA */}
-                    <div className="mt-4">
-                      {allDone ? (
-                        <div className="border-2 border-[#1A8917] bg-[#f0fdf0] p-4 text-center">
-                          <div className="font-display font-black text-base uppercase text-[#1A8917] mb-1">
-                            🎉 All Rounds Complete!
-                          </div>
-                          <p className="font-body text-xs text-ink-light">
-                            Your results are being reviewed. You'll hear back soon.
-                          </p>
-                        </div>
-                      ) : currentRound ? (
-                        <Btn fullWidth onClick={continueApplication}>
-                          Continue: {currentRound.label} →
-                        </Btn>
-                      ) : null}
-                    </div>
-                  </>
-                )}
-              </div>
-            </Card>
-
-            {/* Resume Section */}
-            <Card>
-              <div className="bg-secondary px-5 py-3">
-                <span className="font-display font-extrabold text-xs text-white tracking-[0.15em] uppercase">
-                  Resume
-                </span>
-              </div>
-              <div className="p-7">
-                {resumeFile ? (
-                  <div className="flex flex-col items-center text-center">
-                    <div className="text-[52px] mb-3">📄</div>
-                    <div className="font-display font-black text-lg uppercase text-secondary">
-                      {resumeFile.name}
-                    </div>
-                    <p className="font-body text-xs text-ink-faint mt-1">
-                      {(resumeFile.size / 1024).toFixed(1)} KB · Uploaded just now
-                    </p>
-                    <div className="flex gap-3 mt-5">
-                      <Btn
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          setResumeFile(null);
-                          if (resumeRef.current) resumeRef.current.value = "";
-                        }}
-                      >
-                        Remove
-                      </Btn>
-                      <Btn size="sm" onClick={() => resumeRef.current?.click()}>
-                        Replace
-                      </Btn>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    className="border-2 border-dashed border-border-clr p-10 text-center cursor-pointer hover:border-primary hover:bg-surface-warm transition"
-                    onClick={() => resumeRef.current?.click()}
-                  >
-                    <div className="text-[52px] mb-3">📎</div>
-                    <div className="font-display font-black text-base uppercase text-secondary mb-1">
-                      Upload your resume
-                    </div>
-                    <p className="font-body text-xs text-ink-faint">
-                      PDF, DOC, or DOCX · Max 5MB
-                    </p>
-                  </div>
-                )}
-
-                <input
-                  ref={resumeRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  className="hidden"
-                  onChange={handleResume}
-                />
-              </div>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <div className="p-5 flex flex-col gap-3">
-                <SectionLabel>Quick Actions</SectionLabel>
-                <Btn fullWidth onClick={() => navigate("/recent-openings")}>
-                  Browse Recent Openings →
-                </Btn>
-                {hasApplication && currentRound && (
-                  <Btn fullWidth variant="secondary" onClick={continueApplication}>
-                    Continue Application →
+              {/* Quick Actions */}
+              <Card>
+                <div className="p-5 flex flex-col gap-3">
+                  <SectionLabel>Quick Actions</SectionLabel>
+                  <Btn fullWidth onClick={() => navigate("/recent-openings")}>
+                    Browse Open Positions →
                   </Btn>
-                )}
-              </div>
-            </Card>
+                  {applications.length > 0 && (
+                    <Btn fullWidth variant="secondary" onClick={fetchData}>
+                      🔄 Refresh My Applications
+                    </Btn>
+                  )}
+                </div>
+              </Card>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

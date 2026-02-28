@@ -11,29 +11,32 @@ function isNoAuthMode() {
  * Sets req.candidate = { id, email }
  */
 export function authenticateCandidate(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  // If a Bearer token is present, always try to decode it
+  if (authHeader?.startsWith("Bearer ")) {
+    try {
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      if (decoded.role !== "candidate") {
+        return res.status(403).json({ error: "Access denied — candidates only" });
+      }
+
+      req.candidate = { id: decoded.id, email: decoded.email };
+      return next();
+    } catch (err) {
+      // Token invalid — fall through to no-auth check
+    }
+  }
+
+  // No valid token: allow through only in dev/no-auth mode
   if (isNoAuthMode()) {
     req.candidate = { id: "000000000000000000000002", email: "local-candidate@test.dev" };
     return next();
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-
-  try {
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    if (decoded.role !== "candidate") {
-      return res.status(403).json({ error: "Access denied — candidates only" });
-    }
-
-    req.candidate = { id: decoded.id, email: decoded.email };
-    next();
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid or expired token" });
-  }
+  return res.status(401).json({ error: "No token provided" });
 }
 
 /**
@@ -42,30 +45,30 @@ export function authenticateCandidate(req, res, next) {
  * Sets req.hrUser = { id, email, role }
  */
 export function authenticateHR(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader?.startsWith("Bearer ")) {
+    try {
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      if (decoded.role !== "hr") {
+        return res.status(403).json({ error: "Access denied — HR only" });
+      }
+
+      req.hrUser = { id: decoded.id, email: decoded.email, role: decoded.hrRole };
+      return next();
+    } catch (err) {
+      // Token invalid — fall through to no-auth check
+    }
+  }
+
   if (isNoAuthMode()) {
-    // Use a fixed valid ObjectId placeholder so model refs don't fail
     req.hrUser = { id: "000000000000000000000001", email: "local-hr@test.dev", role: "admin" };
     return next();
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-
-  try {
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    if (decoded.role !== "hr") {
-      return res.status(403).json({ error: "Access denied — HR only" });
-    }
-
-    req.hrUser = { id: decoded.id, email: decoded.email, role: decoded.hrRole };
-    next();
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid or expired token" });
-  }
+  return res.status(401).json({ error: "No token provided" });
 }
 
 /**

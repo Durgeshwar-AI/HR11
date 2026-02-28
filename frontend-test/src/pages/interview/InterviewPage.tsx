@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Conversation } from "@11labs/client";
+// import { Conversation } from "@11labs/client";
 import { Btn } from "../../assets/components/shared/Btn";
 import { interviewSessionApi } from "../../services/api";
 
