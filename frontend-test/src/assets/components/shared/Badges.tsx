@@ -1,4 +1,11 @@
-export function Tag({ children, color }: any) {
+import type { ReactNode } from "react";
+
+interface TagProps {
+  children: ReactNode;
+  color?: string;
+}
+
+export function Tag({ children, color }: TagProps) {
   const c = color || "#1A1A1A";
   return (
     <span
@@ -60,7 +67,7 @@ const STATUS_MAP: Record<
   live: { label: "● LIVE", bg: "#FFF0F0", color: "#B22222", border: "#B22222" },
 };
 
-export function StatusPill({ status }: any) {
+export function StatusPill({ status }: { status: string }) {
   const s = STATUS_MAP[status] || STATUS_MAP.pending;
   return (
     <span
@@ -76,7 +83,7 @@ export function StatusPill({ status }: any) {
   );
 }
 
-export function ScoreBadge({ score }: any) {
+export function ScoreBadge({ score }: { score: number }) {
   const color = score >= 90 ? "#2A7A2A" : score >= 75 ? "#C07800" : "#B22222";
   return (
     <div

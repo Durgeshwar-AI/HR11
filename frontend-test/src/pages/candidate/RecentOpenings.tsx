@@ -112,6 +112,7 @@ const MOCK_OPENINGS: Opening[] = [
 export function RecentOpenings() {
   const navigate = useNavigate();
   const user = getStoredUser();
+  const userName = typeof user?.name === "string" ? user.name : "";
   const [openings, setOpenings] = useState<Opening[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -174,7 +175,7 @@ export function RecentOpenings() {
                 size={24}
               />
               <span className="hidden sm:inline normal-case font-body font-medium text-xs tracking-normal">
-                {user?.name || "Profile"}
+                {userName || "Profile"}
               </span>
             </span>
           </Btn>
@@ -191,7 +192,7 @@ export function RecentOpenings() {
             Candidate Portal
           </p>
           <h1 className="font-display font-black text-[32px] uppercase text-secondary leading-tight">
-            Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""} 👋
+            Welcome back{userName ? `, ${userName.split(" ")[0]}` : ""} 👋
           </h1>
           <p className="mt-1.5 font-body text-sm text-ink-light">
             Browse the latest openings and apply with one click.

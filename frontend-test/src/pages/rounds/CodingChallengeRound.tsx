@@ -1,7 +1,53 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Btn } from "../../assets/components/shared/Btn";
 import { codingApi, getStoredUser } from "../../services/api";
+
+type CodingProblem = {
+  _id?: string;
+  title: string;
+  difficulty: string;
+  tags: string[];
+  description: string;
+  examples: { input: string; output: string; explanation?: string }[];
+  constraints: string[];
+};
+
+type SubmitResult = {
+  passed?: number;
+  total?: number;
+  runtime?: string;
+  memory?: string;
+  testCases?: { input: string; expected: string; got: string; pass: boolean }[];
+  submission?: {
+    status: string;
+    testCasesPassed: number;
+    totalTestCases: number;
+    runtime: string;
+    memory: string;
+    score: number;
+  };
+  overall?: {
+    totalScore: number;
+    maxScore: number;
+    percentage: number;
+  };
+};
+
+type CodingQuestionDto = {
+  _id: string;
+  title: string;
+  difficulty?: string;
+  tags?: string[];
+  description: string;
+  examples?: { input: string; output: string; explanation?: string }[];
+  constraints?: string[];
+  starterCode?: string;
+};
+
+type CodingQuestionsResponse = {
+  questions?: CodingQuestionDto[];
+};
 
 /* ── Fallback mock problem ── */
 const MOCK_PROBLEM = {
@@ -69,8 +115,7 @@ export function CodingChallengeRound() {
   const jobId = searchParams.get("jobId") || "";
   const candidateId = searchParams.get("candidateId") || getStoredUser()?._id || "";
 
-  const [problem, setProblem] = useState<any>(MOCK_PROBLEM);
-  const [loading, setLoading] = useState(true);
+  const [problem, setProblem] = useState<CodingProblem>(MOCK_PROBLEM);
   const [code, setCode] = useState(DEFAULT_CODE);
   const [lang, setLang] = useState("JavaScript");
   const [leftWidth, setLeftWidth] = useState(45);
@@ -80,7 +125,7 @@ export function CodingChallengeRound() {
   const [running, setRunning] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
   const [timeLeft, setTimeLeft] = useState(120 * 60);
-  const [submitResult, setSubmitResult] = useState<any>(null);
+  const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
   const [finishing, setFinishing] = useState(false);
 
   /* Fetch problem from backend, fallback to mock */
@@ -88,7 +133,10 @@ export function CodingChallengeRound() {
     let cancelled = false;
     (async () => {
       try {
-        const data = await codingApi.getQuestions({ limit: 1, jobId: jobId || undefined });
+        const data = (await codingApi.getQuestions({
+          limit: 1,
+          jobId: jobId || undefined,
+        })) as CodingQuestionsResponse;
         if (!cancelled && data.questions?.length) {
           const q = data.questions[0];
           setProblem({
@@ -104,8 +152,6 @@ export function CodingChallengeRound() {
         }
       } catch {
         /* keep mock */
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };

@@ -3,6 +3,12 @@ import { Ticker } from "../../assets/components/layout/Ticker";
 import { Btn } from "../../assets/components/shared/Btn";
 import { useNavigate } from "react-router-dom";
 
+type CandidatePoint = {
+  icon: string;
+  title: string;
+  desc: string;
+};
+
 const CANDIDATE_POINTS = [
   { icon: "🚀", title: "Apply Once, Reach Many", desc: "One profile connects you to hundreds of companies. No more filling the same form over and over." },
   { icon: "🤖", title: "AI-Powered Matching", desc: "Our agents match your skills to roles that actually fit — not keyword bingo." },
@@ -12,7 +18,7 @@ const CANDIDATE_POINTS = [
   { icon: "⚡", title: "Hear Back Faster", desc: "No more ghosting. AI pipelines mean results in hours, not weeks." },
 ];
 
-function PointCard({ point, index }: any) {
+function PointCard({ point, index }: { point: CandidatePoint; index: number }) {
   return (
     <div
       className="fade-up bg-surface border-2 border-secondary p-7 transition-all duration-200 hover:shadow-brutal-orange hover:-translate-x-0.5 hover:-translate-y-0.5"

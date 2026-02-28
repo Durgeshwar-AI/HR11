@@ -17,6 +17,30 @@ import {
 } from "../../constants/data";
 import { jobsApi } from "../../services/api";
 
+type DashboardOpening = {
+  id: string | number;
+  title: string;
+  department: string;
+  applicants: number;
+  shortlisted: number;
+  status: string;
+  posted: string;
+  pipeline: string[];
+};
+
+type DashboardCandidate = (typeof MOCK_CANDIDATES)[number];
+
+type BackendJob = {
+  _id: string;
+  title: string;
+  description?: string;
+  applicantCount?: number;
+  shortlistedCount?: number;
+  status?: string;
+  createdAt?: string;
+  pipeline?: string[];
+};
+
 function ActivityFeed() {
   const items = [
     {
@@ -75,7 +99,7 @@ function ActivityFeed() {
   );
 }
 
-function OpeningCard({ opening }: any) {
+function OpeningCard({ opening }: { opening: DashboardOpening }) {
   const navigate = useNavigate();
   return (
     <Card hover onClick={() => navigate("/leaderboard")}>
@@ -94,7 +118,7 @@ function OpeningCard({ opening }: any) {
             { label: "Applicants", val: opening.applicants },
             { label: "Shortlisted", val: opening.shortlisted },
             { label: "Posted", val: opening.posted },
-          ].map((s: any) => (
+          ].map((s) => (
             <div key={s.label}>
               <div className="font-display font-black text-xl text-secondary">
                 {s.val}
@@ -127,7 +151,7 @@ function OpeningCard({ opening }: any) {
 
 export function CompanyDashboard() {
   const navigate = useNavigate();
-  const [openings, setOpenings] = useState<any[]>(MOCK_OPENINGS);
+  const [openings, setOpenings] = useState<DashboardOpening[]>(MOCK_OPENINGS as DashboardOpening[]);
   const [stats, setStats] = useState(MOCK_STATS);
 
   /* Try fetching real jobs from backend, fallback to mock */
@@ -135,10 +159,10 @@ export function CompanyDashboard() {
     let cancelled = false;
     (async () => {
       try {
-        const jobs = await jobsApi.list();
+        const jobs = (await jobsApi.list()) as BackendJob[];
         if (!cancelled && Array.isArray(jobs) && jobs.length) {
           setOpenings(
-            jobs.map((j: any) => ({
+            jobs.map((j) => ({
               id: j._id,
               title: j.title,
               department: j.description || "Engineering",
@@ -151,8 +175,8 @@ export function CompanyDashboard() {
           );
           setStats((prev) => ({
             ...prev,
-            activeOpenings: jobs.filter((j: any) => j.status === "active" || !j.status).length,
-            totalApplicants: jobs.reduce((sum: number, j: any) => sum + (j.applicantCount ?? 0), 0),
+            activeOpenings: jobs.filter((j) => j.status === "active" || !j.status).length,
+            totalApplicants: jobs.reduce((sum, j) => sum + (j.applicantCount ?? 0), 0),
           }));
         }
       } catch {
@@ -214,7 +238,7 @@ export function CompanyDashboard() {
         <div>
           <SectionLabel>Active Job Openings</SectionLabel>
           <div className="flex flex-col gap-3">
-            {openings.map((o: any) => (
+            {openings.map((o) => (
               <OpeningCard key={o.id} opening={o} />
             ))}
           </div>
@@ -234,7 +258,7 @@ export function CompanyDashboard() {
               </span>
             </div>
             <Card>
-              {MOCK_CANDIDATES.slice(0, 5).map((c: any, i: number) => (
+              {MOCK_CANDIDATES.slice(0, 5).map((c: DashboardCandidate, i: number) => (
                 <div
                   key={c.id}
                   className={[

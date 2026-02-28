@@ -1,34 +1,37 @@
 import { useState, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import type { Dispatch, DragEvent, SetStateAction } from "react";
 import { AppShell } from "../../assets/components/layout/AppShell";
 import { Card, SectionLabel } from "../../assets/components/shared/Card";
 import { Btn } from "../../assets/components/shared/Btn";
 import { ROUNDS } from "../../constants/data";
+import { jobsApi } from "../../services/api";
+
+type PipelineRound = (typeof ROUNDS)[number];
 
 /* ── Drag hook ── */
-function useDragSort(setItems: any) {
+function useDragSort(setItems: Dispatch<SetStateAction<PipelineRound[]>>) {
   const dragging = useRef<number | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
-  const onDragStart = useCallback((e: any, i: number) => {
+  const onDragStart = useCallback((e: DragEvent<HTMLDivElement>, i: number) => {
     dragging.current = i;
     setDragIdx(i);
     e.dataTransfer.effectAllowed = "move";
   }, []);
-  const onDragEnter = useCallback((e: any, i: number) => {
+  const onDragEnter = useCallback((e: DragEvent<HTMLDivElement>, i: number) => {
     e.preventDefault();
     setOverIdx(i);
   }, []);
-  const onDragOver = useCallback((e: any) => {
+  const onDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
   }, []);
   const onDrop = useCallback(
-    (e: any, i: number) => {
+    (e: DragEvent<HTMLDivElement>, i: number) => {
       e.preventDefault();
       const from = dragging.current;
       if (from !== null && from !== i)
-        setItems((p: any[]) => {
+        setItems((p) => {
           const n = [...p];
           const [m] = n.splice(from, 1);
           n.splice(i, 0, m);
@@ -66,17 +69,16 @@ function Connector() {
 }
 
 export function PipelineBuilder() {
-  const navigate = useNavigate();
-  const [pipeline, setPipeline] = useState<any[]>([]);
+  const [pipeline, setPipeline] = useState<PipelineRound[]>([]);
   const [jobTitle, setJobTitle] = useState("");
   const [tab, setTab] = useState("builder");
   const [loading, setLoading] = useState(false);
   const [deployed, setDeployed] = useState(false);
   const flowRef = useRef<HTMLDivElement>(null);
   const drag = useDragSort(setPipeline);
-  const selectedIds = pipeline.map((r: any) => r.id);
+  const selectedIds = pipeline.map((r) => r.id);
 
-  const addRound = (r: any) => {
+  const addRound = (r: PipelineRound) => {
     if (!selectedIds.includes(r.id)) {
       setPipeline((p) => [...p, r]);
       setTimeout(
@@ -86,15 +88,25 @@ export function PipelineBuilder() {
     }
   };
   const removeRound = (id: string) =>
-    setPipeline((p) => p.filter((r: any) => r.id !== id));
+    setPipeline((p) => p.filter((r) => r.id !== id));
   const canDeploy = !!jobTitle.trim() && pipeline.length > 0 && !loading;
 
   const deploy = async () => {
     if (!canDeploy) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    setDeployed(true);
+    try {
+      await jobsApi.create({
+        title: jobTitle.trim(),
+        description: `Pipeline with ${pipeline.length} rounds`,
+        totalRounds: pipeline.length,
+      });
+      setDeployed(true);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to deploy pipeline");
+      setDeployed(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -151,7 +163,7 @@ export function PipelineBuilder() {
           <div>
             <SectionLabel>Available Rounds ({ROUNDS.length})</SectionLabel>
             <div className="flex flex-col gap-[7px]">
-              {ROUNDS.map((r: any) => {
+              {ROUNDS.map((r) => {
                 const sel = selectedIds.includes(r.id);
                 return (
                   <button
@@ -232,7 +244,7 @@ export function PipelineBuilder() {
               ref={flowRef}
               className="flex flex-col items-center max-h-[520px] overflow-y-auto pb-1"
             >
-              {pipeline.map((round: any, i: number) => {
+              {pipeline.map((round, i) => {
                 const isDragging = drag.dragIdx === i;
                 const isOver = drag.overIdx === i && drag.dragIdx !== i;
                 return (
@@ -346,7 +358,7 @@ export function PipelineBuilder() {
                 job_title: jobTitle || "Untitled",
                 created_at: new Date().toISOString(),
                 total_rounds: pipeline.length,
-                  rounds: pipeline.map((r: any, i: number) => ({
+                rounds: pipeline.map((r, i) => ({
                   round_number: i + 1,
                   round_id: r.id,
                   label: r.label,

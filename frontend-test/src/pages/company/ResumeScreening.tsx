@@ -1,29 +1,29 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { AppShell } from "../../assets/components/layout/AppShell";
 import { Card } from "../../assets/components/shared/Card";
 import { Btn } from "../../assets/components/shared/Btn";
 import { Input } from "../../assets/components/shared/Input";
 import { resumeApi } from "../../services/api";
 
+type ScreeningResponse = { screening?: unknown };
+
 // A simple page where HR can upload a resume and supply a job title/description
 // The form hits the `/api/candidates/submit-and-screen` endpoint and displays
 // the returned screening result.
 
 export function ResumeScreening() {
-  const navigate = useNavigate();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
-  const [screening, setScreening] = useState<any>(null);
+  const [screening, setScreening] = useState<unknown>(null);
   const [error, setError] = useState("");
 
-  const handleFileChange = (e: any) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setResumeFile(e.target.files?.[0] || null);
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!resumeFile) return setError("Please select a resume file.");
     if (!jobTitle.trim() || !jobDescription.trim()) {
@@ -39,11 +39,11 @@ export function ResumeScreening() {
       form.append("jobTitle", jobTitle);
       form.append("jobDescription", jobDescription);
 
-      const data = await resumeApi.submitAndScreen(form);
+      const data = (await resumeApi.submitAndScreen(form)) as ScreeningResponse;
       setScreening(data.screening);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("screening error", err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : "Screening failed");
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export function ResumeScreening() {
             label="Job Title"
             placeholder="E.g. Senior Backend Engineer"
             value={jobTitle}
-            onChange={(e: any) => setJobTitle(e.target.value)}
+            onChange={(e) => setJobTitle(e.target.value)}
             required
           />
 

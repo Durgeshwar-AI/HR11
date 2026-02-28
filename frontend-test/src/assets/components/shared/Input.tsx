@@ -1,4 +1,15 @@
 import { useState } from "react";
+import type { ChangeEventHandler } from "react";
+
+interface InputProps {
+  label?: string;
+  type?: string;
+  placeholder?: string;
+  value: string;
+  onChange: ChangeEventHandler<HTMLInputElement>;
+  error?: string;
+  required?: boolean;
+}
 
 export function Input({
   label,
@@ -8,7 +19,7 @@ export function Input({
   onChange,
   error,
   required,
-}: any) {
+}: InputProps) {
   const [focus, setFocus] = useState(false);
   return (
     <div className="flex flex-col gap-[5px]">

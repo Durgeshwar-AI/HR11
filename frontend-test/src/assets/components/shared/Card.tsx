@@ -1,4 +1,13 @@
 import { useState } from "react";
+import type { CSSProperties, MouseEventHandler, ReactNode } from "react";
+
+interface CardProps {
+  children: ReactNode;
+  hover?: boolean;
+  shadow?: boolean;
+  style?: CSSProperties;
+  onClick?: MouseEventHandler<HTMLDivElement>;
+}
 
 export function Card({
   children,
@@ -6,7 +15,7 @@ export function Card({
   shadow = false,
   style = {},
   onClick,
-}: any) {
+}: CardProps) {
   const [hov, setHov] = useState(false);
   return (
     <div
@@ -28,7 +37,7 @@ export function Card({
   );
 }
 
-export function SectionLabel({ children }: any) {
+export function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center gap-3 mb-4">
       <span className="font-display font-black text-[11px] tracking-[0.2em] text-ink-faint uppercase">

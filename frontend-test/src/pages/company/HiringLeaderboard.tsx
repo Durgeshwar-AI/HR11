@@ -12,7 +12,59 @@ import { Btn } from "../../assets/components/shared/Btn";
 import { MOCK_OPENINGS, MOCK_CANDIDATES } from "../../constants/data";
 import { jobsApi, interviewsApi } from "../../services/api";
 
-function CandidateRow({ candidate, rank, onViewInterview }: any) {
+type LeaderboardOpening = {
+  id: string | number;
+  title: string;
+  department: string;
+  applicants: number;
+  shortlisted: number;
+  status: string;
+  posted: string;
+  pipeline: string[];
+};
+
+type LeaderboardCandidate = {
+  id: string | number;
+  name: string;
+  score: number;
+  status: string;
+  round: string;
+  avatar: string;
+  skills: string[];
+  appliedDate: string;
+};
+
+type BackendJob = {
+  _id: string;
+  title: string;
+  description?: string;
+  applicantCount?: number;
+  shortlistedCount?: number;
+  status?: string;
+  createdAt?: string;
+  pipeline?: string[];
+};
+
+type LeaderboardEntry = {
+  _id?: string;
+  candidateId?: string;
+  candidateName?: string;
+  name?: string;
+  totalScore?: number;
+  score?: number;
+  status?: string;
+  currentRound?: string;
+  skills?: string[];
+  createdAt?: string;
+};
+
+interface CandidateRowProps {
+  candidate: LeaderboardCandidate;
+  rank: number;
+  onViewInterview?: () => void;
+}
+
+function CandidateRow({ candidate, rank, onViewInterview }: CandidateRowProps) {
   const medals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
   return (
@@ -92,17 +144,17 @@ function CandidateRow({ candidate, rank, onViewInterview }: any) {
 
 export function HiringLeaderboard() {
   const navigate = useNavigate();
-  const [openings, setOpenings] = useState<any[]>(MOCK_OPENINGS);
-  const [selectedOpening, setSelectedOpening] = useState<any>(MOCK_OPENINGS[0]);
-  const [candidates, setCandidates] = useState<any[]>(MOCK_CANDIDATES);
+  const [openings, setOpenings] = useState<LeaderboardOpening[]>(MOCK_OPENINGS as LeaderboardOpening[]);
+  const [selectedOpening, setSelectedOpening] = useState<LeaderboardOpening>((MOCK_OPENINGS as LeaderboardOpening[])[0]);
+  const [candidates, setCandidates] = useState<LeaderboardCandidate[]>(MOCK_CANDIDATES as LeaderboardCandidate[]);
 
   /* Fetch real job openings */
   useEffect(() => {
     (async () => {
       try {
-        const jobs = await jobsApi.list();
+        const jobs = (await jobsApi.list()) as BackendJob[];
         if (Array.isArray(jobs) && jobs.length) {
-          const mapped = jobs.map((j: any) => ({
+          const mapped: LeaderboardOpening[] = jobs.map((j) => ({
             id: j._id,
             title: j.title,
             department: j.description || "Engineering",
@@ -124,10 +176,10 @@ export function HiringLeaderboard() {
     if (!selectedOpening?.id) return;
     (async () => {
       try {
-        const data = await interviewsApi.leaderboard(selectedOpening.id);
+        const data = (await interviewsApi.leaderboard(String(selectedOpening.id))) as LeaderboardEntry[];
         if (Array.isArray(data) && data.length) {
           setCandidates(
-            data.map((c: any, i: number) => ({
+            data.map((c, i) => ({
               id: c._id || c.candidateId || i,
               name: c.candidateName || c.name || `Candidate ${i + 1}`,
               score: c.totalScore ?? c.score ?? 0,
@@ -144,16 +196,16 @@ export function HiringLeaderboard() {
             })),
           );
         } else {
-          setCandidates(MOCK_CANDIDATES);
+          setCandidates(MOCK_CANDIDATES as LeaderboardCandidate[]);
         }
       } catch {
-        setCandidates(MOCK_CANDIDATES);
+        setCandidates(MOCK_CANDIDATES as LeaderboardCandidate[]);
       }
     })();
   }, [selectedOpening]);
 
   const sorted = [...candidates].sort(
-    (a: any, b: any) => b.score - a.score,
+    (a, b) => b.score - a.score,
   );
 
   return (
@@ -179,7 +231,7 @@ export function HiringLeaderboard() {
       <div className="fade-up mb-6">
         <SectionLabel>Select Job Opening</SectionLabel>
         <div className="flex gap-2.5 flex-wrap">
-          {openings.map((o: any) => (
+          {openings.map((o) => (
             <button
               key={o.id}
               onClick={() => setSelectedOpening(o)}
@@ -217,19 +269,19 @@ export function HiringLeaderboard() {
           { label: "Shortlisted", val: selectedOpening.shortlisted },
           {
             label: "In Progress",
-            val: candidates.filter((c: any) => c.status === "in_progress")
+            val: candidates.filter((c) => c.status === "in_progress")
               .length,
           },
           {
             label: "Avg Score",
             val: candidates.length
               ? Math.round(
-                  candidates.reduce((a: number, b: any) => a + b.score, 0) /
+                  candidates.reduce((a, b) => a + b.score, 0) /
                     candidates.length,
                 )
               : 0,
           },
-        ].map((s: any) => (
+        ].map((s) => (
           <div
             key={s.label}
             className={[
@@ -279,7 +331,7 @@ export function HiringLeaderboard() {
             )}
           </div>
 
-          {sorted.map((c: any, i: number) => (
+          {sorted.map((c, i) => (
             <CandidateRow
               key={c.id}
               candidate={c}

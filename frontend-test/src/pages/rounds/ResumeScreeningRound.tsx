@@ -38,28 +38,30 @@ export function ResumeScreeningRound() {
   useEffect(() => {
     if (phase === "submitting") {
       if (useApi && candidateId) {
-        setPhase("analysing");
-        (async () => {
-          try {
-            const data = await resumeApi.screenExisting(candidateId, {
-              jobTitle,
-              jobDescription: `Screening for ${jobTitle}`,
-            });
-            const s = data.screening || data;
-            setResult({
-              selected: (s.score ?? s.overallScore ?? 80) >= 60,
-              score: s.score ?? s.overallScore ?? 80,
-              summary: s.summary ?? s.analysis ?? "AI analysis complete.",
-              strengths: s.strengths ?? s.pros ?? ["Relevant experience", "Strong skills"],
-              weaknesses: s.weaknesses ?? s.cons ?? ["See detailed report"],
-            });
-            setPhase("done");
-          } catch {
-            setUseApi(false);
-            setPhase("submitting");
-          }
-        })();
-        return;
+        const t = setTimeout(() => {
+          setPhase("analysing");
+          (async () => {
+            try {
+              const data = await resumeApi.screenExisting(candidateId, {
+                jobTitle,
+                jobDescription: `Screening for ${jobTitle}`,
+              });
+              const s = data.screening || data;
+              setResult({
+                selected: (s.score ?? s.overallScore ?? 80) >= 60,
+                score: s.score ?? s.overallScore ?? 80,
+                summary: s.summary ?? s.analysis ?? "AI analysis complete.",
+                strengths: s.strengths ?? s.pros ?? ["Relevant experience", "Strong skills"],
+                weaknesses: s.weaknesses ?? s.cons ?? ["See detailed report"],
+              });
+              setPhase("done");
+            } catch {
+              setUseApi(false);
+              setPhase("submitting");
+            }
+          })();
+        }, 0);
+        return () => clearTimeout(t);
       }
       const t = setTimeout(() => setPhase("analysing"), 1400);
       return () => clearTimeout(t);

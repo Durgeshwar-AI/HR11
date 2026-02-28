@@ -226,6 +226,8 @@ export function AptitudeTestRound() {
   const dividerRef = useRef<HTMLDivElement>(null);
   const [leftWidth, setLeftWidth] = useState(65); // percent
 
+  type ApiQuestion = { _id: string; text: string; options: string[] };
+
   /* timer */
   useState(() => {
     const iv = setInterval(() => {
@@ -251,7 +253,7 @@ export function AptitudeTestRound() {
         const data = await aptitudeApi.getQuestions({ limit: 25, jobId: jobId || undefined });
         if (!cancelled && data.questions?.length) {
           setQuestions(
-            data.questions.map((q: any) => ({ id: q._id, q: q.text, opts: q.options })),
+            (data.questions as ApiQuestion[]).map((q) => ({ id: q._id, q: q.text, opts: q.options })),
           );
         } else {
           throw new Error("empty");
@@ -296,7 +298,11 @@ export function AptitudeTestRound() {
   const toggleFlag = (qIdx: number) => {
     setFlags((f) => {
       const n = new Set(f);
-      n.has(qIdx) ? n.delete(qIdx) : n.add(qIdx);
+      if (n.has(qIdx)) {
+        n.delete(qIdx);
+      } else {
+        n.add(qIdx);
+      }
       return n;
     });
   };

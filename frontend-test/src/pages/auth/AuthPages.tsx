@@ -4,7 +4,22 @@ import { Btn } from "../../assets/components/shared/Btn";
 import { Input } from "../../assets/components/shared/Input";
 import { authApi, saveAuth } from "../../services/api";
 
-function AuthShell({ title, subtitle, tag, children, footer }: any) {
+interface AuthShellProps {
+  title: string;
+  subtitle: string;
+  tag?: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}
+
+type FormKey = "company" | "name" | "email" | "pass";
+type CandidateFormKey = "name" | "email" | "pass" | "role";
+
+function getMessage(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback;
+}
+
+function AuthShell({ title, subtitle, tag, children, footer }: AuthShellProps) {
   return (
     <div className="min-h-screen bg-tertiary flex items-stretch">
       {/* Left panel — branding */}
@@ -97,10 +112,10 @@ export function CompanyLogin() {
     setLoading(true);
     try {
       const res = await authApi.hrLogin({ email, password: pass });
-      saveAuth(res.token, res.user);
+      saveAuth(res.token, res.user as { _id?: string; [key: string]: unknown });
       navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (err: unknown) {
+      setError(getMessage(err, "Login failed"));
     } finally {
       setLoading(false);
     }
@@ -128,7 +143,7 @@ export function CompanyLogin() {
           type="email"
           placeholder="you@company.com"
           value={email}
-          onChange={(e: any) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
         <Input
@@ -136,7 +151,7 @@ export function CompanyLogin() {
           type="password"
           placeholder="••••••••"
           value={pass}
-          onChange={(e: any) => setPass(e.target.value)}
+          onChange={(e) => setPass(e.target.value)}
           required
         />
         <div className="flex justify-end">
@@ -176,7 +191,7 @@ export function CompanyRegister() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const set = (k: string) => (e: any) =>
+  const set = (k: FormKey) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const handleRegister = async (e?: React.FormEvent) => {
@@ -185,10 +200,10 @@ export function CompanyRegister() {
     setLoading(true);
     try {
       const res = await authApi.hrRegister({ name: form.name, email: form.email, password: form.pass, company: form.company });
-      saveAuth(res.token, res.user);
+      saveAuth(res.token, res.user as { _id?: string; [key: string]: unknown });
       navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Registration failed");
+    } catch (err: unknown) {
+      setError(getMessage(err, "Registration failed"));
     } finally {
       setLoading(false);
     }
@@ -278,10 +293,10 @@ export function CandidateLogin() {
     setLoading(true);
     try {
       const res = await authApi.candidateLogin({ email, password: pass });
-      saveAuth(res.token, res.user);
+      saveAuth(res.token, res.user as { _id?: string; [key: string]: unknown });
       navigate("/recent-openings");
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (err: unknown) {
+      setError(getMessage(err, "Login failed"));
     } finally {
       setLoading(false);
     }
@@ -309,7 +324,7 @@ export function CandidateLogin() {
           type="email"
           placeholder="you@email.com"
           value={email}
-          onChange={(e: any) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
         <Input
@@ -317,7 +332,7 @@ export function CandidateLogin() {
           type="password"
           placeholder="••••••••"
           value={pass}
-          onChange={(e: any) => setPass(e.target.value)}
+          onChange={(e) => setPass(e.target.value)}
           required
         />
         {error && (
@@ -346,7 +361,7 @@ export function CandidateRegister() {
   const [form, setForm] = useState({ name: "", email: "", pass: "", role: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const set = (k: string) => (e: any) =>
+  const set = (k: CandidateFormKey) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const handleRegister = async (e?: React.FormEvent) => {
@@ -355,10 +370,10 @@ export function CandidateRegister() {
     setLoading(true);
     try {
       const res = await authApi.candidateRegister({ name: form.name, email: form.email, password: form.pass, role: form.role });
-      saveAuth(res.token, res.user);
+      saveAuth(res.token, res.user as { _id?: string; [key: string]: unknown });
       navigate("/recent-openings");
-    } catch (err: any) {
-      setError(err.message || "Registration failed");
+    } catch (err: unknown) {
+      setError(getMessage(err, "Registration failed"));
     } finally {
       setLoading(false);
     }

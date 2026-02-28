@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStoredUser, clearAuth, isLoggedIn } from "../../services/api";
 import { Card, SectionLabel, Divider } from "../../assets/components/shared/Card";
@@ -16,17 +16,12 @@ const DEFAULT_SKILLS = ["JavaScript", "React", "Node.js", "Python", "SQL"];
 /* ------------------------------------------------------------------ */
 export function CandidateProfile() {
   const navigate = useNavigate();
+  const loggedIn = isLoggedIn();
   const user = getStoredUser();
 
-  /* redirect if not logged in */
-  if (!isLoggedIn()) {
-    navigate("/candidate-login");
-    return null;
-  }
-
-  const name: string = user?.name || "Candidate";
-  const email: string = user?.email || "";
-  const role: string = user?.role || "Job Seeker";
+  const name = typeof user?.name === "string" ? user.name : "Candidate";
+  const email = typeof user?.email === "string" ? user.email : "";
+  const role = typeof user?.role === "string" ? user.role : "Job Seeker";
   const initials = name
     .split(" ")
     .map((w: string) => w[0])
@@ -72,6 +67,14 @@ export function CandidateProfile() {
     clearAuth();
     navigate("/");
   };
+
+  useEffect(() => {
+    if (!loggedIn) {
+      navigate("/candidate-login");
+    }
+  }, [loggedIn, navigate]);
+
+  if (!loggedIn) return null;
 
   return (
     <div className="min-h-screen bg-tertiary">

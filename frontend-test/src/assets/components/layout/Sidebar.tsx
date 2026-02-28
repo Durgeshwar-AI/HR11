@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { clearAuth } from "../../../services/api";
 
 const NAV_ITEMS = [
@@ -7,7 +7,12 @@ const NAV_ITEMS = [
   { key: "leaderboard", path: "/leaderboard", icon: "📋", label: "Leaderboard" },
 ];
 
-export function Sidebar({ currentPage, collapsed }: any) {
+interface SidebarProps {
+  currentPage: string;
+  collapsed: boolean;
+}
+
+export function Sidebar({ currentPage, collapsed }: SidebarProps) {
   const navigate = useNavigate();
   return (
     <aside

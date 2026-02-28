@@ -3,6 +3,10 @@ import { Card } from "../../assets/components/shared/Card";
 import { Btn } from "../../assets/components/shared/Btn";
 import { Tag, StatusPill } from "../../assets/components/shared/Badges";
 
+interface NavigateProps {
+  onNavigate?: (target: string) => void;
+}
+
 const JOB = {
   title: "Senior Backend Engineer",
   company: "TechCorp Inc.",
@@ -21,7 +25,7 @@ const JOB = {
   ],
 };
 
-export function InterviewEntryPage({ onNavigate }: any) {
+export function InterviewEntryPage({ onNavigate }: NavigateProps) {
   const [micOk, setMicOk] = useState(false);
 
   return (

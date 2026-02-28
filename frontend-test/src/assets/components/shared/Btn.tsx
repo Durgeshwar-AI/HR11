@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { CSSProperties, MouseEventHandler, ReactNode } from "react";
 
 const SIZE_CLS: Record<string, string> = {
   sm: "py-2 px-4 text-[11px]",
@@ -25,6 +26,20 @@ const VARIANT_STYLES = {
   },
 };
 
+type BtnVariant = "primary" | "secondary" | "ghost" | "danger";
+type BtnSize = "sm" | "md" | "lg";
+
+interface BtnProps {
+  children: ReactNode;
+  variant?: BtnVariant;
+  size?: BtnSize;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+  fullWidth?: boolean;
+  style?: CSSProperties;
+  type?: "button" | "submit" | "reset";
+}
+
 export function Btn({
   children,
   variant = "primary",
@@ -34,10 +49,10 @@ export function Btn({
   fullWidth,
   style = {},
   type,
-}: any) {
+}: BtnProps) {
   const [hov, setHov] = useState(false);
   const v =
-    VARIANT_STYLES[variant as keyof typeof VARIANT_STYLES] ||
+    VARIANT_STYLES[variant] ||
     VARIANT_STYLES.primary;
   const activeStyle = hov && !disabled ? v.hover : v.base;
 

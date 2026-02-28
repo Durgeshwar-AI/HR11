@@ -1,10 +1,19 @@
 import { Btn } from "../shared/Btn";
 import { useNavigate, useLocation } from "react-router-dom";
 
-export function PublicNav(props: any) {
+interface PublicNavProps {
+  onNavigate?: (target: string) => void;
+  currentPage?: string;
+}
+
+export function PublicNav(props: PublicNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location.pathname || "/";
+  const go = (path: string) => {
+    if (props.onNavigate) props.onNavigate(path);
+    else navigate(path);
+  };
 
   const links = [
     { key: "company-home", label: "Company Home", path: "/company-home" },
@@ -15,7 +24,7 @@ export function PublicNav(props: any) {
   return (
     <nav className="flex items-center justify-between px-12 h-[62px] bg-tertiary border-b-2 border-secondary sticky top-0 z-[100]">
       <div
-        onClick={() => navigate("/")}
+        onClick={() => go("/")}
         className="font-display font-black text-[22px] text-secondary cursor-pointer flex items-center gap-1"
       >
         HR<span className="text-primary">11</span>
@@ -28,7 +37,7 @@ export function PublicNav(props: any) {
         {links.map((l) => (
           <span
             key={l.key}
-            onClick={() => navigate(l.path)}
+            onClick={() => go(l.path)}
             className={[
               "font-body font-medium text-[13px] cursor-pointer pb-0.5 transition-all duration-150",
               pathname === l.path ? "text-primary border-b-2 border-primary" : "text-ink-light border-b-2 border-transparent",
@@ -41,19 +50,19 @@ export function PublicNav(props: any) {
         {/* Only show applicant login/signup on candidate pages; only show company login/signup on company pages. */}
         {pathname.includes("candidate") ? (
           <>
-            <Btn size="sm" variant="secondary" onClick={() => navigate("/candidate-login")}>
+            <Btn size="sm" variant="secondary" onClick={() => go("/candidate-login")}>
               Login
             </Btn>
-            <Btn size="sm" onClick={() => navigate("/candidate-register")}>
+            <Btn size="sm" onClick={() => go("/candidate-register")}>
               Sign Up
             </Btn>
           </>
         ) : pathname.includes("company") ? (
           <>
-            <Btn size="sm" variant="secondary" onClick={() => navigate("/company-login")}>
+            <Btn size="sm" variant="secondary" onClick={() => go("/company-login")}>
               Company Login
             </Btn>
-            <Btn size="sm" onClick={() => navigate("/company-register")}>
+            <Btn size="sm" onClick={() => go("/company-register")}>
               Get Started Free
             </Btn>
           </>

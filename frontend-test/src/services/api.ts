@@ -5,12 +5,26 @@
 
 const BASE = "/api"; // proxied by Vite → http://localhost:5000/api
 
+type ErrorBody = { error?: string };
+type JobMutationPayload = Record<string, unknown>;
+type StoredUser = { _id?: string; [key: string]: unknown };
+
+function getErrorMessage(body: unknown, fallback: string): string {
+  if (body && typeof body === "object" && "error" in body) {
+    const maybeError = (body as ErrorBody).error;
+    if (typeof maybeError === "string" && maybeError.trim()) {
+      return maybeError;
+    }
+  }
+  return fallback;
+}
+
 function authHeaders(): Record<string, string> {
   const token = localStorage.getItem("hr11_token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function request<T = any>(
+async function request<T = unknown>(
   path: string,
   opts: RequestInit = {},
 ): Promise<T> {
@@ -25,22 +39,19 @@ async function request<T = any>(
 
   const body = await res.json().catch(() => ({}));
 
-  if (!res.ok) {
-    const msg = (body as any)?.error || res.statusText;
-    throw new Error(msg);
-  }
+  if (!res.ok) throw new Error(getErrorMessage(body, res.statusText));
   return body as T;
 }
 
 /* helper that omits Content-Type for FormData uploads */
-async function upload<T = any>(path: string, form: FormData): Promise<T> {
+async function upload<T = unknown>(path: string, form: FormData): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: "POST",
     headers: { ...authHeaders() },
     body: form,
   });
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((body as any)?.error || res.statusText);
+  if (!res.ok) throw new Error(getErrorMessage(body, res.statusText));
   return body as T;
 }
 
@@ -69,10 +80,10 @@ export const jobsApi = {
 
   get: (id: string) => request(`/jobs/${id}`),
 
-  create: (data: any) =>
+  create: (data: JobMutationPayload) =>
     request("/jobs", { method: "POST", body: JSON.stringify(data) }),
 
-  update: (id: string, data: any) =>
+  update: (id: string, data: JobMutationPayload) =>
     request(`/jobs/${id}`, { method: "PUT", body: JSON.stringify(data) }),
 
   archive: (id: string) => request(`/jobs/${id}`, { method: "DELETE" }),
@@ -153,15 +164,15 @@ export const interviewsApi = {
 
 /* ─── Token helpers ───────────────────────────────────────────── */
 
-export function saveAuth(token: string, user: any) {
+export function saveAuth(token: string, user: StoredUser) {
   localStorage.setItem("hr11_token", token);
   localStorage.setItem("hr11_user", JSON.stringify(user));
 }
 
-export function getStoredUser() {
+export function getStoredUser(): StoredUser | null {
   try {
     const raw = localStorage.getItem("hr11_user");
-    return raw ? JSON.parse(raw) : null;
+    return raw ? (JSON.parse(raw) as StoredUser) : null;
   } catch {
     return null;
   }

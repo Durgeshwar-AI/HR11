@@ -1,4 +1,14 @@
-export function Avatar({ initials, size = 40, bg, rank, style = {} }: any) {
+import type { CSSProperties } from "react";
+
+interface AvatarProps {
+  initials: string;
+  size?: number;
+  bg?: string;
+  rank?: number;
+  style?: CSSProperties;
+}
+
+export function Avatar({ initials, size = 40, bg, rank, style = {} }: AvatarProps) {
   return (
     <div className="relative shrink-0" style={style}>
       <div

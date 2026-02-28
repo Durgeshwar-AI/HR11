@@ -4,7 +4,19 @@ import { Ticker } from "../../assets/components/layout/Ticker";
 import { Btn } from "../../assets/components/shared/Btn";
 import { HOW_IT_WORKS_STEPS } from "../../constants/data";
 
-function StepCard({ step, index, total }: any) {
+type Step = (typeof HOW_IT_WORKS_STEPS)[number];
+
+interface StepCardProps {
+  step: Step;
+  index: number;
+  total: number;
+}
+
+interface NavigateProps {
+  onNavigate?: (target: string) => void;
+}
+
+function StepCard({ step, index, total }: StepCardProps) {
   const isEven = index % 2 === 0;
   return (
     <div
@@ -49,7 +61,7 @@ function StepCard({ step, index, total }: any) {
   );
 }
 
-function StepContent({ step }: any) {
+function StepContent({ step }: { step: Step }) {
   return (
     <>
       <span className="text-[32px] block mb-3">{step.icon}</span>
@@ -63,7 +75,7 @@ function StepContent({ step }: any) {
   );
 }
 
-function FAQItem({ q, a }: any) {
+function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-2 border-secondary mb-2 overflow-hidden">
@@ -102,7 +114,7 @@ function FAQItem({ q, a }: any) {
   );
 }
 
-export function HowItWorksPage({ onNavigate }: any) {
+export function HowItWorksPage({ onNavigate }: NavigateProps) {
   return (
     <div className="min-h-screen bg-tertiary">
       <PublicNav onNavigate={onNavigate} currentPage="how" />
@@ -138,7 +150,7 @@ export function HowItWorksPage({ onNavigate }: any) {
       {/* Steps */}
       <section className="py-[72px] px-20 max-w-[1000px] mx-auto">
         <div className="flex flex-col gap-10">
-          {HOW_IT_WORKS_STEPS.map((step: any, i: number) => (
+          {HOW_IT_WORKS_STEPS.map((step, i) => (
             <StepCard
               key={i}
               step={step}

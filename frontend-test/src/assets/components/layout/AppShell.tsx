@@ -1,7 +1,13 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { Sidebar } from "./Sidebar";
 
-export function AppShell({ children, currentPage }: any) {
+interface AppShellProps {
+  children: ReactNode;
+  currentPage: string;
+}
+
+export function AppShell({ children, currentPage }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -15,7 +21,7 @@ export function AppShell({ children, currentPage }: any) {
         {/* Top bar */}
         <div className="h-[62px] flex items-center justify-between px-8 bg-surface border-b-2 border-secondary shrink-0">
           <button
-            onClick={() => setCollapsed((c: boolean) => !c)}
+            onClick={() => setCollapsed((c) => !c)}
             className="bg-transparent border-2 border-secondary w-9 h-9 cursor-pointer text-sm flex items-center justify-center font-display"
           >
             ☰

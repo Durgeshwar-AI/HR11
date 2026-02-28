@@ -1,4 +1,4 @@
-export function Ticker({ items }: any) {
+export function Ticker({ items }: { items: string[] }) {
   const all = [...items, ...items];
   return (
     <div className="bg-secondary overflow-hidden py-[9px] whitespace-nowrap border-y border-secondary">

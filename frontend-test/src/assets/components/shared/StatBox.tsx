@@ -1,4 +1,11 @@
-export function StatBox({ label, value, sub, accent }: any) {
+interface StatBoxProps {
+  label: string;
+  value: string | number;
+  sub?: string;
+  accent?: boolean;
+}
+
+export function StatBox({ label, value, sub, accent }: StatBoxProps) {
   return (
     <div
       className={`border-2 border-secondary py-5 px-6 rounded-none ${accent ? "bg-primary" : "bg-surface"}`}

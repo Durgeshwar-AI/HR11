@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Btn } from "../../assets/components/shared/Btn";
 import { technicalApi, getStoredUser } from "../../services/api";
@@ -275,6 +275,8 @@ export function TechnicalInterviewRound() {
   const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 min
   const [leftWidth, setLeftWidth] = useState(65);
 
+  type ApiQuestion = { _id: string; text: string; options: string[] };
+
   /* timer */
   useState(() => {
     const iv = setInterval(() => {
@@ -297,7 +299,7 @@ export function TechnicalInterviewRound() {
         const data = await technicalApi.getQuestions({ limit: 25, jobId: jobId || undefined });
         if (!cancelled && data.questions?.length) {
           setQuestions(
-            data.questions.map((q: any) => ({ id: q._id, q: q.text, opts: q.options })),
+            (data.questions as ApiQuestion[]).map((q) => ({ id: q._id, q: q.text, opts: q.options })),
           );
         } else {
           throw new Error("empty");
@@ -344,7 +346,11 @@ export function TechnicalInterviewRound() {
   const toggleFlag = (qIdx: number) => {
     setFlags((f) => {
       const n = new Set(f);
-      n.has(qIdx) ? n.delete(qIdx) : n.add(qIdx);
+      if (n.has(qIdx)) {
+        n.delete(qIdx);
+      } else {
+        n.add(qIdx);
+      }
       return n;
     });
   };

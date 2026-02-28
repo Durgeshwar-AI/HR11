@@ -39,7 +39,6 @@ export function AIInterviewRound() {
   /* simulate AI asking questions */
   useEffect(() => {
     if (!started || ended) return;
-    setAiSpeaking(true);
     const t = setTimeout(() => {
       setTranscript((prev) => [
         ...prev,
@@ -64,7 +63,10 @@ export function AIInterviewRound() {
       { role: "candidate", text: "(Your spoken response was recorded)" },
     ]);
     if (currentQ < AI_QUESTIONS.length - 1) {
-      setTimeout(() => setCurrentQ((c) => c + 1), 1200);
+      setTimeout(() => {
+        setAiSpeaking(true);
+        setCurrentQ((c) => c + 1);
+      }, 1200);
     } else {
       setTimeout(() => setEnded(true), 1200);
     }
@@ -102,7 +104,14 @@ export function AIInterviewRound() {
             ))}
           </div>
 
-          <Btn onClick={() => setStarted(true)}>Start Interview →</Btn>
+          <Btn
+            onClick={() => {
+              setAiSpeaking(true);
+              setStarted(true);
+            }}
+          >
+            Start Interview →
+          </Btn>
         </div>
       </div>
     );

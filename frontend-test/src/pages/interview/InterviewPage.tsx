@@ -1,7 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { Btn } from "../../assets/components/shared/Btn";
 
-const TRANSCRIPT = [
+type Role = "ai" | "candidate";
+
+interface Message {
+  role: Role;
+  text: string;
+}
+
+interface NavigateProps {
+  onNavigate?: (target: string) => void;
+}
+
+const TRANSCRIPT: Message[] = [
   {
     role: "ai",
     text: "Hi Arjun, I've reviewed your resume and I'm excited to learn more about your work. Let's start with your experience at Zomato. You mentioned you built a real-time order tracking system. Can you walk me through the architecture decisions you made?",
@@ -24,7 +35,7 @@ const TRANSCRIPT = [
   },
 ];
 
-function VoiceWave({ active }: any) {
+function VoiceWave({ active }: { active: boolean }) {
   return (
     <div className="flex gap-1 items-end h-10 justify-center">
       {Array.from({ length: 9 }).map((_, i) => (
@@ -45,11 +56,11 @@ function VoiceWave({ active }: any) {
   );
 }
 
-export function InterviewPage({ onNavigate }: any) {
+export function InterviewPage({ onNavigate }: NavigateProps) {
   const [elapsed, setElapsed] = useState(0);
   const [aiTalking, setAiTalking] = useState(true);
   const [userTalking, setUserTalking] = useState(false);
-  const [messages, setMessages] = useState([TRANSCRIPT[0]]);
+  const [messages, setMessages] = useState<Message[]>([TRANSCRIPT[0]]);
   const [msgIdx, setMsgIdx] = useState(0);
   const [muted, setMuted] = useState(false);
   const [ended, setEnded] = useState(false);
@@ -258,7 +269,7 @@ export function InterviewPage({ onNavigate }: any) {
 }
 
 /* ─── Post-Interview Report ─── */
-function ReportView({ onNavigate }: any) {
+function ReportView({ onNavigate }: NavigateProps) {
   const scores = [
     { label: "Technical Depth", score: 88 },
     { label: "Communication Clarity", score: 82 },

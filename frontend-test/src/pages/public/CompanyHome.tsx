@@ -4,7 +4,9 @@ import { Btn } from "../../assets/components/shared/Btn";
 import { WHY_POINTS } from "../../constants/data";
 import { useNavigate } from "react-router-dom";
 
-function WhyCard({ point, index }: any) {
+type WhyPoint = (typeof WHY_POINTS)[number];
+
+function WhyCard({ point, index }: { point: WhyPoint; index: number }) {
   return (
     <div
       className="fade-up bg-surface border-2 border-secondary p-7 transition-all duration-200 hover:shadow-brutal-orange hover:-translate-x-0.5 hover:-translate-y-0.5"
@@ -87,7 +89,7 @@ export function CompanyHome() {
           <div className="flex-1 h-0.5 bg-secondary" />
         </div>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
-          {WHY_POINTS.map((p: any, i: number) => (
+          {WHY_POINTS.map((p, i) => (
             <WhyCard key={i} point={p} index={i} />
           ))}
         </div>
