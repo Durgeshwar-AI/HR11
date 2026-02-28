@@ -1,5 +1,5 @@
 import express from "express";
-import multer from "multer";
+import upload from "../../config/multer.js";
 import { screenResume } from "../../services/aiService.services.js";
 import Candidate from "../../models/candidate.screening.model.js";
 
@@ -197,4 +197,4 @@ router.get("/", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

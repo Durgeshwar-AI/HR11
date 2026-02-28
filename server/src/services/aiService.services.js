@@ -1,6 +1,7 @@
-const Anthropic = require("@anthropic-ai/sdk");
+import Anthropic from "@anthropic-ai/sdk";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
-const fetch = (...args) => import("node-fetch").then(({ default: f }) => f(...args));
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -107,4 +108,4 @@ Respond ONLY with this JSON structure:
   };
 }
 
-module.exports = { screenResume };
+export { screenResume };
