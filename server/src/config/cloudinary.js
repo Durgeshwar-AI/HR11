@@ -1,5 +1,4 @@
 import cloudinaryModule from "cloudinary";
-import cloudinaryStorage from "multer-storage-cloudinary";
 import multer from "multer";
 
 const cloudinary = cloudinaryModule.v2;
@@ -28,34 +27,47 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Lazy storage + multer — created on first request so env vars are loaded.
-let _multer = null;
-function getUpload() {
-  if (!_multer) {
-    ensureConfig();
-    // multer-storage-cloudinary v2 uses top-level options (not params)
-    const storage = cloudinaryStorage({
-      cloudinary: cloudinaryModule,
-      folder: "resumes",
-      allowedFormats: ["pdf", "docx"],
-      resource_type: "raw",
-      filename: (req, file, cb) => {
-        const timestamp = Date.now();
-        const name = file.originalname.replace(/\.[^/.]+$/, "").replace(/\s+/g, "_");
-        cb(undefined, `${name}_${timestamp}`);
-      },
-    });
-    _multer = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
-  }
-  return _multer;
-}
-
-// Proxy so callers can do `upload.single("resume")` unchanged.
-const upload = new Proxy({}, {
-  get(_, method) {
-    return (...args) => getUpload()[method](...args);
-  },
+// Use memory storage — we upload to Cloudinary manually after multer parses the file.
+// This avoids multer-storage-cloudinary version incompatibilities with multer v2.
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
 });
 
-export { cloudinary, upload };
+/**
+ * Upload a multer file (with .buffer) to Cloudinary.
+ * Returns { url, publicId, originalName, mimeType }.
+ */
+function uploadToCloudinary(file) {
+  ensureConfig();
+
+  return new Promise((resolve, reject) => {
+    const timestamp = Date.now();
+    const name = file.originalname
+      .replace(/\.[^/.]+$/, "")
+      .replace(/\s+/g, "_");
+
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "resumes",
+        resource_type: "raw",
+        public_id: `${name}_${timestamp}`,
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve({
+          url: result.secure_url,
+          publicId: result.public_id,
+          originalName: file.originalname,
+          mimeType: file.mimetype,
+        });
+      },
+    );
+
+    stream.end(file.buffer);
+  });
+}
+
+export { cloudinary, upload, uploadToCloudinary };
 export default cloudinary;

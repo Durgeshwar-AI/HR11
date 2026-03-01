@@ -1,7 +1,7 @@
 import express from "express";
 import { body, validationResult } from "express-validator";
 import Form from "../../models/form.model.js";
-import upload from "../../config/multer.js";
+import { upload, uploadToCloudinary } from "../../config/cloudinary.js";
 
 const router = express.Router();
 
@@ -20,13 +20,17 @@ router.post(
     }
 
     try {
-      const resumeUrl = req.file?.path; // Cloudinary URL
+      let resumeUrl = "";
+      if (req.file) {
+        const cloudResult = await uploadToCloudinary(req.file);
+        resumeUrl = cloudResult.url;
+      }
 
       const form = new Form({
         name: req.body.name,
         email: req.body.email,
         phone: req.body.phone,
-        resume: resumeUrl, // store only URL
+        resume: resumeUrl,
       });
 
       await form.save();

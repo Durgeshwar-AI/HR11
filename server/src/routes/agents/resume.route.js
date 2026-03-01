@@ -1,5 +1,5 @@
 import express from "express";
-import { upload } from "../../config/cloudinary.js";
+import { upload, uploadToCloudinary } from "../../config/cloudinary.js";
 import { screenResume } from "../../services/aiService.services.js";
 import Candidate from "../../models/candidate.screening.model.js";
 import AuthCandidate from "../../models/Candidate.model.js";
@@ -127,15 +127,18 @@ router.post("/submit-and-screen", async (req, res) => {
       }
     }
 
+    // Upload buffer to Cloudinary
+    const cloudResult = await uploadToCloudinary(req.file);
+
     const candidate = await Candidate.create({
       name: FormFields.name || "Unnamed Candidate",
       email: FormFields.email || "",
       phone: FormFields.phone || "",
       resume: {
-        url: req.file.path,
-        cloudinaryId: req.file.filename,
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
+        url: cloudResult.url,
+        cloudinaryId: cloudResult.publicId,
+        originalName: cloudResult.originalName,
+        mimeType: cloudResult.mimeType,
       },
       jobId,
       status: "pending",

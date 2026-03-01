@@ -1,6 +1,6 @@
 import express from "express";
 import { authenticateCandidate } from "../../middleware/auth.js";
-import { upload } from "../../config/cloudinary.js";
+import { upload, uploadToCloudinary } from "../../config/cloudinary.js";
 import Candidate from "../../models/Candidate.model.js";
 import JobRole from "../../models/JobRole.model.js";
 import InterviewProgress from "../../models/InterviewProgress.model.js";
@@ -121,9 +121,12 @@ router.post(
         return res.status(400).json({ error: "Resume file is required" });
       }
 
+      // Upload buffer to Cloudinary
+      const cloudResult = await uploadToCloudinary(req.file);
+
       const candidate = await Candidate.findByIdAndUpdate(
         req.candidate.id,
-        { $set: { resumeUrl: req.file.path } },
+        { $set: { resumeUrl: cloudResult.url } },
         { new: true }
       );
 
