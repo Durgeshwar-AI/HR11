@@ -27,10 +27,7 @@ export function PublicNav(props: PublicNavProps) {
         onClick={() => go("/")}
         className="font-display font-black text-[22px] text-secondary cursor-pointer flex items-center gap-1"
       >
-        HR<span className="text-primary">11</span>
-        <span className="bg-primary text-white text-[9px] font-extrabold px-1.5 py-0.5 tracking-[0.1em] ml-1 mb-0.5 self-end">
-          AI
-        </span>
+        Prompt<span className="text-primary">Hire</span>
       </div>
 
       <div className="flex gap-8 items-center">
@@ -40,7 +37,9 @@ export function PublicNav(props: PublicNavProps) {
             onClick={() => go(l.path)}
             className={[
               "font-body font-medium text-[13px] cursor-pointer pb-0.5 transition-all duration-150",
-              pathname === l.path ? "text-primary border-b-2 border-primary" : "text-ink-light border-b-2 border-transparent",
+              pathname === l.path
+                ? "text-primary border-b-2 border-primary"
+                : "text-ink-light border-b-2 border-transparent",
             ].join(" ")}
           >
             {l.label}
@@ -50,7 +49,11 @@ export function PublicNav(props: PublicNavProps) {
         {/* Only show applicant login/signup on candidate pages; only show company login/signup on company pages. */}
         {pathname.includes("candidate") ? (
           <>
-            <Btn size="sm" variant="secondary" onClick={() => go("/candidate-login")}>
+            <Btn
+              size="sm"
+              variant="secondary"
+              onClick={() => go("/candidate-login")}
+            >
               Login
             </Btn>
             <Btn size="sm" onClick={() => go("/candidate-register")}>
@@ -59,7 +62,11 @@ export function PublicNav(props: PublicNavProps) {
           </>
         ) : pathname.includes("company") ? (
           <>
-            <Btn size="sm" variant="secondary" onClick={() => go("/company-login")}>
+            <Btn
+              size="sm"
+              variant="secondary"
+              onClick={() => go("/company-login")}
+            >
               Company Login
             </Btn>
             <Btn size="sm" onClick={() => go("/company-register")}>

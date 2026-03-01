@@ -48,14 +48,39 @@ const STAGE_LABELS: Record<string, string> = {
 
 /* ── Legacy default pipeline (kept for backward compat) ───────── */
 
-const PIPELINE_KEY = "hr11_pipeline_progress";
+const PIPELINE_KEY = "prompthire_pipeline_progress";
 
 const DEFAULT_ROUNDS: Omit<PipelineRound, "status">[] = [
-  { key: "resume",        label: "Resume Screening",    icon: "", path: "/round/resume-screening" },
-  { key: "aptitude",      label: "Aptitude Test",       icon: "", path: "/round/aptitude-test" },
-  { key: "coding",        label: "Coding Challenge",    icon: "", path: "/round/coding-challenge" },
-  { key: "ai-interview",  label: "AI Voice Interview",  icon: "", path: "/interview-entry" },
-  { key: "technical",     label: "Technical Interview", icon: "", path: "/round/technical-interview" },
+  {
+    key: "resume",
+    label: "Resume Screening",
+    icon: "",
+    path: "/round/resume-screening",
+  },
+  {
+    key: "aptitude",
+    label: "Aptitude Test",
+    icon: "",
+    path: "/round/aptitude-test",
+  },
+  {
+    key: "coding",
+    label: "Coding Challenge",
+    icon: "",
+    path: "/round/coding-challenge",
+  },
+  {
+    key: "ai-interview",
+    label: "AI Voice Interview",
+    icon: "",
+    path: "/interview-entry",
+  },
+  {
+    key: "technical",
+    label: "Technical Interview",
+    icon: "",
+    path: "/round/technical-interview",
+  },
 ];
 
 export function getDefaultPipeline(): PipelineRound[] {
@@ -71,7 +96,9 @@ export function loadPipeline(): PipelineRound[] {
         return parsed;
       }
     }
-  } catch { /* fall through */ }
+  } catch {
+    /* fall through */
+  }
   return getDefaultPipeline();
 }
 
@@ -137,7 +164,7 @@ export interface JobPipelineStage {
 }
 
 function jobPipelineKey(jobId: string) {
-  return `hr11_job_pipeline_${jobId}`;
+  return `prompthire_job_pipeline_${jobId}`;
 }
 
 /**

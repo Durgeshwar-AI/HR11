@@ -20,7 +20,7 @@ function getErrorMessage(body: unknown, fallback: string): string {
 }
 
 function authHeaders(): Record<string, string> {
-  const token = localStorage.getItem("hr11_token");
+  const token = localStorage.getItem("prompthire_token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -348,7 +348,14 @@ export interface CandidateMe {
   skills: string[];
   resumeUrl: string;
   resumeSummary: string | null;
-  appliedJobs: { _id: string; title: string; description?: string; skills?: string[]; status?: string; totalRounds?: number }[];
+  appliedJobs: {
+    _id: string;
+    title: string;
+    description?: string;
+    skills?: string[];
+    status?: string;
+    totalRounds?: number;
+  }[];
   createdAt: string;
 }
 
@@ -370,7 +377,10 @@ export const candidateApi = {
   uploadResume: (file: File) => {
     const form = new FormData();
     form.append("resume", file);
-    return upload<{ resumeUrl: string; message: string }>("/candidate/me/resume", form);
+    return upload<{ resumeUrl: string; message: string }>(
+      "/candidate/me/resume",
+      form,
+    );
   },
 
   /** Get all my applications with progress */
@@ -387,13 +397,13 @@ export const candidateApi = {
 /* ─── Token helpers ───────────────────────────────────────────── */
 
 export function saveAuth(token: string, user: StoredUser) {
-  localStorage.setItem("hr11_token", token);
-  localStorage.setItem("hr11_user", JSON.stringify(user));
+  localStorage.setItem("prompthire_token", token);
+  localStorage.setItem("prompthire_user", JSON.stringify(user));
 }
 
 export function getStoredUser(): StoredUser | null {
   try {
-    const raw = localStorage.getItem("hr11_user");
+    const raw = localStorage.getItem("prompthire_user");
     return raw ? (JSON.parse(raw) as StoredUser) : null;
   } catch {
     return null;
@@ -401,14 +411,14 @@ export function getStoredUser(): StoredUser | null {
 }
 
 export function getStoredToken() {
-  return localStorage.getItem("hr11_token");
+  return localStorage.getItem("prompthire_token");
 }
 
 export function clearAuth() {
-  localStorage.removeItem("hr11_token");
-  localStorage.removeItem("hr11_user");
+  localStorage.removeItem("prompthire_token");
+  localStorage.removeItem("prompthire_user");
 }
 
 export function isLoggedIn() {
-  return !!localStorage.getItem("hr11_token");
+  return !!localStorage.getItem("prompthire_token");
 }

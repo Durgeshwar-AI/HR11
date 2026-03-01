@@ -10,12 +10,36 @@ type CandidatePoint = {
 };
 
 const CANDIDATE_POINTS = [
-  { icon: "", title: "Apply Once, Reach Many", desc: "One profile connects you to hundreds of companies. No more filling the same form over and over." },
-  { icon: "", title: "AI-Powered Matching", desc: "Our agents match your skills to roles that actually fit — not keyword bingo." },
-  { icon: "", title: "Voice Interviews On Your Time", desc: "No scheduling headaches. Take the AI voice interview whenever you're ready, 24/7." },
-  { icon: "", title: "Real Feedback, Always", desc: "Get a detailed score breakdown after every round — strengths, gaps, and next steps." },
-  { icon: "", title: "Zero Bias, Pure Merit", desc: "Your demographics are hidden from scoring. You advance on skill alone." },
-  { icon: "", title: "Hear Back Faster", desc: "No more ghosting. AI pipelines mean results in hours, not weeks." },
+  {
+    icon: "",
+    title: "Apply Once, Reach Many",
+    desc: "One profile connects you to hundreds of companies. No more filling the same form over and over.",
+  },
+  {
+    icon: "",
+    title: "AI-Powered Matching",
+    desc: "Our agents match your skills to roles that actually fit — not keyword bingo.",
+  },
+  {
+    icon: "",
+    title: "Voice Interviews On Your Time",
+    desc: "No scheduling headaches. Take the AI voice interview whenever you're ready, 24/7.",
+  },
+  {
+    icon: "",
+    title: "Real Feedback, Always",
+    desc: "Get a detailed score breakdown after every round — strengths, gaps, and next steps.",
+  },
+  {
+    icon: "",
+    title: "Zero Bias, Pure Merit",
+    desc: "Your demographics are hidden from scoring. You advance on skill alone.",
+  },
+  {
+    icon: "",
+    title: "Hear Back Faster",
+    desc: "No more ghosting. AI pipelines mean results in hours, not weeks.",
+  },
 ];
 
 function PointCard({ point, index }: { point: CandidatePoint; index: number }) {
@@ -58,9 +82,9 @@ export function CandidateHome() {
         </div>
         <div className="max-w-[380px]">
           <p className="font-body text-[15px] text-ink-light leading-relaxed border-l-[3px] border-primary pl-4 mb-6">
-            The average applicant waits 24 days to hear back. With HR11, AI
-            screens your resume instantly, interviews you on your schedule, and
-            gives you real feedback — every single time.
+            The average applicant waits 24 days to hear back. With PromptHire,
+            AI screens your resume instantly, interviews you on your schedule,
+            and gives you real feedback — every single time.
           </p>
           <div className="flex gap-6">
             {[
@@ -96,7 +120,7 @@ export function CandidateHome() {
       <section className="py-16 px-12">
         <div className="flex items-center gap-4 mb-10">
           <h2 className="font-display font-black text-[clamp(1.6rem,3vw,2.4rem)] uppercase tracking-tight text-secondary">
-            WHY CANDIDATES LOVE HR11
+            WHY CANDIDATES LOVE PROMPTHIRE
           </h2>
           <div className="flex-1 h-0.5 bg-secondary" />
         </div>
@@ -110,15 +134,35 @@ export function CandidateHome() {
       {/* How it works for candidates */}
       <section className="px-12 pb-[72px]">
         <h2 className="font-display font-black text-[clamp(1.6rem,3vw,2.4rem)] uppercase tracking-tight text-secondary mb-7">
-          YOUR JOURNEY WITH HR11
+          YOUR JOURNEY WITH PROMPTHIRE
         </h2>
         <div className="border-2 border-secondary overflow-hidden">
           {[
-            ["01", "Create Your Profile", "Upload your resume and fill out your profile once. Our AI parses every detail."],
-            ["02", "Get Matched to Roles", "AI agents connect you to openings that genuinely fit your skills and goals."],
-            ["03", "Ace the AI Rounds", "Take aptitude tests, coding challenges, and voice interviews — all on your schedule."],
-            ["04", "Receive Your Score", "Detailed feedback on every round: strengths, areas to improve, and an overall ranking."],
-            ["05", "Land the Interview", "Top scorers are fast-tracked to human interviews. No gatekeeping, just merit."],
+            [
+              "01",
+              "Create Your Profile",
+              "Upload your resume and fill out your profile once. Our AI parses every detail.",
+            ],
+            [
+              "02",
+              "Get Matched to Roles",
+              "AI agents connect you to openings that genuinely fit your skills and goals.",
+            ],
+            [
+              "03",
+              "Ace the AI Rounds",
+              "Take aptitude tests, coding challenges, and voice interviews — all on your schedule.",
+            ],
+            [
+              "04",
+              "Receive Your Score",
+              "Detailed feedback on every round: strengths, areas to improve, and an overall ranking.",
+            ],
+            [
+              "05",
+              "Land the Interview",
+              "Top scorers are fast-tracked to human interviews. No gatekeeping, just merit.",
+            ],
           ].map(([num, title, desc], i) => (
             <div
               key={i}
@@ -156,7 +200,10 @@ export function CandidateHome() {
           Create your free profile and let AI work for you.
         </p>
         <div className="flex gap-3 justify-center">
-          <Btn onClick={() => navigate("/candidate-register")} style={{ fontSize: 15 }}>
+          <Btn
+            onClick={() => navigate("/candidate-register")}
+            style={{ fontSize: 15 }}
+          >
             Create My Profile →
           </Btn>
           <Btn

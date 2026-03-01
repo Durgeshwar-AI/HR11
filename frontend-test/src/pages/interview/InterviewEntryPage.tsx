@@ -12,7 +12,7 @@ const JOB = {
   totalRounds: 5,
   duration: "20–30 minutes",
   skills: ["Node.js", "AWS", "System Design", "Databases"],
-  interviewer: "HR11 AI — Adaptive Voice Agent",
+  interviewer: "PromptHire AI — Adaptive Voice Agent",
   notes: [
     "Your microphone and camera will be accessed.",
     "Questions are generated from your specific resume projects.",
@@ -36,7 +36,9 @@ export function InterviewEntryPage() {
       stream.getTracks().forEach((t) => t.stop());
       setMicOk(true);
     } catch {
-      setMicError("Microphone access denied. Please allow mic access and try again.");
+      setMicError(
+        "Microphone access denied. Please allow mic access and try again.",
+      );
     }
   };
 
@@ -197,7 +199,9 @@ export function InterviewEntryPage() {
                   {micOk ? " Microphone Ready" : " Test Microphone"}
                 </button>
                 {micError && (
-                  <p className="text-xs text-danger font-body mt-2">{micError}</p>
+                  <p className="text-xs text-danger font-body mt-2">
+                    {micError}
+                  </p>
                 )}
                 {micOk && (
                   <div className="flex gap-[3px] items-end h-8 mt-2.5 justify-center">
@@ -218,7 +222,9 @@ export function InterviewEntryPage() {
             {/* Start button */}
             <Btn
               fullWidth
-              onClick={() => navigate(`/interview${jobId ? `?jobId=${jobId}` : ""}`)}
+              onClick={() =>
+                navigate(`/interview${jobId ? `?jobId=${jobId}` : ""}`)
+              }
               disabled={!micOk}
               style={{ padding: "18px", fontSize: 16 }}
             >

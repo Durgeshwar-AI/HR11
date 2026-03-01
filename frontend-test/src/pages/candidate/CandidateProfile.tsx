@@ -8,7 +8,11 @@ import {
   type CandidateMe,
   type MyApplication,
 } from "../../services/api";
-import { Card, SectionLabel, Divider } from "../../assets/components/shared/Card";
+import {
+  Card,
+  SectionLabel,
+  Divider,
+} from "../../assets/components/shared/Card";
 import { Btn } from "../../assets/components/shared/Btn";
 import { Tag } from "../../assets/components/shared/Badges";
 import { Avatar } from "../../assets/components/shared/Avatar";
@@ -53,9 +57,17 @@ export function CandidateProfile() {
   const [editPhone, setEditPhone] = useState("");
 
   /* ── Derived user info (fallback to localStorage until API loads) */
-  const displayName = editName || profile?.name || (typeof storedUser?.name === "string" ? storedUser.name : "Candidate");
-  const email = profile?.email ?? (typeof storedUser?.email === "string" ? storedUser.email : "");
-  const role = typeof storedUser?.role === "string" && storedUser.role !== "candidate" ? storedUser.role : "Job Seeker";
+  const displayName =
+    editName ||
+    profile?.name ||
+    (typeof storedUser?.name === "string" ? storedUser.name : "Candidate");
+  const email =
+    profile?.email ??
+    (typeof storedUser?.email === "string" ? storedUser.email : "");
+  const role =
+    typeof storedUser?.role === "string" && storedUser.role !== "candidate"
+      ? storedUser.role
+      : "Job Seeker";
   const initials = displayName
     .split(" ")
     .map((w: string) => w[0])
@@ -137,7 +149,9 @@ export function CandidateProfile() {
       if (resumeFile) {
         const uploadRes = await candidateApi.uploadResume(resumeFile);
         // Update local profile state with new URL immediately
-        setProfile((prev) => prev ? { ...prev, resumeUrl: uploadRes.resumeUrl } : prev);
+        setProfile((prev) =>
+          prev ? { ...prev, resumeUrl: uploadRes.resumeUrl } : prev,
+        );
         setResumeFile(null);
         if (resumeRef.current) resumeRef.current.value = "";
       }
@@ -152,7 +166,10 @@ export function CandidateProfile() {
       // Sync localStorage user name
       const stored = getStoredUser();
       if (stored) {
-        saveAuth(localStorage.getItem("hr11_token") || "", { ...stored, name: updated.name });
+        saveAuth(localStorage.getItem("prompthire_token") || "", {
+          ...stored,
+          name: updated.name,
+        });
       }
       setSaveMsg("Profile saved!");
       setTimeout(() => setSaveMsg(null), 3000);
@@ -172,7 +189,9 @@ export function CandidateProfile() {
   /* ── Helpers for application cards ─────────────────────── */
   const getNextRound = (app: MyApplication) => {
     if (!app.progress) return null;
-    const next = app.progress.rounds.find((r) => r.status === "Pending" || r.status === "InProgress");
+    const next = app.progress.rounds.find(
+      (r) => r.status === "Pending" || r.status === "InProgress",
+    );
     return next || null;
   };
 
@@ -181,7 +200,10 @@ export function CandidateProfile() {
     return app.progress.rounds.filter((r) => r.status === "Completed").length;
   };
 
-  const getRoundPath = (app: MyApplication, round: { stageType: string | null }) => {
+  const getRoundPath = (
+    app: MyApplication,
+    round: { stageType: string | null },
+  ) => {
     const base = STAGE_PATHS[round.stageType || ""] || "/recent-openings";
     return `${base}?jobId=${app.jobId}`;
   };
@@ -196,10 +218,16 @@ export function CandidateProfile() {
           className="font-display font-black text-xl text-secondary cursor-pointer select-none"
         >
           HR<span className="text-primary">11</span>
-          <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5">AI</span>
+          <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5">
+            AI
+          </span>
         </div>
         <div className="flex items-center gap-3">
-          <Btn size="sm" variant="ghost" onClick={() => navigate("/recent-openings")}>
+          <Btn
+            size="sm"
+            variant="ghost"
+            onClick={() => navigate("/recent-openings")}
+          >
             Browse Jobs
           </Btn>
           <Btn size="sm" variant="secondary" onClick={handleSignOut}>
@@ -221,7 +249,9 @@ export function CandidateProfile() {
           <div className="text-center py-10">
             <div className="text-4xl mb-3"></div>
             <p className="font-body text-sm text-danger mb-3">{error}</p>
-            <Btn size="sm" onClick={fetchData}>Retry</Btn>
+            <Btn size="sm" onClick={fetchData}>
+              Retry
+            </Btn>
           </div>
         )}
 
@@ -237,14 +267,26 @@ export function CandidateProfile() {
                     onClick={() => fileRef.current?.click()}
                   >
                     {avatarPreview ? (
-                      <img src={avatarPreview} alt={displayName} className="w-[80px] h-[80px] object-cover border-2 border-secondary" />
+                      <img
+                        src={avatarPreview}
+                        alt={displayName}
+                        className="w-[80px] h-[80px] object-cover border-2 border-secondary"
+                      />
                     ) : (
                       <Avatar initials={initials} size={80} />
                     )}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                      <span className="text-white text-[10px] font-display font-extrabold tracking-[0.1em] uppercase">Change</span>
+                      <span className="text-white text-[10px] font-display font-extrabold tracking-[0.1em] uppercase">
+                        Change
+                      </span>
                     </div>
-                    <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarChange}
+                    />
                   </div>
 
                   {/* Editable name */}
@@ -255,14 +297,18 @@ export function CandidateProfile() {
                     placeholder="Your name"
                     className="w-full text-center font-display font-black text-xl uppercase text-secondary bg-transparent border-b-2 border-transparent hover:border-border-clr focus:border-primary outline-none transition mb-1 px-1 py-0.5"
                   />
-                  <div className="font-body text-[13px] text-primary font-semibold mb-1">{role}</div>
+                  <div className="font-body text-[13px] text-primary font-semibold mb-1">
+                    {role}
+                  </div>
 
                   {email && (
                     <>
                       <Divider />
                       <div className="mt-3 flex gap-2 items-center">
                         <span className="text-sm"></span>
-                        <span className="font-body text-xs text-ink-light">{email}</span>
+                        <span className="font-body text-xs text-ink-light">
+                          {email}
+                        </span>
                       </div>
                     </>
                   )}
@@ -281,11 +327,18 @@ export function CandidateProfile() {
 
                   {/* Save button */}
                   <div className="mt-4 w-full">
-                    <Btn fullWidth size="sm" onClick={handleSaveProfile} disabled={saving}>
+                    <Btn
+                      fullWidth
+                      size="sm"
+                      onClick={handleSaveProfile}
+                      disabled={saving}
+                    >
                       {saving ? "Saving…" : " Save Profile"}
                     </Btn>
                     {saveMsg && (
-                      <p className={`font-body text-[11px] mt-1.5 ${saveMsg.includes("saved") ? "text-[#1A8917]" : "text-danger"}`}>
+                      <p
+                        className={`font-body text-[11px] mt-1.5 ${saveMsg.includes("saved") ? "text-[#1A8917]" : "text-danger"}`}
+                      >
                         {saveMsg}
                       </p>
                     )}
@@ -294,14 +347,24 @@ export function CandidateProfile() {
                   {/* ── Stats ── */}
                   <div className="mt-4 grid grid-cols-2 gap-3 w-full">
                     <div className="bg-surface-alt border border-border-clr p-3 text-center">
-                      <div className="font-display font-black text-2xl text-primary">{applications.length}</div>
-                      <div className="font-body text-[10px] text-ink-faint uppercase tracking-wider">Applications</div>
+                      <div className="font-display font-black text-2xl text-primary">
+                        {applications.length}
+                      </div>
+                      <div className="font-body text-[10px] text-ink-faint uppercase tracking-wider">
+                        Applications
+                      </div>
                     </div>
                     <div className="bg-surface-alt border border-border-clr p-3 text-center">
                       <div className="font-display font-black text-2xl text-[#1A8917]">
-                        {applications.filter((a) => a.progress?.status === "Completed").length}
+                        {
+                          applications.filter(
+                            (a) => a.progress?.status === "Completed",
+                          ).length
+                        }
                       </div>
-                      <div className="font-body text-[10px] text-ink-faint uppercase tracking-wider">Completed</div>
+                      <div className="font-body text-[10px] text-ink-faint uppercase tracking-wider">
+                        Completed
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -313,13 +376,23 @@ export function CandidateProfile() {
                   <SectionLabel>Skills</SectionLabel>
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {skills.map((s) => (
-                      <span key={s} className="group inline-flex items-center gap-1.5">
+                      <span
+                        key={s}
+                        className="group inline-flex items-center gap-1.5"
+                      >
                         <Tag>{s}</Tag>
-                        <button onClick={() => removeSkill(s)} className="text-ink-faint hover:text-danger transition font-bold text-xs leading-none">×</button>
+                        <button
+                          onClick={() => removeSkill(s)}
+                          className="text-ink-faint hover:text-danger transition font-bold text-xs leading-none"
+                        >
+                          ×
+                        </button>
                       </span>
                     ))}
                     {skills.length === 0 && (
-                      <p className="text-[11px] text-ink-faint font-body">No skills yet. Add some below.</p>
+                      <p className="text-[11px] text-ink-faint font-body">
+                        No skills yet. Add some below.
+                      </p>
                     )}
                   </div>
                   {skills.length < 8 && (
@@ -332,7 +405,9 @@ export function CandidateProfile() {
                         onKeyDown={(e) => e.key === "Enter" && addSkill()}
                         className="flex-1 text-xs font-body border-2 border-secondary rounded-none px-3 py-1.5 bg-surface text-secondary placeholder:text-ink-faint focus:outline-none focus:border-primary transition"
                       />
-                      <Btn size="sm" onClick={addSkill}>Add</Btn>
+                      <Btn size="sm" onClick={addSkill}>
+                        Add
+                      </Btn>
                     </div>
                   )}
                 </div>
@@ -347,7 +422,9 @@ export function CandidateProfile() {
                   {profile?.resumeUrl ? (
                     <div className="flex flex-col items-center text-center mt-3">
                       <div className="text-[40px] mb-2"></div>
-                      <div className="font-display font-black text-sm uppercase text-secondary mb-1">Resume Uploaded</div>
+                      <div className="font-display font-black text-sm uppercase text-secondary mb-1">
+                        Resume Uploaded
+                      </div>
                       <a
                         href={profile.resumeUrl}
                         target="_blank"
@@ -357,17 +434,40 @@ export function CandidateProfile() {
                         View Resume ↗
                       </a>
                       <div className="flex gap-2 mt-3">
-                        <Btn size="sm" onClick={() => resumeRef.current?.click()}>Replace</Btn>
+                        <Btn
+                          size="sm"
+                          onClick={() => resumeRef.current?.click()}
+                        >
+                          Replace
+                        </Btn>
                       </div>
                     </div>
                   ) : resumeFile ? (
                     <div className="flex flex-col items-center text-center mt-3">
                       <div className="text-[40px] mb-2"></div>
-                      <div className="font-display font-black text-sm uppercase text-secondary">{resumeFile.name}</div>
-                      <p className="font-body text-[10px] text-ink-faint mt-1">{(resumeFile.size / 1024).toFixed(1)} KB</p>
+                      <div className="font-display font-black text-sm uppercase text-secondary">
+                        {resumeFile.name}
+                      </div>
+                      <p className="font-body text-[10px] text-ink-faint mt-1">
+                        {(resumeFile.size / 1024).toFixed(1)} KB
+                      </p>
                       <div className="flex gap-2 mt-3">
-                        <Btn variant="secondary" size="sm" onClick={() => { setResumeFile(null); if (resumeRef.current) resumeRef.current.value = ""; }}>Remove</Btn>
-                        <Btn size="sm" onClick={() => resumeRef.current?.click()}>Replace</Btn>
+                        <Btn
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            setResumeFile(null);
+                            if (resumeRef.current) resumeRef.current.value = "";
+                          }}
+                        >
+                          Remove
+                        </Btn>
+                        <Btn
+                          size="sm"
+                          onClick={() => resumeRef.current?.click()}
+                        >
+                          Replace
+                        </Btn>
                       </div>
                     </div>
                   ) : (
@@ -376,16 +476,30 @@ export function CandidateProfile() {
                       onClick={() => resumeRef.current?.click()}
                     >
                       <div className="text-[40px] mb-2"></div>
-                      <div className="font-display font-black text-xs uppercase text-secondary mb-1">Upload Resume</div>
-                      <p className="font-body text-[10px] text-ink-faint">PDF, DOC, or DOCX · Max 5MB</p>
+                      <div className="font-display font-black text-xs uppercase text-secondary mb-1">
+                        Upload Resume
+                      </div>
+                      <p className="font-body text-[10px] text-ink-faint">
+                        PDF, DOC, or DOCX · Max 5MB
+                      </p>
                     </div>
                   )}
-                  <input ref={resumeRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleResume} />
+                  <input
+                    ref={resumeRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={handleResume}
+                  />
 
                   {profile?.resumeSummary && (
                     <div className="mt-4 bg-surface-alt border border-border-clr p-3">
-                      <div className="font-display font-extrabold text-[10px] tracking-[0.12em] uppercase text-ink-faint mb-1">AI Summary</div>
-                      <p className="font-body text-xs text-ink-light leading-relaxed">{profile.resumeSummary}</p>
+                      <div className="font-display font-extrabold text-[10px] tracking-[0.12em] uppercase text-ink-faint mb-1">
+                        AI Summary
+                      </div>
+                      <p className="font-body text-xs text-ink-light leading-relaxed">
+                        {profile.resumeSummary}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -408,21 +522,34 @@ export function CandidateProfile() {
                   {applications.length === 0 ? (
                     <div className="text-center py-8">
                       <div className="text-[48px] mb-3"></div>
-                      <div className="font-display font-extrabold text-sm uppercase text-secondary mb-1">No Applications Yet</div>
-                      <p className="font-body text-xs text-ink-faint mb-4">Browse openings and apply to get started.</p>
-                      <Btn size="sm" onClick={() => navigate("/recent-openings")}>Browse Openings →</Btn>
+                      <div className="font-display font-extrabold text-sm uppercase text-secondary mb-1">
+                        No Applications Yet
+                      </div>
+                      <p className="font-body text-xs text-ink-faint mb-4">
+                        Browse openings and apply to get started.
+                      </p>
+                      <Btn
+                        size="sm"
+                        onClick={() => navigate("/recent-openings")}
+                      >
+                        Browse Openings →
+                      </Btn>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-4">
                       {applications.map((app) => {
                         const completed = getCompletedCount(app);
-                        const total = app.totalRounds || app.progress?.rounds.length || 0;
+                        const total =
+                          app.totalRounds || app.progress?.rounds.length || 0;
                         const nextRound = getNextRound(app);
                         const allDone = app.progress?.status === "Completed";
                         const pct = total > 0 ? (completed / total) * 100 : 0;
 
                         return (
-                          <div key={app.jobId} className="border-2 border-secondary bg-surface p-4">
+                          <div
+                            key={app.jobId}
+                            className="border-2 border-secondary bg-surface p-4"
+                          >
                             {/* Job header */}
                             <div className="flex items-start justify-between mb-3">
                               <div>
@@ -430,21 +557,34 @@ export function CandidateProfile() {
                                   {app.jobTitle}
                                 </div>
                                 <div className="font-body text-[11px] text-ink-faint mt-0.5">
-                                  Applied {new Date(app.appliedAt).toLocaleDateString()}
+                                  Applied{" "}
+                                  {new Date(app.appliedAt).toLocaleDateString()}
                                   {app.screeningScore !== null && (
-                                    <> · Screening: <strong className="text-primary">{app.screeningScore}%</strong></>
+                                    <>
+                                      {" "}
+                                      · Screening:{" "}
+                                      <strong className="text-primary">
+                                        {app.screeningScore}%
+                                      </strong>
+                                    </>
                                   )}
                                 </div>
                               </div>
-                              <div className={[
-                                "px-2 py-0.5 font-display font-extrabold text-[9px] tracking-[0.1em] uppercase border",
-                                allDone
-                                  ? "border-[#1A8917] text-[#1A8917] bg-[#f0fdf0]"
+                              <div
+                                className={[
+                                  "px-2 py-0.5 font-display font-extrabold text-[9px] tracking-[0.1em] uppercase border",
+                                  allDone
+                                    ? "border-[#1A8917] text-[#1A8917] bg-[#f0fdf0]"
+                                    : app.screeningStatus === "rejected"
+                                      ? "border-red-400 text-red-600 bg-red-50"
+                                      : "border-primary text-primary bg-primary/[0.06]",
+                                ].join(" ")}
+                              >
+                                {allDone
+                                  ? "Completed"
                                   : app.screeningStatus === "rejected"
-                                    ? "border-red-400 text-red-600 bg-red-50"
-                                    : "border-primary text-primary bg-primary/[0.06]",
-                              ].join(" ")}>
-                                {allDone ? "Completed" : app.screeningStatus === "rejected" ? "Rejected" : "In Progress"}
+                                    ? "Rejected"
+                                    : "In Progress"}
                               </div>
                             </div>
 
@@ -463,12 +603,21 @@ export function CandidateProfile() {
                                 <div className="flex gap-1 items-center">
                                   {app.progress.rounds.map((round, idx) => {
                                     const isComp = round.status === "Completed";
-                                    const isActive = round.status === "InProgress" || round.status === "Pending";
-                                    const icon = STAGE_ICONS[round.stageType || ""] || "";
+                                    const isActive =
+                                      round.status === "InProgress" ||
+                                      round.status === "Pending";
+                                    const icon =
+                                      STAGE_ICONS[round.stageType || ""] || "";
                                     return (
-                                      <div key={idx} className="flex items-center">
+                                      <div
+                                        key={idx}
+                                        className="flex items-center"
+                                      >
                                         <div
-                                          title={round.roundName || `Round ${round.roundNumber}`}
+                                          title={
+                                            round.roundName ||
+                                            `Round ${round.roundNumber}`
+                                          }
                                           className={[
                                             "w-8 h-8 flex items-center justify-center text-sm border-2 transition-all",
                                             isComp
@@ -480,8 +629,16 @@ export function CandidateProfile() {
                                         >
                                           {isComp ? "" : icon}
                                         </div>
-                                        {idx < app.progress!.rounds.length - 1 && (
-                                          <div className={["w-4 h-0.5 shrink-0", isComp ? "bg-[#1A8917]" : "bg-border-clr"].join(" ")} />
+                                        {idx <
+                                          app.progress!.rounds.length - 1 && (
+                                          <div
+                                            className={[
+                                              "w-4 h-0.5 shrink-0",
+                                              isComp
+                                                ? "bg-[#1A8917]"
+                                                : "bg-border-clr",
+                                            ].join(" ")}
+                                          />
                                         )}
                                       </div>
                                     );
@@ -491,12 +648,21 @@ export function CandidateProfile() {
                                 {/* Progress bar */}
                                 <div className="mt-2">
                                   <div className="flex justify-between text-[9px] font-display font-bold uppercase tracking-[0.1em] text-ink-faint mb-0.5">
-                                    <span>{completed}/{total} rounds</span>
-                                    {app.progress!.candidateScore != null && <span>Score: {app.progress!.candidateScore}</span>}
+                                    <span>
+                                      {completed}/{total} rounds
+                                    </span>
+                                    {app.progress!.candidateScore != null && (
+                                      <span>
+                                        Score: {app.progress!.candidateScore}
+                                      </span>
+                                    )}
                                   </div>
                                   <div className="h-1.5 bg-surface-alt border border-border-clr">
                                     <div
-                                      className={["h-full transition-all duration-500", allDone ? "bg-[#1A8917]" : "bg-primary"].join(" ")}
+                                      className={[
+                                        "h-full transition-all duration-500",
+                                        allDone ? "bg-[#1A8917]" : "bg-primary",
+                                      ].join(" ")}
                                       style={{ width: `${pct}%` }}
                                     />
                                   </div>
@@ -505,19 +671,26 @@ export function CandidateProfile() {
                             )}
 
                             {/* CTA */}
-                            {!allDone && nextRound && app.screeningStatus !== "rejected" && (
-                              <Btn
-                                fullWidth
-                                size="sm"
-                                onClick={() => navigate(getRoundPath(app, nextRound))}
-                              >
-                                Continue: {nextRound.roundName || `Round ${nextRound.roundNumber}`} →
-                              </Btn>
-                            )}
+                            {!allDone &&
+                              nextRound &&
+                              app.screeningStatus !== "rejected" && (
+                                <Btn
+                                  fullWidth
+                                  size="sm"
+                                  onClick={() =>
+                                    navigate(getRoundPath(app, nextRound))
+                                  }
+                                >
+                                  Continue:{" "}
+                                  {nextRound.roundName ||
+                                    `Round ${nextRound.roundNumber}`}{" "}
+                                  →
+                                </Btn>
+                              )}
                             {allDone && (
                               <div className="bg-[#f0fdf0] border border-[#1A8917]/30 p-2.5 text-center">
                                 <span className="font-display font-extrabold text-xs text-[#1A8917] uppercase">
-                                   All Rounds Complete — Results Under Review
+                                  All Rounds Complete — Results Under Review
                                 </span>
                               </div>
                             )}
@@ -538,7 +711,7 @@ export function CandidateProfile() {
                   </Btn>
                   {applications.length > 0 && (
                     <Btn fullWidth variant="secondary" onClick={fetchData}>
-                       Refresh My Applications
+                      Refresh My Applications
                     </Btn>
                   )}
                 </div>

@@ -125,7 +125,7 @@ export function HowItWorksPage({ onNavigate }: NavigateProps) {
           End-to-End Pipeline
         </p>
         <h1 className="font-display font-black text-[clamp(3rem,7vw,6rem)] leading-[0.9] uppercase text-secondary tracking-tight mb-6">
-          HOW HR11
+          HOW PROMPTHIRE
           <br />
           <span className="text-primary">WORKS</span>
         </h1>
@@ -216,7 +216,7 @@ export function HowItWorksPage({ onNavigate }: NavigateProps) {
           },
           {
             q: "What integrations are available?",
-            a: "HR11 integrates with Google Calendar, Outlook, LinkedIn, major ATS platforms, and exposes a full REST API for custom integrations.",
+            a: "PromptHire integrates with Google Calendar, Outlook, LinkedIn, major ATS platforms, and exposes a full REST API for custom integrations.",
           },
         ].map((f, i) => (
           <FAQItem key={i} {...f} />
@@ -239,7 +239,7 @@ export function HowItWorksPage({ onNavigate }: NavigateProps) {
             style={{ borderColor: "rgba(255,255,255,0.33)", color: "#fff" }}
             onClick={() => onNavigate?.("why")}
           >
-            Why HR11
+            Why PromptHire
           </Btn>
         </div>
       </section>

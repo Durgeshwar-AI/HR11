@@ -60,7 +60,12 @@ export function InterviewPage() {
   const [connecting, setConnecting] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
-  const conversationRef = useRef<ReturnType<typeof Conversation.startSession> extends Promise<infer T> ? T : never>(null);
+  const conversationRef =
+    useRef<
+      ReturnType<typeof Conversation.startSession> extends Promise<infer T>
+        ? T
+        : never
+    >(null);
   const startedRef = useRef(false);
 
   /* Timer */
@@ -129,9 +134,7 @@ export function InterviewPage() {
       console.error("Failed to start interview session:", err);
       startedRef.current = false;
       setConnecting(false);
-      setError(
-        err instanceof Error ? err.message : "Failed to start session",
-      );
+      setError(err instanceof Error ? err.message : "Failed to start session");
     }
   }, [jobId]);
 
@@ -330,8 +333,10 @@ export function InterviewPage() {
                 <div className="text-3xl mb-3 opacity-30">🎙️</div>
                 <p className="font-body text-sm text-white/20">
                   {connecting
-                    ? "Connecting to AI interviewer…"
-                    : "Waiting for the conversation to begin…"}
+                   
+                  ? "Connecting to AI interviewer…"
+                   
+                  : "Waiting for the conversation to begin…"}
                 </p>
               </div>
             )}
@@ -349,7 +354,7 @@ export function InterviewPage() {
                     msg.role === "ai" ? "text-primary/70" : "text-white/25",
                   ].join(" ")}
                 >
-                  {msg.role === "ai" ? "HR11 AI" : "You"}
+                  {msg.role === "ai" ? "PromptHire AI" : "You"}
                 </span>
                 <div
                   className={[
@@ -492,9 +497,7 @@ function ReportView({ jobId }: { jobId: string }) {
             const next = getNextRoundPath(jobId, "ai_voice_interview");
             const label = getNextRoundLabel(jobId, "ai_voice_interview");
             return next ? (
-              <Btn onClick={() => navigate(next)}>
-                Proceed to {label} →
-              </Btn>
+              <Btn onClick={() => navigate(next)}>Proceed to {label} →</Btn>
             ) : (
               <Btn onClick={() => navigate("/candidate-profile")}>
                 View Full Report
