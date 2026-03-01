@@ -150,7 +150,7 @@ export function InterviewPage() {
       {/* Top bar */}
       <div className="h-[60px] bg-secondary border-b border-white/10 flex items-center justify-between px-8 shrink-0">
         <div className="font-display font-black text-xl text-white">
-          HR<span className="text-primary">11</span>
+          Prompt<span className="text-primary">Hire</span>
           <span className="text-[11px] text-white/50 font-body ml-3 font-normal">
             AI Voice Interview · Senior Backend Engineer
           </span>
@@ -200,7 +200,7 @@ export function InterviewPage() {
               
             </div>
             <div className="font-display font-black text-lg text-white tracking-[0.05em] uppercase mb-1">
-              HR11 AI Interviewer
+              PromptHire AI Interviewer
             </div>
             <div className="font-body text-xs text-white/40">
               {connecting ? "Connecting…" : agentSpeaking ? "Speaking…" : "Listening…"}
@@ -295,7 +295,7 @@ export function InterviewPage() {
                     msg.role === "ai" ? "text-primary" : "text-white/40",
                   ].join(" ")}
                 >
-                  {msg.role === "ai" ? "HR11 AI" : "You"}
+                  {msg.role === "ai" ? "PromptHire AI" : "You"}
                 </div>
                 <div
                   className={[

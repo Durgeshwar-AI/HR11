@@ -47,7 +47,7 @@ export function CompanyHome() {
         <div className="max-w-[380px]">
           <p className="font-body text-[15px] text-ink-light leading-relaxed border-l-[3px] border-primary pl-4 mb-6">
             The average hire takes 28 days and involves 14 hours of manual
-            screening per role. HR11 replaces that with an autonomous pipeline
+            screening per role. PromptHire replaces that with an autonomous pipeline
             that runs 24/7 — with zero bias.
           </p>
           <div className="flex gap-6">
@@ -98,11 +98,11 @@ export function CompanyHome() {
       {/* Comparison table */}
       <section className="px-12 pb-[72px]">
         <h2 className="font-display font-black text-[clamp(1.6rem,3vw,2.4rem)] uppercase tracking-tight text-secondary mb-7">
-          HR11 VS TRADITIONAL HIRING
+          PromptHire VS TRADITIONAL HIRING
         </h2>
         <div className="border-2 border-secondary overflow-hidden">
           <div className="grid grid-cols-3 bg-secondary">
-            {["", "Traditional Hiring", "HR11 AI"].map((h, i) => (
+            {["", "Traditional Hiring", "PromptHire AI"].map((h, i) => (
               <div
                 key={i}
                 className={[
@@ -160,7 +160,7 @@ export function CompanyHome() {
           YOUR HIRING?
         </h2>
         <p className="font-body text-sm text-white/50 max-w-[400px] mx-auto mb-8">
-          Join 1,000+ companies hiring smarter with HR11.
+          Join 1,000+ companies hiring smarter with PromptHire.
         </p>
         <div className="flex gap-3 justify-center">
           <Btn onClick={() => navigate("/company-register")} style={{ fontSize: 15 }}>

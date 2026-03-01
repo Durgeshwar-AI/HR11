@@ -21,7 +21,7 @@ import { CodingChallengeRound } from "./pages/rounds/CodingChallengeRound";
 import { AIInterviewRound } from "./pages/rounds/AIInterviewRound";
 import { TechnicalInterviewRound } from "./pages/rounds/TechnicalInterviewRound";
 // Public
-import { WhyHR11Page } from "./pages/public/WhyHR11Page";
+import { WhyPromptHirePage } from "./pages/public/WhyPromptHirePage";
 import { HowItWorksPage } from "./pages/public/HowItWorksPage";
 import { RoleChoice } from "./pages/public/RoleChoice.tsx";
 import { CandidateHome } from "./pages/public/CandidateHome.tsx";
@@ -36,7 +36,7 @@ export default function App() {
       <Routes>
         {/* ── Public ── */}
         <Route path="/" element={<RoleChoice />} />
-        <Route path="/why-hr11" element={<WhyHR11Page />} />
+        <Route path="/why-prompthire" element={<WhyPromptHirePage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
         <Route path="/company-home" element={<CompanyHome />} />
         <Route path="/candidate-home" element={<CandidateHome />} />

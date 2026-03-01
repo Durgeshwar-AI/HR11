@@ -169,7 +169,7 @@ export function AIInterviewRound() {
       <nav className="flex items-center justify-between px-6 h-[52px] bg-[#1a1a1a] border-b border-[#333] shrink-0 z-20">
         <div className="flex items-center gap-3">
           <span className="font-display font-black text-lg text-white">
-            HR<span className="text-primary">11</span>
+            Prompt<span className="text-primary">Hire</span>
           </span>
           <span className="text-xs font-display font-bold text-[#666] uppercase tracking-[0.1em]">
             AI Interview
@@ -236,7 +236,7 @@ export function AIInterviewRound() {
             
           </div>
           <div className="font-display font-bold text-sm text-white mt-3">
-            HR11 AI Interviewer
+            PromptHire AI Interviewer
           </div>
           <div className="text-xs text-[#888] font-body mt-1">
             {aiSpeaking ? "Speaking…" : "Listening…"}

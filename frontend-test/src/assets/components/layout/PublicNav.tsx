@@ -27,7 +27,7 @@ export function PublicNav(props: PublicNavProps) {
         onClick={() => go("/")}
         className="font-display font-black text-[22px] text-secondary cursor-pointer flex items-center gap-1"
       >
-        HR<span className="text-primary">11</span>
+        Prompt<span className="text-primary">Hire</span>
         <span className="bg-primary text-white text-[9px] font-extrabold px-1.5 py-0.5 tracking-[0.1em] ml-1 mb-0.5 self-end">
           AI
         </span>

@@ -24,7 +24,7 @@ export function Sidebar({ currentPage, collapsed }: SidebarProps) {
         className={`h-[62px] flex items-center gap-2 border-b border-white/10 ${collapsed ? "px-4" : "px-5"}`}
       >
         <span className="font-display font-black text-xl text-white">
-          HR<span className="text-primary">11</span>
+          Prompt<span className="text-primary">Hire</span>
         </span>
         {!collapsed && (
           <span className="bg-primary text-white text-[8px] font-extrabold px-[5px] py-px tracking-[0.1em]">

@@ -152,7 +152,7 @@ export function CandidateProfile() {
       // Sync localStorage user name
       const stored = getStoredUser();
       if (stored) {
-        saveAuth(localStorage.getItem("hr11_token") || "", { ...stored, name: updated.name });
+        saveAuth(localStorage.getItem("prompthire_token") || "", { ...stored, name: updated.name });
       }
       setSaveMsg("Profile saved!");
       setTimeout(() => setSaveMsg(null), 3000);
@@ -195,7 +195,7 @@ export function CandidateProfile() {
           onClick={() => navigate("/")}
           className="font-display font-black text-xl text-secondary cursor-pointer select-none"
         >
-          HR<span className="text-primary">11</span>
+          Prompt<span className="text-primary">Hire</span>
           <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5">AI</span>
         </div>
         <div className="flex items-center gap-3">

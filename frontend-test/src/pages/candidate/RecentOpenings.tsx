@@ -132,7 +132,7 @@ export function RecentOpenings() {
           onClick={() => navigate("/")}
           className="font-display font-black text-xl text-secondary cursor-pointer select-none"
         >
-          HR<span className="text-primary">11</span>
+          Prompt<span className="text-primary">Hire</span>
           <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5">AI</span>
         </div>
 

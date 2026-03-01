@@ -1,5 +1,5 @@
 /**
- * HR11 — DESIGN TOKENS
+ * PromptHire — DESIGN TOKENS
  * Quoti-inspired 3-colour rule (strictly enforced)
  *
  * Primary   #E8521A  Burnt Orange   CTA / active / highlights

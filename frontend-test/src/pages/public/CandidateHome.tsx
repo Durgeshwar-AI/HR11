@@ -58,7 +58,7 @@ export function CandidateHome() {
         </div>
         <div className="max-w-[380px]">
           <p className="font-body text-[15px] text-ink-light leading-relaxed border-l-[3px] border-primary pl-4 mb-6">
-            The average applicant waits 24 days to hear back. With HR11, AI
+            The average applicant waits 24 days to hear back. With PromptHire, AI
             screens your resume instantly, interviews you on your schedule, and
             gives you real feedback — every single time.
           </p>
@@ -96,7 +96,7 @@ export function CandidateHome() {
       <section className="py-16 px-12">
         <div className="flex items-center gap-4 mb-10">
           <h2 className="font-display font-black text-[clamp(1.6rem,3vw,2.4rem)] uppercase tracking-tight text-secondary">
-            WHY CANDIDATES LOVE HR11
+            WHY CANDIDATES LOVE PromptHire
           </h2>
           <div className="flex-1 h-0.5 bg-secondary" />
         </div>
@@ -110,7 +110,7 @@ export function CandidateHome() {
       {/* How it works for candidates */}
       <section className="px-12 pb-[72px]">
         <h2 className="font-display font-black text-[clamp(1.6rem,3vw,2.4rem)] uppercase tracking-tight text-secondary mb-7">
-          YOUR JOURNEY WITH HR11
+          YOUR JOURNEY WITH PromptHire
         </h2>
         <div className="border-2 border-secondary overflow-hidden">
           {[

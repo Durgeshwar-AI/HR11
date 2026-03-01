@@ -12,7 +12,7 @@ const JOB = {
   totalRounds: 5,
   duration: "20–30 minutes",
   skills: ["Node.js", "AWS", "System Design", "Databases"],
-  interviewer: "HR11 AI — Adaptive Voice Agent",
+  interviewer: "PromptHire AI — Adaptive Voice Agent",
   notes: [
     "Your microphone and camera will be accessed.",
     "Questions are generated from your specific resume projects.",
@@ -48,7 +48,7 @@ export function InterviewEntryPage() {
           className="font-display font-black text-xl text-white cursor-pointer"
           onClick={() => navigate("/candidate-profile")}
         >
-          HR<span className="text-primary">11</span>
+          Prompt<span className="text-primary">Hire</span>
           <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5 tracking-[0.1em]">
             AI
           </span>
