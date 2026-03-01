@@ -41,12 +41,12 @@ export function AppShell({ children, currentPage }: AppShellProps) {
             onClick={() => setCollapsed((c) => !c)}
             className="bg-transparent border-2 border-secondary w-9 h-9 cursor-pointer text-sm flex items-center justify-center font-display"
           >
-            ☰
+            
           </button>
 
           <div className="flex items-center gap-5">
             <div className="font-body text-[13px] text-ink-light bg-surface-alt border border-border-clr py-1.5 px-3.5 flex items-center gap-2">
-              <span>🔔</span>
+              <span></span>
               <span className="font-display font-extrabold text-[10px] bg-primary text-white px-[5px] py-px">
                 3
               </span>

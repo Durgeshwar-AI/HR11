@@ -65,7 +65,7 @@ interface CandidateRowProps {
 }
 
 function CandidateRow({ candidate, rank, onViewInterview }: CandidateRowProps) {
-  const medals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+  const medals: Record<number, string> = { 1: "", 2: "", 3: "" };
 
   return (
     <div
@@ -115,7 +115,7 @@ function CandidateRow({ candidate, rank, onViewInterview }: CandidateRowProps) {
         </div>
         <div className="flex gap-2 flex-wrap">
           <span className="text-[11px] text-ink-faint font-body">
-            📍 {candidate.round}
+             {candidate.round}
           </span>
           <span className="text-[11px] text-ink-faint font-body">
             · {candidate.appliedDate}
@@ -136,7 +136,7 @@ function CandidateRow({ candidate, rank, onViewInterview }: CandidateRowProps) {
         <Btn size="sm" variant="secondary" onClick={() => onViewInterview?.()}>
           View Report
         </Btn>
-        {candidate.status === "shortlisted" && <Btn size="sm">Hire ✓</Btn>}
+        {candidate.status === "shortlisted" && <Btn size="sm">Hire </Btn>}
       </div>
     </div>
   );
@@ -342,7 +342,7 @@ export function HiringLeaderboard() {
         </Card>
 
         <p className="text-[11px] text-ink-faint mt-3 font-body text-right">
-          🔒 This leaderboard is only visible to HR team members.
+           This leaderboard is only visible to HR team members.
         </p>
       </div>
     </AppShell>

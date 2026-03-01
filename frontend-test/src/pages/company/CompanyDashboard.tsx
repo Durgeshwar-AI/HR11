@@ -45,27 +45,27 @@ function ActivityFeed() {
   const items = [
     {
       time: "2 min ago",
-      icon: "🎙️",
+      icon: "",
       text: "Arjun Mehta completed AI Voice Interview — Score: 94",
     },
     {
       time: "18 min ago",
-      icon: "📄",
+      icon: "",
       text: "12 new resumes parsed for Senior Backend Engineer",
     },
     {
       time: "1 hr ago",
-      icon: "✅",
+      icon: "",
       text: "Priya Sharma shortlisted for Technical Interview",
     },
     {
       time: "3 hrs ago",
-      icon: "📡",
+      icon: "",
       text: "Job posting went live: Product Designer",
     },
     {
       time: "5 hrs ago",
-      icon: "🔍",
+      icon: "",
       text: "Background check cleared for Rohan Das",
     },
   ];

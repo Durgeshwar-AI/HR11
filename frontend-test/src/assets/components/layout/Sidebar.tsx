@@ -3,8 +3,8 @@ import { clearAuth } from "../../../services/api";
 
 const NAV_ITEMS = [
   { key: "dashboard", path: "/dashboard", icon: "⊞", label: "Dashboard" },
-  { key: "pipeline", path: "/pipeline", icon: "⚙️", label: "Pipeline Builder" },
-  { key: "leaderboard", path: "/leaderboard", icon: "📋", label: "Leaderboard" },
+  { key: "pipeline", path: "/pipeline", icon: "", label: "Pipeline Builder" },
+  { key: "leaderboard", path: "/leaderboard", icon: "", label: "Leaderboard" },
 ];
 
 interface SidebarProps {
@@ -66,7 +66,7 @@ export function Sidebar({ currentPage, collapsed }: SidebarProps) {
           onClick={() => { clearAuth(); navigate("/"); }}
           className="flex items-center gap-3 py-2.5 px-1 cursor-pointer opacity-60 hover:opacity-100 transition-opacity"
         >
-          <span>🚪</span>
+          <span></span>
           {!collapsed && (
             <span className="font-display font-bold text-xs tracking-[0.08em] uppercase text-white">
               Logout

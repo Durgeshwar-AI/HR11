@@ -29,12 +29,12 @@ export const STAGE_ROUTE_MAP: Record<string, string> = {
 };
 
 const STAGE_ICONS: Record<string, string> = {
-  resume_screening: "📄",
-  aptitude_test: "🧠",
-  coding_challenge: "💻",
-  ai_voice_interview: "🎙️",
-  technical_interview: "🔧",
-  custom_round: "🛠️",
+  resume_screening: "",
+  aptitude_test: "",
+  coding_challenge: "",
+  ai_voice_interview: "",
+  technical_interview: "",
+  custom_round: "",
 };
 
 const STAGE_LABELS: Record<string, string> = {
@@ -51,11 +51,11 @@ const STAGE_LABELS: Record<string, string> = {
 const PIPELINE_KEY = "hr11_pipeline_progress";
 
 const DEFAULT_ROUNDS: Omit<PipelineRound, "status">[] = [
-  { key: "resume",        label: "Resume Screening",    icon: "📄", path: "/round/resume-screening" },
-  { key: "aptitude",      label: "Aptitude Test",       icon: "🧠", path: "/round/aptitude-test" },
-  { key: "coding",        label: "Coding Challenge",    icon: "💻", path: "/round/coding-challenge" },
-  { key: "ai-interview",  label: "AI Voice Interview",  icon: "🎙️", path: "/interview-entry" },
-  { key: "technical",     label: "Technical Interview", icon: "🔧", path: "/round/technical-interview" },
+  { key: "resume",        label: "Resume Screening",    icon: "", path: "/round/resume-screening" },
+  { key: "aptitude",      label: "Aptitude Test",       icon: "", path: "/round/aptitude-test" },
+  { key: "coding",        label: "Coding Challenge",    icon: "", path: "/round/coding-challenge" },
+  { key: "ai-interview",  label: "AI Voice Interview",  icon: "", path: "/interview-entry" },
+  { key: "technical",     label: "Technical Interview", icon: "", path: "/round/technical-interview" },
 ];
 
 export function getDefaultPipeline(): PipelineRound[] {
@@ -153,7 +153,7 @@ export function initJobPipeline(
   const rounds: PipelineRound[] = sorted.map((s) => ({
     key: s.stageType,
     label: s.stageName || STAGE_LABELS[s.stageType] || s.stageType,
-    icon: STAGE_ICONS[s.stageType] || "📋",
+    icon: STAGE_ICONS[s.stageType] || "",
     path: STAGE_ROUTE_MAP[s.stageType] || "/candidate-profile",
     status: "locked" as RoundStatus,
   }));

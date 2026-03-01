@@ -158,7 +158,7 @@ export function RecentOpenings() {
             Candidate Portal
           </p>
           <h1 className="font-display font-black text-[32px] uppercase text-secondary leading-tight">
-            Welcome back{userName ? `, ${userName.split(" ")[0]}` : ""} 👋
+            Welcome back{userName ? `, ${userName.split(" ")[0]}` : ""} 
           </h1>
           <p className="mt-1.5 font-body text-sm text-ink-light">
             Browse the latest openings and apply with one click.
@@ -199,7 +199,7 @@ export function RecentOpenings() {
           </div>
         ) : fetchError ? (
           <div className="text-center py-20">
-            <div className="text-4xl mb-3">⚠️</div>
+            <div className="text-4xl mb-3"></div>
             <p className="font-display font-black text-xl uppercase text-secondary">
               Unable to load jobs
             </p>
@@ -208,7 +208,7 @@ export function RecentOpenings() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-4xl mb-3">📭</div>
+            <div className="text-4xl mb-3"></div>
             <p className="font-display font-black text-xl uppercase text-secondary">
               {openings.length === 0 ? "No open positions right now" : "No openings found"}
             </p>

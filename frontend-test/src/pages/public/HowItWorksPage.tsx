@@ -168,11 +168,11 @@ export function HowItWorksPage({ onNavigate }: NavigateProps) {
             POWERED BY
           </span>
           {[
-            { name: "LlamaParse", icon: "🦙", desc: "Resume parsing" },
-            { name: "Vapi", icon: "🎙️", desc: "Voice interviews" },
-            { name: "Multi-Agent", icon: "🤖", desc: "AI debate engine" },
-            { name: "Google Calendar", icon: "🗓️", desc: "Auto scheduling" },
-            { name: "Streamlit", icon: "📊", desc: "HR dashboard" },
+            { name: "LlamaParse", icon: "", desc: "Resume parsing" },
+            { name: "Vapi", icon: "", desc: "Voice interviews" },
+            { name: "Multi-Agent", icon: "", desc: "AI debate engine" },
+            { name: "Google Calendar", icon: "", desc: "Auto scheduling" },
+            { name: "Streamlit", icon: "", desc: "HR dashboard" },
           ].map((t) => (
             <div
               key={t.name}

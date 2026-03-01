@@ -83,7 +83,7 @@ export function AIInterviewRound() {
     return (
       <div className="h-screen bg-[#111] flex flex-col items-center justify-center text-white">
         <div className="text-center max-w-[520px]">
-          <div className="text-5xl mb-4">🎙️</div>
+          <div className="text-5xl mb-4"></div>
           <div className="font-display font-black text-3xl uppercase tracking-tight mb-3">
             AI VOICE INTERVIEW
           </div>
@@ -128,7 +128,7 @@ export function AIInterviewRound() {
     return (
       <div className="h-screen bg-[#111] flex flex-col items-center justify-center text-white">
         <div className="text-center max-w-[480px]">
-          <div className="text-5xl mb-4">✅</div>
+          <div className="text-5xl mb-4"></div>
           <div className="font-display font-black text-3xl uppercase tracking-tight mb-2">
             Interview Complete
           </div>
@@ -137,7 +137,7 @@ export function AIInterviewRound() {
           </div>
           <div className="border border-[#1A8917] bg-[#1A8917]/10 p-5 mb-6">
             <div className="font-display font-extrabold text-sm uppercase text-[#4ec94e] mb-1">
-              ✅ Selected for next round
+               Selected for next round
             </div>
             <div className="font-body text-xs text-[#999]">
               AI Score: 88/100 · Communication: 9.1/10 · Technical Depth: 8.7/10
@@ -221,7 +221,7 @@ export function AIInterviewRound() {
           </div>
           {muted && (
             <div className="absolute top-3 right-3 bg-red-500/80 px-2 py-1 text-[10px] font-bold text-white">
-              🔇 Muted
+               Muted
             </div>
           )}
         </div>
@@ -233,7 +233,7 @@ export function AIInterviewRound() {
               aiSpeaking ? "bg-primary/20 scale-110 animate-pulse" : "bg-[#252526]"
             }`}
           >
-            🤖
+            
           </div>
           <div className="font-display font-bold text-sm text-white mt-3">
             HR11 AI Interviewer
@@ -292,7 +292,7 @@ export function AIInterviewRound() {
             muted ? "bg-red-500 text-white" : "bg-[#333] text-white hover:bg-[#444]"
           }`}
         >
-          {muted ? "🔇" : "🎤"}
+          {muted ? "" : ""}
         </button>
         <button
           onClick={() => setVideoOff(!videoOff)}
@@ -300,7 +300,7 @@ export function AIInterviewRound() {
             videoOff ? "bg-red-500 text-white" : "bg-[#333] text-white hover:bg-[#444]"
           }`}
         >
-          {videoOff ? "📷" : "🎥"}
+          {videoOff ? "" : ""}
         </button>
 
         {/* Respond button */}
@@ -313,14 +313,14 @@ export function AIInterviewRound() {
               : "border-primary bg-primary text-white hover:bg-[#c44013]"
           }`}
         >
-          {aiSpeaking ? "AI is speaking…" : "✋ I'm done responding"}
+          {aiSpeaking ? "AI is speaking…" : " I'm done responding"}
         </button>
 
         <button
           onClick={() => setEnded(true)}
           className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-lg cursor-pointer hover:bg-red-700 transition-colors"
         >
-          📞
+          
         </button>
       </div>
     </div>

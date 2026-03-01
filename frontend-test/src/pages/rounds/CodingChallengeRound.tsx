@@ -373,7 +373,7 @@ export function CodingChallengeRound() {
                 <div>
                   <div className={`border-2 p-5 mb-4 ${(submitResult.submission?.testCasesPassed ?? MOCK_RESULTS.passed) >= (submitResult.submission?.totalTestCases ?? MOCK_RESULTS.total) * 0.8 ? "border-[#1A8917] bg-[#f0fdf0]" : "border-[#c00] bg-[#fff5f5]"}`}>
                     <div className="font-display font-black text-lg text-secondary mb-1">
-                      {(submitResult.submission?.testCasesPassed ?? MOCK_RESULTS.passed) >= (submitResult.submission?.totalTestCases ?? MOCK_RESULTS.total) * 0.8 ? "✅ Accepted" : "❌ Wrong Answer"}
+                      {(submitResult.submission?.testCasesPassed ?? MOCK_RESULTS.passed) >= (submitResult.submission?.totalTestCases ?? MOCK_RESULTS.total) * 0.8 ? " Accepted" : " Wrong Answer"}
                     </div>
                     <div className="font-body text-xs text-ink-light">
                       {submitResult.submission?.testCasesPassed ?? MOCK_RESULTS.passed}/{submitResult.submission?.totalTestCases ?? MOCK_RESULTS.total} test cases passed
@@ -489,7 +489,7 @@ export function CodingChallengeRound() {
                               : "border-red-500 bg-red-500/10 text-red-400"
                           }`}
                         >
-                          <span>{tc.pass ? "✓" : "✗"}</span>
+                          <span>{tc.pass ? "" : ""}</span>
                           <span>Input: {tc.input}</span>
                           <span>→ {tc.got}</span>
                           {!tc.pass && (

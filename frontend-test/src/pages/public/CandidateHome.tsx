@@ -10,12 +10,12 @@ type CandidatePoint = {
 };
 
 const CANDIDATE_POINTS = [
-  { icon: "🚀", title: "Apply Once, Reach Many", desc: "One profile connects you to hundreds of companies. No more filling the same form over and over." },
-  { icon: "🤖", title: "AI-Powered Matching", desc: "Our agents match your skills to roles that actually fit — not keyword bingo." },
-  { icon: "🎙️", title: "Voice Interviews On Your Time", desc: "No scheduling headaches. Take the AI voice interview whenever you're ready, 24/7." },
-  { icon: "📊", title: "Real Feedback, Always", desc: "Get a detailed score breakdown after every round — strengths, gaps, and next steps." },
-  { icon: "⚖️", title: "Zero Bias, Pure Merit", desc: "Your demographics are hidden from scoring. You advance on skill alone." },
-  { icon: "⚡", title: "Hear Back Faster", desc: "No more ghosting. AI pipelines mean results in hours, not weeks." },
+  { icon: "", title: "Apply Once, Reach Many", desc: "One profile connects you to hundreds of companies. No more filling the same form over and over." },
+  { icon: "", title: "AI-Powered Matching", desc: "Our agents match your skills to roles that actually fit — not keyword bingo." },
+  { icon: "", title: "Voice Interviews On Your Time", desc: "No scheduling headaches. Take the AI voice interview whenever you're ready, 24/7." },
+  { icon: "", title: "Real Feedback, Always", desc: "Get a detailed score breakdown after every round — strengths, gaps, and next steps." },
+  { icon: "", title: "Zero Bias, Pure Merit", desc: "Your demographics are hidden from scoring. You advance on skill alone." },
+  { icon: "", title: "Hear Back Faster", desc: "No more ghosting. AI pipelines mean results in hours, not weeks." },
 ];
 
 function PointCard({ point, index }: { point: CandidatePoint; index: number }) {
