@@ -25,7 +25,7 @@ type DashboardOpening = {
   shortlisted: number;
   status: string;
   posted: string;
-  pipeline: string[];
+  pipeline: unknown[];
 };
 
 type DashboardCandidate = (typeof MOCK_CANDIDATES)[number];
@@ -130,14 +130,17 @@ function OpeningCard({ opening }: { opening: DashboardOpening }) {
           ))}
         </div>
         <div className="flex gap-1.5 flex-wrap">
-          {opening.pipeline.slice(0, 4).map((r: string, i: number) => (
-            <span
-              key={r}
-              className="text-[9px] font-body font-semibold tracking-[0.1em] uppercase text-ink-light bg-surface-alt border border-border-clr px-[7px] py-[2px]"
-            >
-              {String(i + 1).padStart(2, "0")} {r.replace(/_/g, " ")}
-            </span>
-          ))}
+          {opening.pipeline.slice(0, 4).map((r: unknown, i: number) => {
+            const label = typeof r === "string" ? r : (r as { id?: string; label?: string })?.label ?? String(r);
+            return (
+              <span
+                key={label + i}
+                className="text-[9px] font-body font-semibold tracking-[0.1em] uppercase text-ink-light bg-surface-alt border border-border-clr px-[7px] py-[2px]"
+              >
+                {String(i + 1).padStart(2, "0")} {label.replace(/_/g, " ")}
+              </span>
+            );
+          })}
           {opening.pipeline.length > 4 && (
             <span className="text-[9px] text-ink-faint font-body px-1 py-[2px]">
               +{opening.pipeline.length - 4} more
