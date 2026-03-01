@@ -367,7 +367,7 @@ export const candidateApi = {
   uploadResume: (file: File) => {
     const form = new FormData();
     form.append("resume", file);
-    return upload<{ resumeUrl: string; message: string }>("/candidate/me/resume", form);
+    return upload<{ resumeUrl: string; message: string }>("/candidate/submit-and-screen", form);
   },
 
   /** Get all my applications with progress */
