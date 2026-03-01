@@ -137,7 +137,7 @@ export const resumeApi = {
 
   screenExisting: (
     candidateId: string,
-    data: { jobTitle: string; jobDescription: string },
+    data: { jobTitle: string; jobDescription: string; jobId?: string },
   ) =>
     request(`/candidates/${candidateId}/screen`, {
       method: "POST",

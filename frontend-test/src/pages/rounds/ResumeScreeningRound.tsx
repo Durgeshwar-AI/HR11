@@ -2,18 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Btn } from "../../assets/components/shared/Btn";
 import { Card } from "../../assets/components/shared/Card";
-import { resumeApi, getStoredUser } from "../../services/api";
+import { resumeApi, candidateApi, getStoredUser, type CandidateMe } from "../../services/api";
 import { startRound, completeRound, getNextRoundPath, getNextRoundLabel } from "../../services/pipeline";
-
-/* ── mock resume data pulled from "profile" ── */
-const PROFILE_RESUME = {
-  name: "Arjun Mehta",
-  email: "arjun@email.com",
-  role: "Senior Backend Engineer",
-  skills: ["Node.js", "Python", "Go", "AWS", "Redis", "Kafka", "Docker", "PostgreSQL", "System Design"],
-  experience: "5 years — Zomato, Razorpay",
-  fileName: "Arjun_Mehta_Resume.pdf",
-};
 
 type Phase = "idle" | "submitting" | "analysing" | "done";
 type Result = { selected: boolean; score: number; summary: string; strengths: string[]; weaknesses: string[] } | null;
@@ -23,10 +13,35 @@ export function ResumeScreeningRound() {
   const [searchParams] = useSearchParams();
   const candidateId = searchParams.get("candidateId") || getStoredUser()?._id || "";
   const jobId = searchParams.get("jobId") || "";
-  const jobTitle = searchParams.get("jobTitle") || PROFILE_RESUME.role;
+  const jobTitle = searchParams.get("jobTitle") || "Job Role";
   const [phase, setPhase] = useState<Phase>("idle");
   const [result, setResult] = useState<Result>(null);
   const [useApi, setUseApi] = useState(!!candidateId);
+  const [profile, setProfile] = useState<CandidateMe | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  /* Fetch real candidate profile */
+  useEffect(() => {
+    (async () => {
+      try {
+        const me = await candidateApi.me();
+        setProfile(me);
+      } catch {
+        /* profile unavailable — will show fallback */
+      } finally {
+        setProfileLoading(false);
+      }
+    })();
+  }, []);
+
+  /* Derived display values from real profile */
+  const displayName = profile?.name || getStoredUser()?.name as string || "Candidate";
+  const displayEmail = profile?.email || "";
+  const displaySkills = profile?.skills || [];
+  const displayResumeUrl = profile?.resumeUrl || "";
+  const displayFileName = displayResumeUrl
+    ? decodeURIComponent(displayResumeUrl.split("/").pop() || "Resume.pdf")
+    : "Resume.pdf";
 
   /* Mark this round as current on mount */
   useEffect(() => {
@@ -52,6 +67,7 @@ export function ResumeScreeningRound() {
               const data: any = await resumeApi.screenExisting(candidateId, {
                 jobTitle,
                 jobDescription: `Screening for ${jobTitle}`,
+                jobId,
               });
               const s = data.screening || data;
               setResult({
@@ -126,29 +142,49 @@ export function ResumeScreeningRound() {
                 <span className="text-2xl">📄</span>
                 <div>
                   <div className="font-display font-extrabold text-base uppercase text-secondary">
-                    {PROFILE_RESUME.fileName}
+                    {profileLoading ? "Loading resume…" : displayFileName}
                   </div>
                   <div className="font-body text-xs text-ink-faint">
-                    Auto-fetched from your profile
+                    {displayResumeUrl ? "Fetched from your profile" : "Auto-fetched from your profile"}
                   </div>
                 </div>
               </div>
 
               {/* Mini resume preview */}
               <div className="bg-surface-alt border border-border-clr p-4 mb-4">
-                <div className="font-display font-black text-lg text-secondary">{PROFILE_RESUME.name}</div>
-                <div className="font-body text-xs text-primary font-semibold mb-1">{PROFILE_RESUME.role}</div>
-                <div className="font-body text-xs text-ink-light mb-2">{PROFILE_RESUME.experience}</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {PROFILE_RESUME.skills.map((s) => (
-                    <span
-                      key={s}
-                      className="text-[10px] font-body font-semibold tracking-[0.05em] bg-surface border border-border-clr px-2 py-px text-ink-light"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
+                {profileLoading ? (
+                  <div className="font-body text-sm text-ink-faint animate-pulse">Loading profile…</div>
+                ) : (
+                  <>
+                    <div className="font-display font-black text-lg text-secondary">{displayName}</div>
+                    {displayEmail && (
+                      <div className="font-body text-xs text-ink-light mb-1">{displayEmail}</div>
+                    )}
+                    <div className="font-body text-xs text-primary font-semibold mb-1">{jobTitle}</div>
+                    {displayResumeUrl && (
+                      <a
+                        href={displayResumeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block font-body text-xs text-primary underline mb-2"
+                      >
+                        View Resume ↗
+                      </a>
+                    )}
+                    {displaySkills.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {displaySkills.map((s) => (
+                          <span
+                            key={s}
+                            className="text-[10px] font-body font-semibold tracking-[0.05em] bg-surface border border-border-clr px-2 py-px text-ink-light"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* Progress */}

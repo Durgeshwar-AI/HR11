@@ -10,7 +10,7 @@ const router = express.Router();
 // ─── Public: List job openings (no auth needed) ─────────────────
 router.get("/jobs/active", async (_req, res) => {
   try {
-    const jobs = await JobRole.find({ status: { $in: ["Active", "Draft"] } })
+    const jobs = await JobRole.find({ status: { $regex: /^(active|draft)$/i } })
       .populate("createdBy", "name company")
       .select("title description skills status pipeline totalRounds createdAt submissionDeadline")
       .sort({ createdAt: -1 });

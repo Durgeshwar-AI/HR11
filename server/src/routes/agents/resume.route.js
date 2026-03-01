@@ -2,6 +2,7 @@ import express from "express";
 import { upload } from "../../config/cloudinary.js";
 import { screenResume } from "../../services/aiService.services.js";
 import Candidate from "../../models/candidate.screening.model.js";
+import AuthCandidate from "../../models/Candidate.model.js";
 import JobRole from "../../models/JobRole.model.js";
 
 const router = express.Router();
@@ -26,23 +27,66 @@ router.post("/:id/screen", async (req, res) => {
         .json({ error: "jobTitle and jobDescription are required" });
     }
 
-    const candidate = await Candidate.findById(req.params.id);
-    if (!candidate)
-      return res.status(404).json({ error: "Candidate not found" });
+    // First try the ScreeningCandidate collection
+    let candidate = await Candidate.findById(req.params.id);
 
+    if (candidate) {
+      // Existing screening candidate — use their stored resume
+      const result = await screenResume({
+        resumeUrl: candidate.resume.url,
+        mimeType: candidate.resume.mimeType,
+        jobTitle,
+        jobDescription,
+        formData: candidate.formData,
+      });
+      candidate.screeningResults.push(result);
+      candidate.status = "screened";
+      await candidate.save();
+
+      return res.json({
+        candidateId: candidate._id,
+        screening: result,
+      });
+    }
+
+    // Fallback: check the auth Candidate (InterviewCandidate) collection
+    const authCandidate = await AuthCandidate.findById(req.params.id);
+    if (!authCandidate || !authCandidate.resumeUrl) {
+      return res.status(404).json({
+        error: authCandidate
+          ? "No resume found on candidate profile. Please upload a resume first."
+          : "Candidate not found",
+      });
+    }
+
+    // Screen using the auth candidate's resume URL
     const result = await screenResume({
-      resumeUrl: candidate.resume.url,
-      mimeType: candidate.resume.mimeType,
+      resumeUrl: authCandidate.resumeUrl,
+      mimeType: "application/pdf",
       jobTitle,
       jobDescription,
-      formData: candidate.formData,
+      name: authCandidate.name,
+      email: authCandidate.email,
     });
-    candidate.screeningResults.push(result);
-    candidate.status = "screened";
-    await candidate.save();
 
-    res.json({
-      candidateId: candidate._id,
+    // Create a ScreeningCandidate record so progress is tracked properly
+    const screeningRecord = await Candidate.create({
+      name: authCandidate.name,
+      email: authCandidate.email,
+      phone: authCandidate.phone || "",
+      resume: {
+        url: authCandidate.resumeUrl,
+        cloudinaryId: "auth_profile",
+        originalName: "Resume.pdf",
+        mimeType: "application/pdf",
+      },
+      jobId: req.body.jobId || "",
+      screeningResults: [result],
+      status: "screened",
+    });
+
+    return res.json({
+      candidateId: screeningRecord._id,
       screening: result,
     });
   } catch (err) {

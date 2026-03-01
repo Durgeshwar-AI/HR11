@@ -98,11 +98,12 @@ export function RecentOpenings() {
     return () => { cancelled = true; };
   }, []);
 
+  const q = search.toLowerCase();
   const filtered = openings.filter(
     (o) =>
-      o.title.toLowerCase().includes(search.toLowerCase()) ||
-      o.company.toLowerCase().includes(search.toLowerCase()) ||
-      o.skills.some((t) => t.toLowerCase().includes(search.toLowerCase())),
+      (o.title ?? "").toLowerCase().includes(q) ||
+      (o.company ?? "").toLowerCase().includes(q) ||
+      (o.skills ?? []).some((t) => (t ?? "").toLowerCase().includes(q)),
   );
 
   const handleSignOut = () => {
