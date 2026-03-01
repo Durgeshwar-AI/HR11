@@ -16,6 +16,7 @@ import codingRoutes from "./routes/coding/coding.route.js";
 import technicalRoutes from "./routes/technical/technical.route.js";
 import whatsappRoutes from "./routes/whatsapp/whatsapp.route.js";
 import candidateRoutes from "./routes/candidate/candidate.route.js";
+import mailRoutes from "./routes/mail.route.js";
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/candidates", resumeRoutes);
 app.use("/api/candidate", candidateRoutes);
 app.use("/api/forms", formsRoutes);
+app.use("/api/mail", mailRoutes);
 
 app.use((err, req, res, _next) => {
   console.error("Unhandled error:", err);
