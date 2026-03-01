@@ -15,6 +15,11 @@ const pipelineStageSchema = new mongoose.Schema(
     stageType: { type: String, enum: STAGE_TYPES, required: true },
     stageName: { type: String }, // optional display name override
     order: { type: Number, required: true }, // 1-based position in pipeline
+    difficulty: {
+      type: String,
+      enum: ["Easy", "Medium", "Hard"],
+      default: "Medium",
+    },
     scheduledDate: { type: Date, default: null }, // auto-filled by scheduler
     thresholdScore: { type: Number, default: 60 }, // min score to advance (0–100)
     daysAfterPrev: { type: Number, default: 3 }, // days gap used by auto-scheduler

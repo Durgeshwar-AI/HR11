@@ -17,6 +17,7 @@ function normalisePipeline(raw) {
       stageType: s.stageType || s.id,
       stageName: s.stageName || s.label || null,
       order: s.order ?? idx + 1,
+      difficulty: s.difficulty || "Medium",
       thresholdScore: s.thresholdScore ?? 60,
       daysAfterPrev: s.daysAfterPrev ?? 3,
       scheduledDate: s.scheduledDate ? new Date(s.scheduledDate) : null,

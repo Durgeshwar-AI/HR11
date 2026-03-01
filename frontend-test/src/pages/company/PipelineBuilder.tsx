@@ -6,7 +6,22 @@ import { Btn } from "../../assets/components/shared/Btn";
 import { ROUNDS } from "../../constants/data";
 import { jobsApi } from "../../services/api";
 
-type PipelineRound = (typeof ROUNDS)[number];
+type Difficulty = "Easy" | "Medium" | "Hard";
+type PipelineRound = (typeof ROUNDS)[number] & { difficulty?: Difficulty };
+
+// Rounds that support difficulty selection
+const DIFFICULTY_ROUNDS = new Set([
+  "aptitude_test",
+  "coding_challenge",
+  "ai_voice_interview",
+  "technical_interview",
+]);
+const DIFFICULTIES: Difficulty[] = ["Easy", "Medium", "Hard"];
+const DIFFICULTY_COLORS: Record<Difficulty, string> = {
+  Easy: "bg-green-100 text-green-700 border-green-300",
+  Medium: "bg-yellow-100 text-yellow-700 border-yellow-300",
+  Hard: "bg-red-100 text-red-700 border-red-300",
+};
 
 /* ── Drag hook ── */
 function useDragSort(setItems: Dispatch<SetStateAction<PipelineRound[]>>) {
@@ -80,7 +95,10 @@ export function PipelineBuilder() {
 
   const addRound = (r: PipelineRound) => {
     // Repeats ARE allowed — just push another copy
-    setPipeline((p) => [...p, r]);
+    const withDifficulty = DIFFICULTY_ROUNDS.has(r.id)
+      ? { ...r, difficulty: "Medium" as Difficulty }
+      : r;
+    setPipeline((p) => [...p, withDifficulty]);
     setTimeout(
       () => flowRef.current?.scrollTo({ top: 9999, behavior: "smooth" }),
       80,
@@ -88,6 +106,10 @@ export function PipelineBuilder() {
   };
   const removeRound = (idx: number) =>
     setPipeline((p) => p.filter((_, i) => i !== idx));
+  const setDifficulty = (idx: number, diff: Difficulty) =>
+    setPipeline((p) =>
+      p.map((r, i) => (i === idx ? { ...r, difficulty: diff } : r)),
+    );
   const canDeploy =
     !!jobTitle.trim() &&
     !!jobDescription.trim() &&
@@ -107,6 +129,7 @@ export function PipelineBuilder() {
           stageType: r.id, // ROUNDS[].id === stageType
           stageName: r.label,
           order: i + 1,
+          ...(r.difficulty ? { difficulty: r.difficulty } : {}),
           thresholdScore: 60,
           daysAfterPrev: 3,
         })),
@@ -304,6 +327,27 @@ export function PipelineBuilder() {
                         <div className="text-[10px] text-ink-faint font-body mt-px">
                           {round.duration}
                         </div>
+                        {DIFFICULTY_ROUNDS.has(round.id) && (
+                          <div className="flex gap-1 mt-1.5">
+                            {DIFFICULTIES.map((d) => (
+                              <button
+                                key={d}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDifficulty(i, d);
+                                }}
+                                className={[
+                                  "px-2 py-[1px] text-[9px] font-display font-bold tracking-[0.08em] uppercase border cursor-pointer transition-all",
+                                  round.difficulty === d
+                                    ? DIFFICULTY_COLORS[d]
+                                    : "bg-transparent text-ink-faint border-border-clr hover:border-secondary",
+                                ].join(" ")}
+                              >
+                                {d}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={() => removeRound(i)}
@@ -368,6 +412,7 @@ export function PipelineBuilder() {
                   stageType: r.id,
                   stageName: r.label,
                   order: i + 1,
+                  ...(r.difficulty ? { difficulty: r.difficulty } : {}),
                   thresholdScore: 60,
                   daysAfterPrev: 3,
                 })),
