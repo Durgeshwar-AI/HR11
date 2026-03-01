@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // ── Health check ─────────────────────────────────────────────────
 app.get("/", (req, res) => {
-  res.json({ message: "AgenticHire API is running", status: "ok" });
+  res.json({ message: "PromptHire API is running", status: "ok" });
 });
 
 app.use("/api/auth", authRoutes);

@@ -125,7 +125,7 @@ export function HowItWorksPage({ onNavigate }: NavigateProps) {
           End-to-End Pipeline
         </p>
         <h1 className="font-display font-black text-[clamp(3rem,7vw,6rem)] leading-[0.9] uppercase text-secondary tracking-tight mb-6">
-          HOW PROMPTHIRE
+          HOW PromptHire
           <br />
           <span className="text-primary">WORKS</span>
         </h1>

@@ -26,6 +26,11 @@ export function Sidebar({ currentPage, collapsed }: SidebarProps) {
         <span className="font-display font-black text-xl text-white">
           Prompt<span className="text-primary">Hire</span>
         </span>
+        {!collapsed && (
+          <span className="bg-primary text-white text-[8px] font-extrabold px-[5px] py-px tracking-[0.1em]">
+            AI
+          </span>
+        )}
       </div>
 
       {/* Nav */}
@@ -58,10 +63,7 @@ export function Sidebar({ currentPage, collapsed }: SidebarProps) {
       {/* Logout */}
       <div className="p-4 border-t border-white/10">
         <div
-          onClick={() => {
-            clearAuth();
-            navigate("/");
-          }}
+          onClick={() => { clearAuth(); navigate("/"); }}
           className="flex items-center gap-3 py-2.5 px-1 cursor-pointer opacity-60 hover:opacity-100 transition-opacity"
         >
           <span></span>

@@ -25,7 +25,7 @@ function AuthShell({ title, subtitle, tag, children, footer }: AuthShellProps) {
       {/* Left panel — branding */}
       <div className="w-[42%] bg-secondary p-12 flex flex-col justify-between">
         <div className="font-display font-black text-2xl text-white">
-          HR<span className="text-primary">11</span>
+          Prompt<span className="text-primary">Hire</span>
           <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 ml-2 tracking-[0.1em]">
             AI
           </span>

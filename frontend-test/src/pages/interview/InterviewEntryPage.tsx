@@ -36,9 +36,7 @@ export function InterviewEntryPage() {
       stream.getTracks().forEach((t) => t.stop());
       setMicOk(true);
     } catch {
-      setMicError(
-        "Microphone access denied. Please allow mic access and try again.",
-      );
+      setMicError("Microphone access denied. Please allow mic access and try again.");
     }
   };
 
@@ -50,7 +48,7 @@ export function InterviewEntryPage() {
           className="font-display font-black text-xl text-white cursor-pointer"
           onClick={() => navigate("/candidate-profile")}
         >
-          HR<span className="text-primary">11</span>
+          Prompt<span className="text-primary">Hire</span>
           <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5 tracking-[0.1em]">
             AI
           </span>
@@ -199,9 +197,7 @@ export function InterviewEntryPage() {
                   {micOk ? " Microphone Ready" : " Test Microphone"}
                 </button>
                 {micError && (
-                  <p className="text-xs text-danger font-body mt-2">
-                    {micError}
-                  </p>
+                  <p className="text-xs text-danger font-body mt-2">{micError}</p>
                 )}
                 {micOk && (
                   <div className="flex gap-[3px] items-end h-8 mt-2.5 justify-center">
@@ -222,9 +218,7 @@ export function InterviewEntryPage() {
             {/* Start button */}
             <Btn
               fullWidth
-              onClick={() =>
-                navigate(`/interview${jobId ? `?jobId=${jobId}` : ""}`)
-              }
+              onClick={() => navigate(`/interview${jobId ? `?jobId=${jobId}` : ""}`)}
               disabled={!micOk}
               style={{ padding: "18px", fontSize: 16 }}
             >

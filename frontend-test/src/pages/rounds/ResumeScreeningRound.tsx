@@ -122,7 +122,7 @@ export function ResumeScreeningRound() {
       {/* Top bar */}
       <nav className="flex items-center justify-between px-10 h-[60px] bg-tertiary border-b-2 border-secondary sticky top-0 z-10">
         <div className="font-display font-black text-xl text-secondary cursor-pointer" onClick={() => navigate("/candidate-profile")}>
-          HR<span className="text-primary">11</span>
+          Prompt<span className="text-primary">Hire</span>
           <span className="bg-primary text-white text-[8px] px-1.5 py-px ml-1.5">AI</span>
         </div>
         <div className="font-display font-extrabold text-xs tracking-[0.15em] uppercase text-ink-faint">
