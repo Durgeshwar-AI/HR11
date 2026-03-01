@@ -4,12 +4,17 @@ import JobRole, { STAGE_TYPES } from "../../models/JobRole.model.js";
 import InterviewProgress from "../../models/InterviewProgress.model.js";
 import ScreeningCandidate from "../../models/candidate.screening.model.js";
 import { handleWhatsAppJobCommand } from "../../services/whatsappJobCreator.service.js";
-import { autoSchedulePipeline, processFailedCandidates } from "../../services/pipelineScheduler.service.js";
+import {
+  autoSchedulePipeline,
+  processFailedCandidates,
+} from "../../services/pipelineScheduler.service.js";
 
 const router = express.Router();
 
 // ─── Prefix trigger keyword ──────────────────────────────────────
-const TRIGGER_KEYWORD = (process.env.WA_TRIGGER_KEYWORD || "CREATE JOB").toUpperCase();
+const TRIGGER_KEYWORD = (
+  process.env.TELEGRAM_TRIGGER_KEYWORD || "CREATE JOB"
+).toUpperCase();
 
 // ── Stage slug → stageType mapping (allows shorthand) ────────────
 const STAGE_ALIASES = {
@@ -34,74 +39,72 @@ function resolveStage(raw) {
 }
 
 /**
- * Send a WhatsApp text reply via Meta Cloud API.
+ * Send a Telegram text reply via Bot API.
+ * Uses MarkdownV2 parse mode for bold/italic formatting.
  */
-async function sendWhatsAppReply(to, text) {
-  const phoneNumberId = process.env.WA_PHONE_NUMBER_ID;
-  const accessToken = process.env.WA_ACCESS_TOKEN;
+async function sendTelegramReply(chatId, text) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
 
-  if (!phoneNumberId || !accessToken) {
-    console.warn("[WhatsApp] WA_PHONE_NUMBER_ID or WA_ACCESS_TOKEN not set — reply skipped");
+  if (!botToken) {
+    console.warn("[Telegram] TELEGRAM_BOT_TOKEN not set — reply skipped");
     return;
   }
 
   const res = await fetch(
-    `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+    `https://api.telegram.org/bot${botToken}/sendMessage`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to,
-        type: "text",
-        text: { body: text },
+        chat_id: chatId,
+        text,
+        parse_mode: "Markdown",
       }),
     },
   );
 
   if (!res.ok) {
     const err = await res.text();
-    console.error("[WhatsApp] Failed to send reply:", err);
+    console.error("[Telegram] Failed to send reply:", err);
   }
 }
 
 // ── Command handlers ─────────────────────────────────────────────
 
-async function handleHelp(from) {
-  await sendWhatsAppReply(
-    from,
-    `🤖 *AgenticHire Commands*\n\n` +
-    `📋 *CREATE JOB* <description>\n` +
-    `   AI parses title, skills, deadline, rounds.\n` +
-    `   _Ex: CREATE JOB Senior React Eng, deadline April 30, top 5_\n\n` +
-    `🔧 *ADD PIPELINE* <job_id> stages: <s1, s2, ...>\n` +
-    `   Stages (repeats allowed): resume, aptitude, coding, ai, technical, custom\n` +
-    `   _Ex: ADD PIPELINE 663abc stages: resume, aptitude, technical, technical_\n\n` +
-    `📅 *SCHEDULE* <job_id>\n` +
-    `   Auto-assigns dates to each stage from the deadline onwards.\n` +
-    `   _Ex: SCHEDULE 663abc_\n\n` +
-    `📊 *STATUS* <job_id>\n` +
-    `   Shows pipeline, dates, and per-stage candidate counts.\n` +
-    `   _Ex: STATUS 663abc_\n\n` +
-    `✅ *SHORTLIST* <job_id> stage <n>\n` +
-    `   Removes candidates who failed stage N; survivors advance.\n` +
-    `   _Ex: SHORTLIST 663abc stage 2_\n\n` +
-    `❓ *HELP* — shows this menu`,
+async function handleHelp(chatId) {
+  await sendTelegramReply(
+    chatId,
+    `🤖 *AgenticHire Bot Commands*\n\n` +
+      `📋 *CREATE JOB* <description>\n` +
+      `   AI parses title, skills, deadline, pipeline.\n` +
+      `   Creates job + full pipeline + auto-schedules dates.\n` +
+      `   _Ex: CREATE JOB Senior React Eng, deadline April 30, top 5_\n` +
+      `   _Ex: CREATE JOB ML Engineer, skills: Python TensorFlow, rounds: resume, coding, technical_\n\n` +
+      `🔧 *ADD PIPELINE* <job\\_id> stages: <s1, s2, ...>\n` +
+      `   Override pipeline for an existing job.\n` +
+      `   Stages: resume, aptitude, coding, ai, technical, custom\n` +
+      `   _Ex: ADD PIPELINE 663abc stages: resume, aptitude, technical_\n\n` +
+      `📅 *SCHEDULE* <job\\_id>\n` +
+      `   Re-schedule dates if you changed the pipeline.\n\n` +
+      `📊 *STATUS* <job\\_id>\n` +
+      `   Shows pipeline, dates, and per-stage candidate counts.\n\n` +
+      `✅ *SHORTLIST* <job\\_id> stage <n>\n` +
+      `   Removes candidates who failed stage N.\n\n` +
+      `📃 *LIST JOBS*\n` +
+      `   Shows all active job openings.\n\n` +
+      `❓ */help* — shows this menu`,
   );
 }
 
-async function handleAddPipeline(from, rawText) {
+async function handleAddPipeline(chatId, rawText) {
   const jobMatch = rawText.match(/add\s+pipeline\s+([a-f0-9]{24})/i);
   const stagesMatch = rawText.match(/stages?\s*:\s*(.+)/i);
 
   if (!jobMatch || !stagesMatch) {
-    await sendWhatsAppReply(
-      from,
-      `❌ Format: *ADD PIPELINE <job_id> stages: resume, aptitude, coding, technical*\n` +
-      `Use STATUS <job_id> to get IDs. Send HELP for docs.`,
+    await sendTelegramReply(
+      chatId,
+      `❌ Format: *ADD PIPELINE <job\\_id> stages: resume, aptitude, coding, technical*\n` +
+        `Use STATUS <job\\_id> to get IDs. Send HELP for docs.`,
     );
     return;
   }
@@ -118,8 +121,8 @@ async function handleAddPipeline(from, rawText) {
     .filter(Boolean);
 
   if (!pipeline.length) {
-    await sendWhatsAppReply(
-      from,
+    await sendTelegramReply(
+      chatId,
       `❌ No valid stages found. Valid: resume, aptitude, coding, ai, technical, custom`,
     );
     return;
@@ -127,7 +130,7 @@ async function handleAddPipeline(from, rawText) {
 
   const job = await JobRole.findById(jobId);
   if (!job) {
-    await sendWhatsAppReply(from, `❌ Job ID "${jobId}" not found.`);
+    await sendTelegramReply(chatId, `❌ Job ID "${jobId}" not found.`);
     return;
   }
 
@@ -140,28 +143,28 @@ async function handleAddPipeline(from, rawText) {
     .map((s, i) => `  ${i + 1}. ${s.stageType.replace(/_/g, " ")}`)
     .join("\n");
 
-  await sendWhatsAppReply(
-    from,
+  await sendTelegramReply(
+    chatId,
     `✅ *Pipeline saved for "${job.title}"*\n\n${list}\n\n` +
-    `📅 Next: *SCHEDULE ${job._id}* to auto-assign dates.`,
+      `📅 Next: *SCHEDULE ${job._id}* to auto-assign dates.`,
   );
 }
 
-async function handleSchedule(from, rawText) {
+async function handleSchedule(chatId, rawText) {
   const idMatch = rawText.match(/schedule\s+([a-f0-9]{24})/i);
   if (!idMatch) {
-    await sendWhatsAppReply(from, `❌ Format: *SCHEDULE <job_id>*`);
+    await sendTelegramReply(chatId, `❌ Format: *SCHEDULE <job\\_id>*`);
     return;
   }
 
   const job = await JobRole.findById(idMatch[1]);
   if (!job) {
-    await sendWhatsAppReply(from, `❌ Job not found.`);
+    await sendTelegramReply(chatId, `❌ Job not found.`);
     return;
   }
   if (!job.pipeline?.length) {
-    await sendWhatsAppReply(
-      from,
+    await sendTelegramReply(
+      chatId,
       `❌ No pipeline on "${job.title}".\nRun: *ADD PIPELINE ${job._id} stages: resume, technical* first.`,
     );
     return;
@@ -173,35 +176,40 @@ async function handleSchedule(from, rawText) {
   const lines = updated.pipeline
     .sort((a, b) => a.order - b.order)
     .map((s) => {
-      const d = s.scheduledDate ? new Date(s.scheduledDate).toDateString() : "TBD";
+      const d = s.scheduledDate
+        ? new Date(s.scheduledDate).toDateString()
+        : "TBD";
       const name = s.stageName || s.stageType.replace(/_/g, " ");
       return `  ${s.order}. ${name} → ${d}`;
     })
     .join("\n");
 
-  await sendWhatsAppReply(
-    from,
+  await sendTelegramReply(
+    chatId,
     `📅 *Pipeline scheduled for "${updated.title}"*\n\n${lines}\n\n` +
-    `Candidates will be notified when each stage opens.`,
+      `Candidates will be notified when each stage opens.`,
   );
 }
 
-async function handleStatus(from, rawText) {
+async function handleStatus(chatId, rawText) {
   const idMatch = rawText.match(/status\s+([a-f0-9]{24})/i);
   if (!idMatch) {
-    await sendWhatsAppReply(from, `❌ Format: *STATUS <job_id>*`);
+    await sendTelegramReply(chatId, `❌ Format: *STATUS <job\\_id>*`);
     return;
   }
 
   const job = await JobRole.findById(idMatch[1]);
   if (!job) {
-    await sendWhatsAppReply(from, `❌ Job not found.`);
+    await sendTelegramReply(chatId, `❌ Job not found.`);
     return;
   }
 
   const [total, shortlisted, progressRecords] = await Promise.all([
     ScreeningCandidate.countDocuments({ jobId: job._id }),
-    ScreeningCandidate.countDocuments({ jobId: job._id, status: "shortlisted" }),
+    ScreeningCandidate.countDocuments({
+      jobId: job._id,
+      status: "shortlisted",
+    }),
     InterviewProgress.find({ jobId: job._id }),
   ]);
 
@@ -210,259 +218,260 @@ async function handleStatus(from, rawText) {
     pipelineText = job.pipeline
       .sort((a, b) => a.order - b.order)
       .map((s) => {
-        const d = s.scheduledDate ? new Date(s.scheduledDate).toDateString() : "Not scheduled";
+        const d = s.scheduledDate
+          ? new Date(s.scheduledDate).toDateString()
+          : "Not scheduled";
         const name = s.stageName || s.stageType.replace(/_/g, " ");
         const active = progressRecords.filter((p) =>
-          p.rounds.find((r) => r.roundNumber === s.order && r.status === "InProgress"),
+          p.rounds.find(
+            (r) => r.roundNumber === s.order && r.status === "InProgress",
+          ),
         ).length;
         const done = progressRecords.filter((p) =>
-          p.rounds.find((r) => r.roundNumber === s.order && r.status === "Completed"),
+          p.rounds.find(
+            (r) => r.roundNumber === s.order && r.status === "Completed",
+          ),
         ).length;
         return `  ${s.order}. ${name}\n     📅 ${d} | 🔵 ${active} active | ✅ ${done} done`;
       })
       .join("\n");
   }
 
-  await sendWhatsAppReply(
-    from,
+  await sendTelegramReply(
+    chatId,
     `📊 *${job.title}*\n` +
-    `ID: ${job._id}\n` +
-    `Status: ${job.status} | Deadline: ${job.submissionDeadline ? new Date(job.submissionDeadline).toDateString() : "None"}\n` +
-    `Applicants: ${total} | Shortlisted: ${shortlisted}\n\n` +
-    `*Pipeline:*\n${pipelineText}`,
+      `ID: ${job._id}\n` +
+      `Status: ${job.status} | Deadline: ${job.submissionDeadline ? new Date(job.submissionDeadline).toDateString() : "None"}\n` +
+      `Applicants: ${total} | Shortlisted: ${shortlisted}\n\n` +
+      `*Pipeline:*\n${pipelineText}`,
   );
 }
 
-async function handleShortlist(from, rawText) {
+async function handleShortlist(chatId, rawText) {
   const match = rawText.match(/shortlist\s+([a-f0-9]{24})\s+stage\s+(\d+)/i);
   if (!match) {
-    await sendWhatsAppReply(from, `❌ Format: *SHORTLIST <job_id> stage <number>*`);
+    await sendTelegramReply(
+      chatId,
+      `❌ Format: *SHORTLIST <job\\_id> stage <number>*`,
+    );
     return;
   }
 
-  const result = await processFailedCandidates(match[1], parseInt(match[2], 10));
-  await sendWhatsAppReply(
-    from,
+  const result = await processFailedCandidates(
+    match[1],
+    parseInt(match[2], 10),
+  );
+  await sendTelegramReply(
+    chatId,
     `✅ Stage ${match[2]} shortlisting complete.\n` +
-    `${result?.rejected ?? 0} candidate(s) eliminated (score below threshold).\n` +
-    `Passing candidates advance to the next round.`,
+      `${result?.rejected ?? 0} candidate(s) eliminated (score below threshold).\n` +
+      `Passing candidates advance to the next round.`,
   );
 }
 
-// ── GET /api/whatsapp/webhook — Meta verification handshake ──────
-router.get("/webhook", (req, res) => {
-  const mode = req.query["hub.mode"];
-  const token = req.query["hub.verify_token"];
-  const challenge = req.query["hub.challenge"];
+async function handleListJobs(chatId, hrId) {
+  const jobs = await JobRole.find({ status: "Active" })
+    .sort({ createdAt: -1 })
+    .limit(10)
+    .select("title pipeline status submissionDeadline createdAt");
 
-  if (mode === "subscribe" && token === process.env.WA_VERIFY_TOKEN) {
-    console.log("[WhatsApp] Webhook verified successfully");
-    return res.status(200).send(challenge);
+  if (!jobs.length) {
+    await sendTelegramReply(
+      chatId,
+      `📭 No active jobs found. Send *CREATE JOB* to create one.`,
+    );
+    return;
   }
 
-  res.status(403).json({ error: "Verification failed" });
-});
+  const lines = jobs
+    .map((j, i) => {
+      const deadline = j.submissionDeadline
+        ? new Date(j.submissionDeadline).toDateString()
+        : "No deadline";
+      const stages = j.pipeline?.length || 0;
+      return `${i + 1}. *${j.title}*\n   📅 ${deadline} | 🔧 ${stages} stages\n   ID: \`${j._id}\``;
+    })
+    .join("\n\n");
 
-// ── POST /api/whatsapp/webhook ────────────────────────────────────
+  await sendTelegramReply(
+    chatId,
+    `📋 *Active Job Openings (${jobs.length})*\n\n${lines}\n\n` +
+      `Use *STATUS <job\\_id>* to see details.`,
+  );
+}
+
+// ── POST /api/telegram/webhook — Telegram Bot webhook ────────────
 router.post("/webhook", async (req, res) => {
-  res.sendStatus(200); // Meta requires 200 within 5 s
+  res.sendStatus(200); // Acknowledge immediately
 
   try {
-    const body = req.body;
-    if (body.object !== "whatsapp_business_account") return;
+    const update = req.body;
 
-    const messages = body.entry?.[0]?.changes?.[0]?.value?.messages;
-    if (!messages) return;
+    // Telegram sends updates with a "message" field
+    const msg = update?.message;
+    if (!msg || !msg.text) return;
 
-    for (const message of messages) {
-      if (message.type !== "text") continue;
+    const chatId = msg.chat.id;
+    const telegramUserId = msg.from?.id?.toString();
+    const rawText = msg.text.trim();
+    const upper = rawText.toUpperCase();
 
-      const from = message.from;
-      const rawText = message.text?.body?.trim() || "";
-      const upper = rawText.toUpperCase();
+    // Resolve HR user by Telegram user ID
+    const hrUser = await HRUser.findOne({ telegramUserId });
+    const fallbackHRId = process.env.TELEGRAM_DEFAULT_HR_ID;
 
-      // Resolve HR user
-      const hrUser = await HRUser.findOne({ whatsappPhone: from });
-      const fallbackHRId = process.env.WA_DEFAULT_HR_ID;
+    if (!hrUser && !fallbackHRId) {
+      await sendTelegramReply(
+        chatId,
+        "❌ Your Telegram account is not linked to any HR account. Ask admin to register it.",
+      );
+      return;
+    }
 
-      if (!hrUser && !fallbackHRId) {
-        await sendWhatsAppReply(
-          from,
-          "❌ Your WhatsApp number is not linked to any HR account. Ask admin to register it.",
+    const createdByHRId = hrUser?._id?.toString() || fallbackHRId;
+
+    try {
+      if (
+        upper === "/HELP" ||
+        upper === "HELP" ||
+        upper === "/START" ||
+        upper === "?"
+      ) {
+        await handleHelp(chatId);
+      } else if (
+        upper.startsWith("LIST JOBS") ||
+        upper.startsWith("/LIST") ||
+        upper.startsWith("/JOBS")
+      ) {
+        await handleListJobs(chatId, createdByHRId);
+      } else if (
+        upper.startsWith("ADD PIPELINE") ||
+        upper.startsWith("/ADD_PIPELINE")
+      ) {
+        await handleAddPipeline(
+          chatId,
+          rawText.replace(/^\/add_pipeline\s*/i, "ADD PIPELINE "),
         );
-        continue;
-      }
-
-      const createdByHRId = hrUser?._id?.toString() || fallbackHRId;
-
-      try {
-        if (upper === "HELP" || upper === "?") {
-          await handleHelp(from);
-        } else if (upper.startsWith("ADD PIPELINE")) {
-          await handleAddPipeline(from, rawText);
-        } else if (upper.startsWith("SCHEDULE")) {
-          await handleSchedule(from, rawText);
-        } else if (upper.startsWith("STATUS")) {
-          await handleStatus(from, rawText);
-        } else if (upper.startsWith("SHORTLIST")) {
-          await handleShortlist(from, rawText);
-        } else if (upper.startsWith(TRIGGER_KEYWORD)) {
-          const command = rawText.slice(TRIGGER_KEYWORD.length).trim();
-          if (!command) {
-            await sendWhatsAppReply(
-              from,
-              `Describe the job after the keyword.\n` +
-              `Example: *${TRIGGER_KEYWORD}* Senior React Eng, deadline April 30, top 5, skills: React TS\n\n` +
-              `Send *HELP* to see all commands.`,
-            );
-            continue;
-          }
-          const { summary } = await handleWhatsAppJobCommand(command, createdByHRId);
-          await sendWhatsAppReply(
-            from,
-            summary +
-            `\n\n📌 Tip: *ADD PIPELINE <job_id> stages: resume, aptitude, technical*`,
+      } else if (
+        upper.startsWith("SCHEDULE") ||
+        upper.startsWith("/SCHEDULE")
+      ) {
+        await handleSchedule(
+          chatId,
+          rawText.replace(/^\/schedule\s*/i, "SCHEDULE "),
+        );
+      } else if (upper.startsWith("STATUS") || upper.startsWith("/STATUS")) {
+        await handleStatus(chatId, rawText.replace(/^\/status\s*/i, "STATUS "));
+      } else if (
+        upper.startsWith("SHORTLIST") ||
+        upper.startsWith("/SHORTLIST")
+      ) {
+        await handleShortlist(
+          chatId,
+          rawText.replace(/^\/shortlist\s*/i, "SHORTLIST "),
+        );
+      } else if (
+        upper.startsWith(TRIGGER_KEYWORD) ||
+        upper.startsWith("/CREATE_JOB") ||
+        upper.startsWith("/CREATEJOB")
+      ) {
+        const command = rawText
+          .replace(/^\/create_?job\s*/i, "")
+          .replace(new RegExp(`^${TRIGGER_KEYWORD}\\s*`, "i"), "")
+          .trim();
+        if (!command) {
+          await sendTelegramReply(
+            chatId,
+            `Describe the job after the command.\n` +
+              `Example: *CREATE JOB* Senior React Eng, deadline April 30, top 5, skills: React TS\n\n` +
+              `Send /help to see all commands.`,
           );
-        } else {
-          await sendWhatsAppReply(from, `❓ Unknown command. Send *HELP* to see all options.`);
+          return;
         }
-      } catch (cmdErr) {
-        console.error("[WhatsApp] Command error:", cmdErr.message);
-        await sendWhatsAppReply(from, `❌ Error: ${cmdErr.message}\n\nSend *HELP* for usage guide.`);
+        const { summary } = await handleWhatsAppJobCommand(
+          command,
+          createdByHRId,
+        );
+        await sendTelegramReply(chatId, summary);
+      } else {
+        await sendTelegramReply(
+          chatId,
+          `❓ Unknown command. Send /help to see all options.`,
+        );
       }
+    } catch (cmdErr) {
+      console.error("[Telegram] Command error:", cmdErr.message);
+      await sendTelegramReply(
+        chatId,
+        `❌ Error: ${cmdErr.message}\n\nSend /help for usage guide.`,
+      );
     }
   } catch (err) {
-    console.error("[WhatsApp] Webhook processing error:", err);
+    console.error("[Telegram] Webhook processing error:", err);
   }
 });
 
+// ── POST /api/telegram/setup — Register webhook with Telegram ────
+router.post("/setup", async (req, res) => {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const webhookUrl = req.body.webhookUrl || process.env.TELEGRAM_WEBHOOK_URL;
 
-
-/**
- * Send a WhatsApp text reply via Meta Cloud API.
- */
-// async function sendWhatsAppReply(to, text) {
-//   const phoneNumberId = process.env.WA_PHONE_NUMBER_ID;
-//   const accessToken = process.env.WA_ACCESS_TOKEN;
-
-//   if (!phoneNumberId || !accessToken) {
-//     console.warn("[WhatsApp] WA_PHONE_NUMBER_ID or WA_ACCESS_TOKEN not set — reply skipped");
-//     return;
-//   }
-
-//   const res = await fetch(
-//     `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
-//     {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${accessToken}`,
-//       },
-//       body: JSON.stringify({
-//         messaging_product: "whatsapp",
-//         to,
-//         type: "text",
-//         text: { body: text },
-//       }),
-//     },
-//   );
-
-//   if (!res.ok) {
-//     const err = await res.text();
-//     console.error("[WhatsApp] Failed to send reply:", err);
-//   }
-// }
-
-/**
- * GET /api/whatsapp/webhook
- * Meta webhook verification handshake.
- * Meta sends hub.mode, hub.verify_token, hub.challenge as query params.
- */
-router.get("/webhook", (req, res) => {
-  const mode = req.query["hub.mode"];
-  const token = req.query["hub.verify_token"];
-  const challenge = req.query["hub.challenge"];
-
-  if (mode === "subscribe" && token === process.env.WA_VERIFY_TOKEN) {
-    console.log("[WhatsApp] Webhook verified successfully");
-    return res.status(200).send(challenge);
+  if (!botToken) {
+    return res.status(400).json({ error: "TELEGRAM_BOT_TOKEN not set" });
   }
-
-  res.status(403).json({ error: "Verification failed" });
-});
-
-/**
- * POST /api/whatsapp/webhook
- * Receives incoming WhatsApp messages from Meta Cloud API.
- * Only processes messages that start with the trigger keyword.
- */
-router.post("/webhook", async (req, res) => {
-  // Acknowledge immediately — Meta requires a 200 within 5 s
-  res.sendStatus(200);
+  if (!webhookUrl) {
+    return res
+      .status(400)
+      .json({
+        error: "Provide webhookUrl in body or set TELEGRAM_WEBHOOK_URL env var",
+      });
+  }
 
   try {
-    const body = req.body;
+    const response = await fetch(
+      `https://api.telegram.org/bot${botToken}/setWebhook`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: `${webhookUrl}/api/telegram/webhook` }),
+      },
+    );
+    const data = await response.json();
 
-    // Validate this is a WhatsApp message event
-    if (body.object !== "whatsapp_business_account") return;
-
-    const entry = body.entry?.[0];
-    const change = entry?.changes?.[0];
-    const value = change?.value;
-
-    if (!value?.messages) return;
-
-    for (const message of value.messages) {
-      if (message.type !== "text") continue;
-
-      const from = message.from; // sender's phone number (E.164, no +)
-      const rawText = message.text?.body?.trim() || "";
-      const upperText = rawText.toUpperCase();
-
-      // Only act on trigger keyword messages
-      if (!upperText.startsWith(TRIGGER_KEYWORD)) continue;
-
-      // Strip the keyword prefix to get the actual command
-      const command = rawText.slice(TRIGGER_KEYWORD.length).trim();
-      if (!command) {
-        await sendWhatsAppReply(
-          from,
-          `Please describe the job after the keyword. Example:\n*${TRIGGER_KEYWORD}* Senior React Engineer, remote, skills: React TypeScript, deadline March 30, top 5 candidates, 2 interview rounds`,
-        );
-        continue;
-      }
-
-      console.log(`[WhatsApp] Job command from ${from}: ${command}`);
-
-      // Resolve the HR user by their registered WhatsApp phone
-      let hrUser = await HRUser.findOne({ whatsappPhone: from });
-
-      // Fallback: use the configured default admin HR ID
-      const fallbackHRId = process.env.WA_DEFAULT_HR_ID;
-
-      if (!hrUser && !fallbackHRId) {
-        await sendWhatsAppReply(
-          from,
-          "❌ Your WhatsApp number is not linked to any HR account. Please ask your admin to register your number.",
-        );
-        continue;
-      }
-
-      const createdByHRId = hrUser?._id?.toString() || fallbackHRId;
-
-      try {
-        const { summary } = await handleWhatsAppJobCommand(command, createdByHRId);
-        await sendWhatsAppReply(from, summary);
-      } catch (parseErr) {
-        console.error("[WhatsApp] Job creation error:", parseErr.message);
-        await sendWhatsAppReply(
-          from,
-          `❌ Could not create job: ${parseErr.message}\n\nPlease try again with more detail, e.g.:\n*${TRIGGER_KEYWORD}* Senior React Engineer, remote, deadline April 30`,
-        );
-      }
+    if (data.ok) {
+      console.log(
+        "[Telegram] Webhook registered successfully:",
+        data.description,
+      );
+      res.json({ success: true, description: data.description });
+    } else {
+      console.error(
+        "[Telegram] Webhook registration failed:",
+        data.description,
+      );
+      res.status(400).json({ error: data.description });
     }
   } catch (err) {
-    console.error("[WhatsApp] Webhook processing error:", err);
+    console.error("[Telegram] Setup error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /api/telegram/status — Check webhook status ──────────────
+router.get("/status", async (req, res) => {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) {
+    return res.status(400).json({ error: "TELEGRAM_BOT_TOKEN not set" });
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.telegram.org/bot${botToken}/getWebhookInfo`,
+    );
+    const data = await response.json();
+    res.json(data.result || data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

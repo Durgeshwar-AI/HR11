@@ -1,6 +1,7 @@
 import Groq from "groq-sdk";
 import JobRole from "../models/JobRole.model.js";
 import Question from "../models/Question.model.js";
+import { autoSchedulePipeline } from "./pipelineScheduler.service.js";
 
 let _groq = null;
 function getGroq() {
@@ -11,7 +12,7 @@ function getGroq() {
   return _groq;
 }
 
-const SYSTEM_PROMPT = `You are an AI assistant that extracts structured job role data from natural language HR messages sent via WhatsApp.
+const SYSTEM_PROMPT = `You are an AI assistant that extracts structured job role data from natural language HR messages sent via Telegram.
 
 Parse the message and return ONLY valid JSON (no markdown, no extra text) with this schema:
 {
@@ -24,6 +25,7 @@ Parse the message and return ONLY valid JSON (no markdown, no extra text) with t
   "pipeline": [
     {
       "stageType": "one of: resume_screening | aptitude_test | coding_challenge | ai_voice_interview | technical_interview | custom_round",
+      "stageName": "human-readable name for this stage",
       "order": 1,
       "thresholdScore": 60,
       "daysAfterPrev": 3
@@ -39,19 +41,27 @@ Parse the message and return ONLY valid JSON (no markdown, no extra text) with t
 }
 
 Pipeline rules:
-- "pipeline" should be inferred when the HR mentions stage names like "aptitude", "coding", "technical", "resume screening", "AI interview", "voice interview".
+- ALWAYS generate a pipeline. This is the most important field.
+- If the HR explicitly mentions stages like "aptitude", "coding", "technical", "resume screening", "AI interview", "voice interview", use those.
+- If no pipeline is mentioned explicitly, ALWAYS generate a sensible default pipeline based on the job type:
+  - For engineering/technical roles: resume_screening → aptitude_test → coding_challenge → technical_interview
+  - For non-technical roles (design, marketing, HR, sales): resume_screening → aptitude_test → ai_voice_interview
+  - For senior/lead roles: resume_screening → coding_challenge → technical_interview → ai_voice_interview
+  - For internships/junior roles: resume_screening → aptitude_test → coding_challenge
 - Stages allowed: resume_screening, aptitude_test, coding_challenge, ai_voice_interview, technical_interview, custom_round.
 - A stage can repeat (e.g. two technical rounds). Assign sequential order values.
-- If no pipeline is mentioned, return "pipeline" as an empty array.
+- The pipeline must NEVER be empty. Always include at least resume_screening + one more stage.
 - "thresholdScore" defaults to 60 unless explicitly stated.
 - "daysAfterPrev" defaults to 3 unless a gap is explicitly stated.
+- "stageName" should be a human-readable label like "Resume Screening", "Aptitude Test", etc.
 
 General rules:
 - If a deadline date is mentioned without a year, assume the current year (2026).
-- If "rounds" or "stages" are mentioned by count only (not names), put the count in totalRounds and leave pipeline empty.
-- If pipeline stages are named, populate the pipeline array AND set totalRounds to the pipeline length.
+- If no deadline is mentioned, set submissionDeadline to 14 days from today's date.
+- totalRounds must always match the pipeline length.
 - If no questions are explicitly mentioned, return questions as an empty array.
-- Skills can be inferred from the job title if not explicitly listed.
+- Skills MUST be inferred from the job title and description if not explicitly listed. Always return at least 3 relevant skills.
+- topN defaults to 5 if not mentioned.
 - Always return valid JSON. Never include code fences or explanation text.`;
 
 /**
@@ -165,39 +175,118 @@ export async function createJobFromParsed(parsed, createdByHRId) {
   return { job, questions: createdQuestions };
 }
 
+// ── Stage icons for pretty summaries ────────────────────────────
+const STAGE_ICONS = {
+  resume_screening: "📄",
+  aptitude_test: "🧠",
+  coding_challenge: "💻",
+  ai_voice_interview: "🎙️",
+  technical_interview: "⚙️",
+  custom_round: "🛠️",
+};
+
+// ── Default pipeline fallback if AI returns empty ───────────────
+const DEFAULT_PIPELINE = [
+  {
+    stageType: "resume_screening",
+    stageName: "Resume Screening",
+    order: 1,
+    thresholdScore: 60,
+    daysAfterPrev: 3,
+  },
+  {
+    stageType: "aptitude_test",
+    stageName: "Aptitude Test",
+    order: 2,
+    thresholdScore: 60,
+    daysAfterPrev: 3,
+  },
+  {
+    stageType: "coding_challenge",
+    stageName: "Coding Challenge",
+    order: 3,
+    thresholdScore: 60,
+    daysAfterPrev: 3,
+  },
+  {
+    stageType: "technical_interview",
+    stageName: "Technical Interview",
+    order: 4,
+    thresholdScore: 60,
+    daysAfterPrev: 3,
+  },
+];
+
 /**
- * Master function: parse message → create in DB → return summary.
+ * Master function: parse message → create in DB → auto-schedule pipeline → return summary.
+ * Works like the frontend PipelineBuilder — one command does everything.
  */
 export async function handleWhatsAppJobCommand(message, createdByHRId) {
   const parsed = await parseJobFromMessage(message);
+
+  // Ensure pipeline is never empty — use default if AI didn't generate one
+  if (!Array.isArray(parsed.pipeline) || parsed.pipeline.length === 0) {
+    parsed.pipeline = DEFAULT_PIPELINE;
+    parsed.totalRounds = DEFAULT_PIPELINE.length;
+  }
+
+  // Ensure deadline exists (default 14 days from now)
+  if (!parsed.submissionDeadline) {
+    const deadline = new Date();
+    deadline.setDate(deadline.getDate() + 14);
+    parsed.submissionDeadline = deadline.toISOString();
+  }
+
+  // Ensure topN
+  if (parsed.topN == null) parsed.topN = 5;
+
   const { job, questions } = await createJobFromParsed(parsed, createdByHRId);
 
-  const deadline = job.submissionDeadline
-    ? job.submissionDeadline.toDateString()
+  // ── Auto-schedule pipeline dates (like SCHEDULE command) ────────
+  let scheduledJob = job;
+  if (job.pipeline?.length > 0) {
+    try {
+      await autoSchedulePipeline(job, job.submissionDeadline);
+      scheduledJob = await JobRole.findById(job._id);
+    } catch (schedErr) {
+      console.warn("[JobCreator] Auto-schedule failed:", schedErr.message);
+    }
+  }
+
+  // ── Build rich summary ─────────────────────────────────────────
+  const deadline = scheduledJob.submissionDeadline
+    ? scheduledJob.submissionDeadline.toDateString()
     : "Not set";
+
+  const pipelineLines =
+    scheduledJob.pipeline
+      ?.sort((a, b) => a.order - b.order)
+      .map((s) => {
+        const icon = STAGE_ICONS[s.stageType] || "▪️";
+        const name = s.stageName || s.stageType.replace(/_/g, " ");
+        const date = s.scheduledDate
+          ? new Date(s.scheduledDate).toDateString()
+          : "TBD";
+        return `  ${icon} ${s.order}. ${name} — ${date}`;
+      })
+      .join("\n") || "  None";
 
   const questionLines =
     questions.length > 0
       ? questions.map((q, i) => `  ${i + 1}. [${q.level}] ${q.text}`).join("\n")
-      : "  None added";
-
-  const pipelineLines =
-    job.pipeline?.length > 0
-      ? job.pipeline
-          .map((s) => `  ${s.order}. ${s.stageType.replace(/_/g, " ")}`)
-          .join("\n")
-      : "  Not defined (use ADD PIPELINE)";
+      : "  Auto-generated during each round";
 
   const summary =
-    `✅ *Job Created Successfully!*\n\n` +
-    `*Title:* ${job.title}\n` +
-    `*Skills:* ${job.skills.join(", ") || "N/A"}\n` +
+    `✅ *Job Created & Pipeline Deployed!*\n\n` +
+    `*Title:* ${scheduledJob.title}\n` +
+    `*Description:* ${scheduledJob.description || "—"}\n` +
+    `*Skills:* ${scheduledJob.skills.join(", ") || "N/A"}\n` +
     `*Deadline:* ${deadline}\n` +
-    `*Top N candidates:* ${job.topN}\n` +
-    `*Interview Rounds:* ${job.totalRounds}\n` +
-    `*Pipeline (${job.pipeline?.length ?? 0} stages):*\n${pipelineLines}\n` +
+    `*Top N candidates:* ${scheduledJob.topN}\n\n` +
+    `📋 *Hiring Pipeline (${scheduledJob.pipeline?.length ?? 0} stages):*\n${pipelineLines}\n\n` +
     `*Questions (${questions.length}):*\n${questionLines}\n\n` +
-    `*Job ID:* ${job._id}`;
+    `*Job ID:* \`${scheduledJob._id}\`\n` +
+    `*Status:* ${scheduledJob.status} | *Scheduling:* ✅ Done`;
 
-  return { summary, job, questions };
+  return { summary, job: scheduledJob, questions };
 }

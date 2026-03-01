@@ -14,7 +14,7 @@ import formsRoutes from "./routes/forms/forms.route.js";
 import aptitudeRoutes from "./routes/aptitude/aptitude.route.js";
 import codingRoutes from "./routes/coding/coding.route.js";
 import technicalRoutes from "./routes/technical/technical.route.js";
-import whatsappRoutes from "./routes/whatsapp/whatsapp.route.js";
+import telegramRoutes from "./routes/whatsapp/whatsapp.route.js";
 import candidateRoutes from "./routes/candidate/candidate.route.js";
 import mailRoutes from "./routes/mail.route.js";
 
@@ -39,7 +39,7 @@ app.use("/api/agent", agentToolsRoutes);
 app.use("/api/aptitude", aptitudeRoutes);
 app.use("/api/coding", codingRoutes);
 app.use("/api/technical", technicalRoutes);
-app.use("/api/whatsapp", whatsappRoutes);
+app.use("/api/telegram", telegramRoutes);
 app.use("/api/candidates", resumeRoutes);
 app.use("/api/candidate", candidateRoutes);
 app.use("/api/forms", formsRoutes);
