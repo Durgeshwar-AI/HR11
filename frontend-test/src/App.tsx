@@ -23,6 +23,7 @@ import { TechnicalInterviewRound } from "./pages/rounds/TechnicalInterviewRound"
 // Public
 import { WhyPromptHirePage } from "./pages/public/WhyPromptHirePage";
 import { HowItWorksPage } from "./pages/public/HowItWorksPage";
+import { PricingPage } from "./pages/public/PricingPage";
 import { RoleChoice } from "./pages/public/RoleChoice.tsx";
 import { CandidateHome } from "./pages/public/CandidateHome.tsx";
 import { CompanyHome } from "./pages/public/CompanyHome.tsx";
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/" element={<RoleChoice />} />
         <Route path="/why-prompthire" element={<WhyPromptHirePage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
         <Route path="/company-home" element={<CompanyHome />} />
         <Route path="/candidate-home" element={<CandidateHome />} />
         <Route path="/company-login" element={<CompanyLogin />} />
