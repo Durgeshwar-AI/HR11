@@ -363,7 +363,7 @@ export function AptitudeTestRound() {
       <nav className="flex items-center justify-between px-6 h-[56px] bg-secondary text-white shrink-0 z-20">
         <div className="flex items-center gap-4">
           <span className="font-display font-black text-lg cursor-pointer" onClick={() => navigate("/candidate-profile")}>
-            HR<span className="text-primary">11</span>
+            Prompt<span className="text-primary">Hire</span>
           </span>
           <span className="font-display font-extrabold text-xs tracking-[0.12em] uppercase opacity-60">
             Aptitude Test

@@ -24,7 +24,7 @@ const transporter = nodemailer.createTransport({
  */
 async function sendRejectionEmail(to, name, jobTitle) {
   const mailOptions = {
-    from: process.env.MAIL_FROM || "AgenticHire <noreply@agentichire.com>",
+    from: process.env.MAIL_FROM || "PromptHire <noreply@prompthire.com>",
     to,
     subject: `Application Update — ${jobTitle}`,
     html: `
@@ -46,7 +46,7 @@ async function sendRejectionEmail(to, name, jobTitle) {
         </p>
         <p>We wish you the very best in your career journey.</p>
         <br />
-        <p style="margin:0;">Warm regards,<br /><strong>The AgenticHire Team</strong></p>
+        <p style="margin:0;">Warm regards,<br /><strong>The PromptHire Team</strong></p>
       </div>
     `,
   };
@@ -119,7 +119,7 @@ async function sendSchedulingEmail(to, name, jobTitle, stage, linkOpts = {}) {
     : `<p>Please ensure you are available at the scheduled time. Further instructions will be shared closer to the date.</p>`;
 
   const mailOptions = {
-    from: process.env.MAIL_FROM || "AgenticHire <noreply@agentichire.com>",
+    from: process.env.MAIL_FROM || "PromptHire <noreply@prompthire.com>",
     to,
     subject: `${icon} Next Round Scheduled — ${jobTitle}`,
     html: `
@@ -143,7 +143,7 @@ async function sendSchedulingEmail(to, name, jobTitle, stage, linkOpts = {}) {
         ${ctaBlock}
         <p>Good luck!</p>
         <br />
-        <p style="margin:0;">Warm regards,<br /><strong>The AgenticHire Team</strong></p>
+        <p style="margin:0;">Warm regards,<br /><strong>The PromptHire Team</strong></p>
       </div>
     `,
   };
@@ -158,7 +158,7 @@ async function sendShortlistEmail(to, name, jobTitle, rank) {
   if (!to) return;
 
   const mailOptions = {
-    from: process.env.MAIL_FROM || "AgenticHire <noreply@agentichire.com>",
+    from: process.env.MAIL_FROM || "PromptHire <noreply@prompthire.com>",
     to,
     subject: `🎉 You've been shortlisted — ${jobTitle}`,
     html: `
@@ -172,7 +172,7 @@ async function sendShortlistEmail(to, name, jobTitle, rank) {
         <p>You will receive a separate email with the schedule for your next assessment round shortly.</p>
         <p>Best of luck!</p>
         <br />
-        <p style="margin:0;">Warm regards,<br /><strong>The AgenticHire Team</strong></p>
+        <p style="margin:0;">Warm regards,<br /><strong>The PromptHire Team</strong></p>
       </div>
     `,
   };
@@ -266,7 +266,7 @@ async function sendAssessmentLinkEmail({
     : "";
 
   const mailOptions = {
-    from: process.env.MAIL_FROM || "AgenticHire <noreply@agentichire.com>",
+    from: process.env.MAIL_FROM || "PromptHire <noreply@prompthire.com>",
     to,
     subject: `${icon} Your ${stageName} is Ready — ${jobTitle}`,
     html: `
@@ -314,7 +314,7 @@ async function sendAssessmentLinkEmail({
 
         <p>Good luck!</p>
         <br />
-        <p style="margin:0;">Warm regards,<br /><strong>The AgenticHire Team</strong></p>
+        <p style="margin:0;">Warm regards,<br /><strong>The PromptHire Team</strong></p>
       </div>
     `,
   };

@@ -18,7 +18,7 @@ connectDB().then(async () => {
   startPipelineAdvancementScheduler();
 
   app.listen(PORT, () =>
-    console.log(`AgenticHire server running on port ${PORT}`),
+    console.log(`PromptHire server running on port ${PORT}`),
   );
 });
 

@@ -60,12 +60,7 @@ export function InterviewPage() {
   const [connecting, setConnecting] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
-  const conversationRef =
-    useRef<
-      ReturnType<typeof Conversation.startSession> extends Promise<infer T>
-        ? T
-        : never
-    >(null);
+  const conversationRef = useRef<ReturnType<typeof Conversation.startSession> extends Promise<infer T> ? T : never>(null);
   const startedRef = useRef(false);
 
   /* Timer */
@@ -134,7 +129,9 @@ export function InterviewPage() {
       console.error("Failed to start interview session:", err);
       startedRef.current = false;
       setConnecting(false);
-      setError(err instanceof Error ? err.message : "Failed to start session");
+      setError(
+        err instanceof Error ? err.message : "Failed to start session",
+      );
     }
   }, [jobId]);
 
@@ -497,7 +494,9 @@ function ReportView({ jobId }: { jobId: string }) {
             const next = getNextRoundPath(jobId, "ai_voice_interview");
             const label = getNextRoundLabel(jobId, "ai_voice_interview");
             return next ? (
-              <Btn onClick={() => navigate(next)}>Proceed to {label} →</Btn>
+              <Btn onClick={() => navigate(next)}>
+                Proceed to {label} →
+              </Btn>
             ) : (
               <Btn onClick={() => navigate("/candidate-profile")}>
                 View Full Report

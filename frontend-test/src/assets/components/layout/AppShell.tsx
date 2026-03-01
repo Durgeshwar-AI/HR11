@@ -36,21 +36,13 @@ export function AppShell({ children, currentPage }: AppShellProps) {
 
       <div className="flex-1 flex flex-col overflow-auto">
         {/* Top bar */}
-        <div className="h-[62px] flex items-center justify-between px-8 bg-surface border-b-2 border-secondary shrink-0">
-          <button
-            onClick={() => setCollapsed((c) => !c)}
-            className="bg-transparent border-2 border-secondary w-9 h-9 cursor-pointer text-sm flex items-center justify-center font-display"
-          >
-            
-          </button>
+        <div className="h-[62px] flex items-center justify-end px-8 bg-surface border-b-2 border-secondary shrink-0">
+         
 
           <div className="flex items-center gap-5">
-            <div className="font-body text-[13px] text-ink-light bg-surface-alt border border-border-clr py-1.5 px-3.5 flex items-center gap-2">
-              <span></span>
-              <span className="font-display font-extrabold text-[10px] bg-primary text-white px-[5px] py-px">
-                3
-              </span>
-            </div>
+            
+              
+            
             <div className="flex items-center gap-2 bg-surface-alt border border-border-clr py-1.5 px-3.5 cursor-pointer">
               <div className="w-7 h-7 bg-primary text-white flex items-center justify-center font-display font-black text-xs">
                 HR

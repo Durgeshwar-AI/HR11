@@ -241,7 +241,7 @@ export function CodingChallengeRound() {
             className="font-display font-black text-lg cursor-pointer"
             onClick={() => navigate("/candidate-profile")}
           >
-            HR<span className="text-primary">11</span>
+            Prompt<span className="text-primary">Hire</span>
           </span>
           <span className="font-display font-extrabold text-xs tracking-[0.12em] uppercase opacity-60">
             Coding Challenge
