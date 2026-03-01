@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { Sidebar } from "./Sidebar";
+import { authApi } from "../../../services/api";
 
 interface AppShellProps {
   children: ReactNode;
@@ -9,6 +10,22 @@ interface AppShellProps {
 
 export function AppShell({ children, currentPage }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [hrName, setHrName] = useState<string>("");
+
+  useEffect(() => {
+    const fetchHrProfile = async () => {
+      try {
+        const response = await authApi.hrProfile();
+        if (response?.user?.name) {
+          setHrName(response.user.name);
+        }
+      } catch {
+        // Silently fail if not authenticated or endpoint fails
+      }
+    };
+
+    fetchHrProfile();
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-tertiary">
@@ -39,7 +56,7 @@ export function AppShell({ children, currentPage }: AppShellProps) {
                 HR
               </div>
               <span className="font-body font-medium text-[13px] text-secondary">
-                TechCorp Inc.
+                {hrName}
               </span>
             </div>
           </div>

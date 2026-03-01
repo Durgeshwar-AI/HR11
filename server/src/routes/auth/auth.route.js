@@ -186,6 +186,33 @@ router.post("/candidate/login", async (req, res) => {
   }
 });
 
+// ─── Get current HR user profile ────────────────────────────────
+router.get("/hr/me", authenticateHR, async (req, res) => {
+  try {
+    const hrUser = await HRUser.findById(req.hrUser.id).select(
+      "name email role company whatsappPhone"
+    );
+
+    if (!hrUser) {
+      return res.status(404).json({ error: "HR user not found" });
+    }
+
+    res.json({
+      user: {
+        id: hrUser._id,
+        name: hrUser.name,
+        email: hrUser.email,
+        role: hrUser.role,
+        company: hrUser.company,
+        whatsappPhone: hrUser.whatsappPhone,
+      },
+    });
+  } catch (err) {
+    console.error("Get HR profile error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Link / unlink WhatsApp phone number ─────────────────────────
 // PATCH /api/auth/hr/whatsapp
 // Body: { whatsappPhone: "919876543210" }  (E.164 without the +)

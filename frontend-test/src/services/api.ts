@@ -89,6 +89,18 @@ export const authApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+
+  hrProfile: () =>
+    request<{
+      user: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+        company?: string;
+        whatsappPhone?: string;
+      };
+    }>("/auth/hr/me"),
 };
 
 /* ─── Jobs ─────────────────────────────────────────────────────── */
