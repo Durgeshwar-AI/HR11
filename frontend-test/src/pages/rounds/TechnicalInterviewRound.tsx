@@ -445,7 +445,7 @@ export function TechnicalInterviewRound() {
       {submitted ? (
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="text-center max-w-[480px]">
-            <div className="text-6xl mb-4">{(result?.percentage ?? 0) >= 70 ? "🎉" : "📊"}</div>
+            <div className="text-6xl mb-4">{(result?.percentage ?? 0) >= 70 ? "" : ""}</div>
             <div className="font-display font-black text-[clamp(2rem,4vw,3rem)] text-secondary uppercase mb-2">
               {(result?.percentage ?? 0) >= 70 ? "PASSED!" : "COMPLETED"}
             </div>
@@ -455,7 +455,7 @@ export function TechnicalInterviewRound() {
             </div>
             <div className={`border-2 px-6 py-4 mb-6 ${(result?.percentage ?? 0) >= 70 ? "border-[#1A8917] bg-[#f0fdf0]" : "border-[#c00] bg-[#fff5f5]"}`}>
               <div className="font-display font-extrabold text-sm uppercase">
-                {(result?.percentage ?? 0) >= 70 ? "✅  Congratulations! You've completed all rounds." : "❌  Not selected"}
+                {(result?.percentage ?? 0) >= 70 ? "  Congratulations! You've completed all rounds." : "  Not selected"}
               </div>
             </div>
             <Btn onClick={() => {
@@ -486,7 +486,7 @@ export function TechnicalInterviewRound() {
                       : "border-border-clr bg-surface-alt text-ink-faint"
                   }`}
                 >
-                  {flags.has(current) ? "🚩 Flagged" : "🏳️ Flag"}
+                  {flags.has(current) ? " Flagged" : " Flag"}
                 </button>
               </div>
 

@@ -173,7 +173,7 @@ export function CompanyLogin() {
           variant="secondary"
           onClick={() => navigate("/dashboard")}
         >
-          🔗 Continue with Google
+           Continue with Google
         </Btn>
       </form>
     </AuthShell>
@@ -272,7 +272,7 @@ export function CompanyRegister() {
           variant="secondary"
           onClick={() => navigate("/dashboard")}
         >
-          🔗 Register with Google
+           Register with Google
         </Btn>
       </form>
     </AuthShell>
@@ -345,10 +345,10 @@ export function CandidateLogin() {
         </Btn>
         <OrDivider />
         <Btn fullWidth variant="secondary">
-          🔗 Continue with Google
+           Continue with Google
         </Btn>
         <Btn fullWidth variant="secondary">
-          💼 Continue with LinkedIn
+           Continue with LinkedIn
         </Btn>
       </form>
     </AuthShell>
@@ -434,10 +434,10 @@ export function CandidateRegister() {
           {loading ? "Creating account…" : "Create My Account →"}
         </Btn>
         <Btn fullWidth variant="secondary">
-          🔗 Sign Up with Google
+           Sign Up with Google
         </Btn>
         <Btn fullWidth variant="secondary">
-          💼 Import from LinkedIn
+           Import from LinkedIn
         </Btn>
       </form>
     </AuthShell>

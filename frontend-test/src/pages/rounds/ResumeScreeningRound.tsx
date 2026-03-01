@@ -139,7 +139,7 @@ export function ResumeScreeningRound() {
           <Card>
             <div className="px-6 py-5">
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-2xl">📄</span>
+                <span className="text-2xl"></span>
                 <div>
                   <div className="font-display font-extrabold text-base uppercase text-secondary">
                     {profileLoading ? "Loading resume…" : displayFileName}
@@ -194,7 +194,7 @@ export function ResumeScreeningRound() {
                     {phase === "idle" && "Preparing…"}
                     {phase === "submitting" && "Submitting resume…"}
                     {phase === "analysing" && "AI agents analysing…"}
-                    {phase === "done" && "Analysis complete ✓"}
+                    {phase === "done" && "Analysis complete "}
                   </span>
                   <span>{progressPct}%</span>
                 </div>
@@ -226,7 +226,7 @@ export function ResumeScreeningRound() {
                     : "border-[#c00] bg-[#fff5f5]"
                 }`}
               >
-                <span className="text-3xl">{result.selected ? "✅" : "❌"}</span>
+                <span className="text-3xl">{result.selected ? "" : ""}</span>
                 <div>
                   <div className="font-display font-black text-xl uppercase text-secondary">
                     {result.selected ? "SELECTED FOR NEXT ROUND" : "NOT SELECTED"}
@@ -254,7 +254,7 @@ export function ResumeScreeningRound() {
                       </div>
                       {result.strengths.map((s, i) => (
                         <div key={i} className="flex gap-2 mb-1.5">
-                          <span className="text-[#1A8917] text-xs shrink-0">✓</span>
+                          <span className="text-[#1A8917] text-xs shrink-0"></span>
                           <span className="font-body text-xs text-ink-light">{s}</span>
                         </div>
                       ))}

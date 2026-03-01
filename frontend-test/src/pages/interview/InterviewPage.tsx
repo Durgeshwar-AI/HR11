@@ -190,7 +190,7 @@ export function InterviewPage() {
                   : "bg-white/[0.08] border-[3px] border-white/[0.15]",
               ].join(" ")}
             >
-              🤖
+              
             </div>
             <div className="font-display font-black text-lg text-white tracking-[0.05em] uppercase mb-1">
               HR11 AI Interviewer
@@ -235,7 +235,7 @@ export function InterviewPage() {
                   : "bg-white/[0.08] border-2 border-white/20",
               ].join(" ")}
             >
-              {muted ? "🔇" : "🎙️"}
+              {muted ? "" : ""}
             </button>
 
             <button
@@ -249,7 +249,7 @@ export function InterviewPage() {
 
           {/* Anti-cheat indicator */}
           <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] py-2 px-4 text-[11px]">
-            <span className="text-primary">🔒</span>
+            <span className="text-primary"></span>
             <span className="font-body text-white/[0.35] text-[11px]">
               Anti-cheat monitoring active
             </span>
@@ -338,7 +338,7 @@ function ReportView({ jobId }: { jobId: string }) {
     <div className="min-h-screen bg-tertiary py-12 px-6">
       <div className="max-w-[720px] mx-auto">
         <div className="fade-up text-center mb-10">
-          <div className="text-[56px] mb-3">✅</div>
+          <div className="text-[56px] mb-3"></div>
           <h1 className="font-display font-black text-[clamp(2rem,4vw,3rem)] uppercase tracking-tight text-secondary mb-2 leading-none">
             INTERVIEW COMPLETE
           </h1>
@@ -394,13 +394,13 @@ function ReportView({ jobId }: { jobId: string }) {
           </div>
           <div className="flex gap-3 flex-wrap">
             {[
-              { icon: "✅", text: "No scripted reading detected", ok: true },
+              { icon: "", text: "No scripted reading detected", ok: true },
               {
-                icon: "✅",
+                icon: "",
                 text: "No external audio source detected",
                 ok: true,
               },
-              { icon: "⚠️", text: "1 long pause on Redis question", ok: false },
+              { icon: "", text: "1 long pause on Redis question", ok: false },
             ].map((f, i) => (
               <div
                 key={i}

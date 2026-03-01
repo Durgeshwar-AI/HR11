@@ -124,14 +124,14 @@ export function InterviewEntryPage() {
                 </div>
                 {[
                   { icon: "⏱", label: "Duration", val: JOB.duration },
-                  { icon: "🤖", label: "Interviewer", val: JOB.interviewer },
+                  { icon: "", label: "Interviewer", val: JOB.interviewer },
                   {
-                    icon: "🎙️",
+                    icon: "",
                     label: "Format",
                     val: "Real-time voice conversation",
                   },
                   {
-                    icon: "📊",
+                    icon: "",
                     label: "Evaluation",
                     val: "Technical depth + communication clarity",
                   },
@@ -194,7 +194,7 @@ export function InterviewEntryPage() {
                       : "bg-surface-alt border-border-clr text-secondary",
                   ].join(" ")}
                 >
-                  {micOk ? "✓ Microphone Ready" : "🎙️ Test Microphone"}
+                  {micOk ? " Microphone Ready" : " Test Microphone"}
                 </button>
                 {micError && (
                   <p className="text-xs text-danger font-body mt-2">{micError}</p>

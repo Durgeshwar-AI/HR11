@@ -353,7 +353,7 @@ export function PipelineBuilder() {
                         onClick={() => removeRound(i)}
                         className="bg-transparent border border-border-clr text-ink-faint w-6 h-6 cursor-pointer text-[11px] flex items-center justify-center"
                       >
-                        ✕
+                        
                       </button>
                     </div>
                   </div>
@@ -364,7 +364,7 @@ export function PipelineBuilder() {
                 <div className="flex flex-col items-center">
                   <Connector />
                   <div className="bg-primary text-white font-display font-extrabold text-[10px] tracking-[0.18em] uppercase px-[18px] py-1.5">
-                    ✓ HIRE DECISION
+                     HIRE DECISION
                   </div>
                 </div>
               )}
@@ -381,8 +381,8 @@ export function PipelineBuilder() {
                   {loading
                     ? "⟳ DEPLOYING…"
                     : deployed
-                      ? "✓ PIPELINE DEPLOYED"
-                      : "🚀 DEPLOY PIPELINE"}
+                      ? " PIPELINE DEPLOYED"
+                      : " DEPLOY PIPELINE"}
                 </Btn>
                 {deployed && (
                   <p className="text-center text-xs text-success mt-2 font-body">

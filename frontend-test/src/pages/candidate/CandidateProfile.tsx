@@ -26,11 +26,11 @@ const STAGE_PATHS: Record<string, string> = {
 };
 
 const STAGE_ICONS: Record<string, string> = {
-  resume_screening: "📄",
-  aptitude_test: "🧠",
-  coding_challenge: "💻",
-  ai_voice_interview: "🎙️",
-  technical_interview: "🔧",
+  resume_screening: "",
+  aptitude_test: "",
+  coding_challenge: "",
+  ai_voice_interview: "",
+  technical_interview: "",
 };
 
 /* ------------------------------------------------------------------ */
@@ -219,7 +219,7 @@ export function CandidateProfile() {
         {/* ── Error state ───────────────────────────────────── */}
         {error && !loading && (
           <div className="text-center py-10">
-            <div className="text-4xl mb-3">⚠️</div>
+            <div className="text-4xl mb-3"></div>
             <p className="font-body text-sm text-danger mb-3">{error}</p>
             <Btn size="sm" onClick={fetchData}>Retry</Btn>
           </div>
@@ -261,7 +261,7 @@ export function CandidateProfile() {
                     <>
                       <Divider />
                       <div className="mt-3 flex gap-2 items-center">
-                        <span className="text-sm">📧</span>
+                        <span className="text-sm"></span>
                         <span className="font-body text-xs text-ink-light">{email}</span>
                       </div>
                     </>
@@ -269,7 +269,7 @@ export function CandidateProfile() {
 
                   {/* Editable phone */}
                   <div className="mt-2 flex gap-2 items-center w-full">
-                    <span className="text-sm">📱</span>
+                    <span className="text-sm"></span>
                     <input
                       type="tel"
                       value={editPhone}
@@ -282,7 +282,7 @@ export function CandidateProfile() {
                   {/* Save button */}
                   <div className="mt-4 w-full">
                     <Btn fullWidth size="sm" onClick={handleSaveProfile} disabled={saving}>
-                      {saving ? "Saving…" : "💾 Save Profile"}
+                      {saving ? "Saving…" : " Save Profile"}
                     </Btn>
                     {saveMsg && (
                       <p className={`font-body text-[11px] mt-1.5 ${saveMsg.includes("saved") ? "text-[#1A8917]" : "text-danger"}`}>
@@ -346,7 +346,7 @@ export function CandidateProfile() {
                   {/* Show saved resume from backend URL */}
                   {profile?.resumeUrl ? (
                     <div className="flex flex-col items-center text-center mt-3">
-                      <div className="text-[40px] mb-2">📄</div>
+                      <div className="text-[40px] mb-2"></div>
                       <div className="font-display font-black text-sm uppercase text-secondary mb-1">Resume Uploaded</div>
                       <a
                         href={profile.resumeUrl}
@@ -362,7 +362,7 @@ export function CandidateProfile() {
                     </div>
                   ) : resumeFile ? (
                     <div className="flex flex-col items-center text-center mt-3">
-                      <div className="text-[40px] mb-2">📄</div>
+                      <div className="text-[40px] mb-2"></div>
                       <div className="font-display font-black text-sm uppercase text-secondary">{resumeFile.name}</div>
                       <p className="font-body text-[10px] text-ink-faint mt-1">{(resumeFile.size / 1024).toFixed(1)} KB</p>
                       <div className="flex gap-2 mt-3">
@@ -375,7 +375,7 @@ export function CandidateProfile() {
                       className="border-2 border-dashed border-border-clr p-6 text-center cursor-pointer hover:border-primary hover:bg-surface-warm transition mt-3"
                       onClick={() => resumeRef.current?.click()}
                     >
-                      <div className="text-[40px] mb-2">📎</div>
+                      <div className="text-[40px] mb-2"></div>
                       <div className="font-display font-black text-xs uppercase text-secondary mb-1">Upload Resume</div>
                       <p className="font-body text-[10px] text-ink-faint">PDF, DOC, or DOCX · Max 5MB</p>
                     </div>
@@ -407,7 +407,7 @@ export function CandidateProfile() {
                 <div className="p-5">
                   {applications.length === 0 ? (
                     <div className="text-center py-8">
-                      <div className="text-[48px] mb-3">🚀</div>
+                      <div className="text-[48px] mb-3"></div>
                       <div className="font-display font-extrabold text-sm uppercase text-secondary mb-1">No Applications Yet</div>
                       <p className="font-body text-xs text-ink-faint mb-4">Browse openings and apply to get started.</p>
                       <Btn size="sm" onClick={() => navigate("/recent-openings")}>Browse Openings →</Btn>
@@ -464,7 +464,7 @@ export function CandidateProfile() {
                                   {app.progress.rounds.map((round, idx) => {
                                     const isComp = round.status === "Completed";
                                     const isActive = round.status === "InProgress" || round.status === "Pending";
-                                    const icon = STAGE_ICONS[round.stageType || ""] || "📋";
+                                    const icon = STAGE_ICONS[round.stageType || ""] || "";
                                     return (
                                       <div key={idx} className="flex items-center">
                                         <div
@@ -478,7 +478,7 @@ export function CandidateProfile() {
                                                 : "bg-surface-alt border-border-clr text-ink-faint opacity-50",
                                           ].join(" ")}
                                         >
-                                          {isComp ? "✓" : icon}
+                                          {isComp ? "" : icon}
                                         </div>
                                         {idx < app.progress!.rounds.length - 1 && (
                                           <div className={["w-4 h-0.5 shrink-0", isComp ? "bg-[#1A8917]" : "bg-border-clr"].join(" ")} />
@@ -517,7 +517,7 @@ export function CandidateProfile() {
                             {allDone && (
                               <div className="bg-[#f0fdf0] border border-[#1A8917]/30 p-2.5 text-center">
                                 <span className="font-display font-extrabold text-xs text-[#1A8917] uppercase">
-                                  🎉 All Rounds Complete — Results Under Review
+                                   All Rounds Complete — Results Under Review
                                 </span>
                               </div>
                             )}
@@ -538,7 +538,7 @@ export function CandidateProfile() {
                   </Btn>
                   {applications.length > 0 && (
                     <Btn fullWidth variant="secondary" onClick={fetchData}>
-                      🔄 Refresh My Applications
+                       Refresh My Applications
                     </Btn>
                   )}
                 </div>
