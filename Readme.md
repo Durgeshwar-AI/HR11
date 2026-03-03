@@ -409,4 +409,3 @@ npx tsx src/index.ts
 
 ---
 
-_Three AI models. 20 HR questions with adaptive follow-ups. Zero human intervention from resume to ranked shortlist._
