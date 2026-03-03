@@ -414,7 +414,7 @@ export function CandidateProfile() {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-4">
-                      {applications.map((app) => {
+                      {applications.map((app, appIndex) => {
                         const completed = getCompletedCount(app);
                         const total = app.totalRounds || app.progress?.rounds.length || 0;
                         const nextRound = getNextRound(app);
@@ -422,7 +422,7 @@ export function CandidateProfile() {
                         const pct = total > 0 ? (completed / total) * 100 : 0;
 
                         return (
-                          <div key={app.jobId} className="border-2 border-secondary bg-surface p-4">
+                          <div key={`${app.jobId}-${app.appliedAt}-${appIndex}`} className="border-2 border-secondary bg-surface p-4">
                             {/* Job header */}
                             <div className="flex items-start justify-between mb-3">
                               <div>

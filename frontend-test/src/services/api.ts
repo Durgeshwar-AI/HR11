@@ -289,6 +289,13 @@ export const interviewSessionApi = {
       systemPrompt: string;
       firstMessage: string;
       questionCount: number;
+      candidateName: string;
+      jobTitle: string;
+      questions: Array<{
+        id: number;
+        text: string;
+        category: string;
+      }>;
       metadata: Record<string, string>;
     }>("/interview/token", {
       method: "POST",

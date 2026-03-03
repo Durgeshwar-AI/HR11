@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import { authenticateCandidate } from "../../middleware/auth.js";
 import Interview from "../../models/Interview.model.js";
 import Question from "../../models/Question.model.js";
@@ -25,6 +26,10 @@ router.post("/token", authenticateCandidate, async (req, res) => {
 
     if (!jobId) {
       return res.status(400).json({ error: "jobId is required" });
+    }
+
+    if (!mongoose.isValidObjectId(jobId)) {
+      return res.status(400).json({ error: "Invalid jobId" });
     }
 
     // Upsert Interview record (skip for aptitude rounds)
@@ -61,10 +66,20 @@ router.post("/token", authenticateCandidate, async (req, res) => {
         text: q.text,
         category: q.level?.toLowerCase() || "general",
         followUp: q.followUpPrompt || null,
-      }));
+      })).filter((q) => typeof q.text === "string" && q.text.trim().length > 0);
     } else {
+      // Pick generic default questions
       questions = DEFAULT_HR_QUESTIONS;
     }
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      questions = DEFAULT_HR_QUESTIONS;
+    }
+
+    // SLICE QUESTIONS: ElevenLabs limits 'system_prompt' to ~2288 characters.
+    // If the list of questions is too long, the prompt throws an error or fails.
+    // So we safely restrict it to maximum 10 questions.
+    questions = questions.slice(0, 10);
 
     // 4. Build the full system prompt
     const systemPrompt = buildInterviewPrompt(
@@ -72,7 +87,9 @@ router.post("/token", authenticateCandidate, async (req, res) => {
       jobTitle,
       questions,
     );
-    const firstMessage = `Hi ${candidateName}! Welcome to your interview for the ${jobTitle} position. I'll be asking you a series of questions to learn more about your experience and how you think. Feel free to take your time with each answer. Let's get started! — ${questions[0].text}`;
+    const firstQuestionText =
+      questions[0]?.text || "Tell me about yourself and your background.";
+    const firstMessage = `Hi ${candidateName}! Welcome to your interview for the ${jobTitle} position. I'll be asking you a series of questions to learn more about your experience and how you think. Feel free to take your time with each answer. Let's get started! — ${firstQuestionText}`;
 
     // ── Get signed URL from ElevenLabs ───────────────────────────
     const agentId = process.env.ELEVENLABS_AGENT_ID;
@@ -107,11 +124,16 @@ router.post("/token", authenticateCandidate, async (req, res) => {
       systemPrompt,
       firstMessage,
       questionCount: questions.length,
+      candidateName,
+      jobTitle,
+      questions,
       metadata: { candidateId, jobId, interviewId, mode },
     });
   } catch (err) {
     console.error("Token generation error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err instanceof Error ? err.message : "Failed to generate interview token",
+    });
   }
 });
 

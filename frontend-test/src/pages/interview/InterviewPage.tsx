@@ -46,7 +46,6 @@ function StatusDot({ status }: { status: "connecting" | "live" | "ended" }) {
 
 /* ─── Main Interview Page ─── */
 export function InterviewPage() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const jobId = searchParams.get("jobId") ?? "";
 
@@ -87,44 +86,147 @@ export function InterviewPage() {
       setError(null);
 
       // Get signed URL + prompt overrides from our backend
-      const { signedUrl, systemPrompt, firstMessage } = await interviewSessionApi.startSession(jobId);
+      const { signedUrl, systemPrompt, firstMessage, candidateName, jobTitle, questions } = await interviewSessionApi.startSession(jobId);
 
-      // Let ElevenLabs handle mic access internally — do NOT call getUserMedia separately
-      const conversation = await Conversation.startSession({
+      // Track which question step the agent is on, cycling through all questions.
+      // We NEVER return null — so the agent never self-terminates via conclude_interview.
+      let stepIndex = 0;
+      const questionList: Array<{ id: number; text: string; category: string }> = questions ?? [];
+
+      // Fallback open-ended follow-ups when all preset questions are exhausted
+      const fallbackQuestions = [
+        "Can you tell me more about your most recent role and your key responsibilities?",
+        "What's a project you're most proud of and why?",
+        "How do you handle disagreements with teammates?",
+        "Where do you see yourself growing professionally in the next few years?",
+        "Is there anything else you'd like to share about your background or experience?",
+      ];
+
+      const baseSessionConfig = {
         signedUrl,
-        overrides: {
-          agent: {
-            prompt: { prompt: systemPrompt },
-            firstMessage,
+        clientTools: {
+          fetch_candidate_context: () =>
+            JSON.stringify({
+              name: candidateName ?? "Candidate",
+              jobTitle: jobTitle ?? "the open position",
+            }),
+          fetch_next_question: () => {
+            // Pull from preset questions first, then cycle through fallbacks — NEVER return null
+            if (stepIndex < questionList.length) {
+              const q = questionList[stepIndex++];
+              return JSON.stringify({
+                id: q.id,
+                text: q.text,
+                category: q.category,
+                allowFollowUp: true,
+                enableHint: false,
+              });
+            }
+            // All preset questions done — return a fallback to keep the conversation going
+            const fb = fallbackQuestions[(stepIndex++ - questionList.length) % fallbackQuestions.length];
+            return JSON.stringify({
+              id: stepIndex,
+              text: fb,
+              category: "general",
+              allowFollowUp: true,
+              enableHint: false,
+            });
+          },
+          conclude_interview: (params: unknown) => {
+            // Silently capture the transcript/data but do NOT disconnect the session
+            console.log("conclude_interview intercepted — ignoring to keep session alive", params);
+            return JSON.stringify({ status: "noted" });
           },
         },
-        onConnect: () => {
-          setConnecting(false);
-        },
-        onDisconnect: () => {
-          setEnded(true);
-          setShowReport(true);
-        },
-        onModeChange: ({ mode }) => {
-          setAgentSpeaking(mode === "speaking");
-          setUserSpeaking(mode === "listening");
-        },
-        onMessage: ({ message, source }) => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: source === "ai" ? "ai" : "candidate",
-              text: message,
-            },
-          ]);
-        },
-        onError: (err) => {
-          console.error("ElevenLabs error:", err);
-          setError(typeof err === "string" ? err : "Connection error");
-        },
-      });
+      };
 
-      conversationRef.current = conversation;
+      // Let ElevenLabs handle mic access internally — do NOT call getUserMedia separately
+      let conversation;
+      try {
+        conversation = await Conversation.startSession({
+          ...baseSessionConfig,
+          overrides: {
+            agent: {
+              prompt: { prompt: systemPrompt },
+              firstMessage,
+            },
+          },
+          onConnect: () => {
+            setConnecting(false);
+          },
+          onDisconnect: () => {
+            setEnded(true);
+            setShowReport(true);
+          },
+          onModeChange: ({ mode }) => {
+            setAgentSpeaking(mode === "speaking");
+            setUserSpeaking(mode === "listening");
+          },
+          onMessage: ({ message, source }) => {
+            setMessages((prev) => [
+              ...prev,
+              {
+                role: source === "ai" ? "ai" : "candidate",
+                text: message,
+              },
+            ]);
+          },
+          onError: (err) => {
+            console.error("ElevenLabs error:", err);
+            setError(typeof err === "string" ? err : "Connection error");
+          },
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message.toLowerCase() : "";
+        const firstMessageBlocked =
+          message.includes("first_message") && message.includes("not allowed");
+
+        if (!firstMessageBlocked) {
+          throw err;
+        }
+
+        // Agent config disallows overriding first_message. Retry without firstMessage.
+        conversation = await Conversation.startSession({
+          ...baseSessionConfig,
+          overrides: {
+            agent: {
+              prompt: { prompt: systemPrompt },
+            },
+          },
+          onConnect: () => {
+            setConnecting(false);
+          },
+          onDisconnect: () => {
+            setEnded(true);
+            setShowReport(true);
+          },
+          onModeChange: ({ mode }) => {
+            setAgentSpeaking(mode === "speaking");
+            setUserSpeaking(mode === "listening");
+          },
+          onMessage: ({ message, source }) => {
+            setMessages((prev) => [
+              ...prev,
+              {
+                role: source === "ai" ? "ai" : "candidate",
+                text: message,
+              },
+            ]);
+          },
+          onError: (innerErr) => {
+            console.error("ElevenLabs error:", innerErr);
+            setError(typeof innerErr === "string" ? innerErr : "Connection error");
+          },
+        });
+      }
+
+      if (!conversation) {
+        throw new Error("Failed to initialize conversation session");
+      }
+
+      const stableConversation = conversation;
+
+      conversationRef.current = stableConversation;
     } catch (err) {
       console.error("Failed to start interview session:", err);
       startedRef.current = false;
