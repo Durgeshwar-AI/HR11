@@ -91,6 +91,32 @@ router.get("/", authenticateHR, async (req, res) => {
 });
 
 // ─── Get single job with questions ───────────────────────────────
+// Public endpoint for candidates to view job details
+router.get("/:id/public", async (req, res) => {
+  try {
+    const job = await JobRole.findById(req.params.id).populate(
+      "createdBy",
+      "name email",
+    );
+    if (!job) return res.status(404).json({ error: "Job not found" });
+
+    res.json({
+      _id: job._id,
+      id: job._id,
+      title: job.title,
+      description: job.description,
+      skills: job.skills || [],
+      status: job.status,
+      totalRounds: job.totalRounds,
+      pipeline: job.pipeline,
+      company: job.createdBy?.name || "Company",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Get single job with questions (HR only) ───────────────────
 router.get("/:id", authenticateHR, async (req, res) => {
   try {
     const job = await JobRole.findById(req.params.id).populate(

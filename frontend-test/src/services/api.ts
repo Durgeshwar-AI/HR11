@@ -109,7 +109,7 @@ export const jobsApi = {
   list: (status?: string) =>
     request(`/jobs${status ? `?status=${status}` : ""}`),
 
-  get: (id: string) => request(`/jobs/${id}`),
+  get: (id: string) => request(`/jobs/${id}/public`),
 
   create: (data: JobMutationPayload) =>
     request("/jobs", { method: "POST", body: JSON.stringify(data) }),

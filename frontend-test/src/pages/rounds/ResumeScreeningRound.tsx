@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Btn } from "../../assets/components/shared/Btn";
 import { Card } from "../../assets/components/shared/Card";
-import { resumeApi, candidateApi, getStoredUser, type CandidateMe } from "../../services/api";
+import { resumeApi, candidateApi, jobsApi, getStoredUser, type CandidateMe } from "../../services/api";
 import { startRound, completeRound, getNextRoundPath, getNextRoundLabel } from "../../services/pipeline";
 
 type Phase = "idle" | "submitting" | "analysing" | "done";
@@ -19,6 +19,8 @@ export function ResumeScreeningRound() {
   const [useApi, setUseApi] = useState(!!candidateId);
   const [profile, setProfile] = useState<CandidateMe | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [jobDescription, setJobDescription] = useState<string>("");
+  const [jobLoading, setJobLoading] = useState(true);
 
   /* Fetch real candidate profile */
   useEffect(() => {
@@ -34,6 +36,25 @@ export function ResumeScreeningRound() {
     })();
   }, []);
 
+  /* Fetch job description from backend */
+  useEffect(() => {
+    if (jobId) {
+      (async () => {
+        try {
+          const jobData: any = await jobsApi.get(jobId);
+          setJobDescription(jobData.description || "");
+        } catch (err) {
+          console.warn("[Job Fetch] Could not fetch job:", err);
+          setJobDescription("");
+        } finally {
+          setJobLoading(false);
+        }
+      })();
+    } else {
+      setJobLoading(false);
+    }
+  }, [jobId]);
+
   /* Derived display values from real profile */
   const displayName = profile?.name || getStoredUser()?.name as string || "Candidate";
   const displayEmail = profile?.email || "";
@@ -48,13 +69,15 @@ export function ResumeScreeningRound() {
     startRound("resume");
   }, []);
 
-  /* auto-submit on mount */
+  /* auto-submit on mount, but wait for job to load first */
   useEffect(() => {
-    const t = setTimeout(() => {
-      setPhase("submitting");
-    }, 600);
-    return () => clearTimeout(t);
-  }, []);
+    if (!jobLoading) {
+      const t = setTimeout(() => {
+        setPhase("submitting");
+      }, 600);
+      return () => clearTimeout(t);
+    }
+  }, [jobLoading]);
 
   /* Try backend screening, else use mock animation */
   useEffect(() => {
@@ -66,7 +89,7 @@ export function ResumeScreeningRound() {
             try {
               const data: any = await resumeApi.screenExisting(candidateId, {
                 jobTitle,
-                jobDescription: `Screening for ${jobTitle}`,
+                jobDescription,
                 jobId,
               });
               const s = data.screening || data;
@@ -78,7 +101,8 @@ export function ResumeScreeningRound() {
                 weaknesses: s.weaknesses ?? s.cons ?? ["See detailed report"],
               });
               setPhase("done");
-            } catch {
+            } catch (err) {
+              console.error("[screenExisting] Screening failed:", err);
               setUseApi(false);
               setPhase("submitting");
             }
