@@ -5,6 +5,19 @@ import { Btn } from "../../assets/components/shared/Btn";
 import { interviewSessionApi } from "../../services/api";
 import { getNextRoundPath, getNextRoundLabel } from "../../services/pipeline";
 
+// ─── SDK patch ────────────────────────────────────────────────────────────────
+if (typeof window !== "undefined") {
+  const _nativeSend = WebSocket.prototype.send;
+  WebSocket.prototype.send = function (
+    this: WebSocket,
+    data: string | ArrayBufferLike | Blob | ArrayBufferView,
+  ) {
+    if (this.readyState !== WebSocket.OPEN) return; // drop silently
+    _nativeSend.call(this, data);
+  };
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 type Role = "ai" | "candidate";
 
 interface Message {
@@ -58,9 +71,13 @@ export function InterviewPage() {
   const [showReport, setShowReport] = useState(false);
   const [connecting, setConnecting] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const chatRef = useRef<HTMLDivElement>(null);
   const conversationRef = useRef<ReturnType<typeof Conversation.startSession> extends Promise<infer T> ? T : never>(null);
   const startedRef = useRef(false);
+  const messagesRef = useRef<Message[]>([]);
+  const isEndingRef = useRef(false);
+  const attemptRef = useRef(1); // tracks which connection attempt we're on
 
   /* Timer */
   useEffect(() => {
@@ -76,6 +93,22 @@ export function InterviewPage() {
     }
   }, [messages]);
 
+  // Keep messagesRef in sync with state
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  /* Safely end session exactly once */
+  const safeEndSession = useCallback(async () => {
+    if (isEndingRef.current) return;
+    isEndingRef.current = true;
+    try {
+      await conversationRef.current?.endSession();
+    } catch {
+      // WebSocket may already be closed — swallow
+    }
+  }, []);
+
   /* Start ElevenLabs session — prevent double invocation */
   const startConversation = useCallback(async () => {
     if (startedRef.current) return;
@@ -86,14 +119,42 @@ export function InterviewPage() {
       setError(null);
 
       // Get signed URL + prompt overrides from our backend
-      const { signedUrl, systemPrompt, firstMessage, candidateName, jobTitle, questions } = await interviewSessionApi.startSession(jobId);
+      const {
+        signedUrl,
+        systemPrompt,
+        firstMessage,
+        candidateName,
+        jobTitle,
+        questions,
+        interviewId,  // FIX 2: destructure interviewId from response
+      } = await interviewSessionApi.startSession(jobId);
 
-      // Track which question step the agent is on, cycling through all questions.
-      // We NEVER return null — so the agent never self-terminates via conclude_interview.
+      // Read JWT token from localStorage (same key used by saveAuth)
+      const token = localStorage.getItem("prompthire_token");
+
+      // ElevenLabs enforces a hard limit on prompt override length via signed
+      // URL sessions (~2000 chars is safe). Build a minimal prompt that stays
+      // under the limit rather than embedding the full question list, which can
+      // easily exceed it. The agent's dashboard prompt handles the full script;
+      // we only inject the candidate name + job title so the greeting is correct.
+      const PROMPT_CHAR_LIMIT = 1800;
+      const minimalPrompt =
+        `You are conducting an AI voice interview. ` +
+        `The candidate's name is ${candidateName ?? "the candidate"}. ` +
+        `The role is: ${jobTitle ?? "the open position"}. ` +
+        `Greet them by name, then work through the interview questions you have been configured with. ` +
+        `Be professional, concise, and encouraging.`;
+
+      // Use the full system prompt only if it fits; otherwise fall back to the
+      // minimal one. Never pass firstMessage as an override — if the agent
+      // dashboard has that permission disabled the server silently drops the
+      // connection immediately.
+      const safeSystemPrompt =
+        systemPrompt.length <= PROMPT_CHAR_LIMIT ? systemPrompt : minimalPrompt;
+
       let stepIndex = 0;
       const questionList: Array<{ id: number; text: string; category: string }> = questions ?? [];
 
-      // Fallback open-ended follow-ups when all preset questions are exhausted
       const fallbackQuestions = [
         "Can you tell me more about your most recent role and your key responsibilities?",
         "What's a project you're most proud of and why?",
@@ -110,8 +171,8 @@ export function InterviewPage() {
               name: candidateName ?? "Candidate",
               jobTitle: jobTitle ?? "the open position",
             }),
+
           fetch_next_question: () => {
-            // Pull from preset questions first, then cycle through fallbacks — NEVER return null
             if (stepIndex < questionList.length) {
               const q = questionList[stepIndex++];
               return JSON.stringify({
@@ -122,7 +183,6 @@ export function InterviewPage() {
                 enableHint: false,
               });
             }
-            // All preset questions done — return a fallback to keep the conversation going
             const fb = fallbackQuestions[(stepIndex++ - questionList.length) % fallbackQuestions.length];
             return JSON.stringify({
               id: stepIndex,
@@ -132,134 +192,146 @@ export function InterviewPage() {
               enableHint: false,
             });
           },
-          conclude_interview: (params: unknown) => {
-            // Silently capture the transcript/data but do NOT disconnect the session
-            console.log("conclude_interview intercepted — ignoring to keep session alive", params);
-            return JSON.stringify({ status: "noted" });
+
+          // FIX 1+2+3: token, interviewId, and fresh messages all correctly resolved
+          conclude_interview: async (params: { transcript?: string; hintsUsed?: string[] }) => {
+            try {
+              const headers: Record<string, string> = {
+                "Content-Type": "application/json",
+              };
+              if (token) headers["Authorization"] = `Bearer ${token}`;
+
+              // FIX 3: use messagesRef.current — never stale
+              const fallbackTranscript = messagesRef.current
+                .map((m) => `${m.role}: ${m.text}`)
+                .join("\n");
+
+              await fetch("/api/agent/conclude", {
+                method: "POST",
+                headers,
+                body: JSON.stringify({
+                  interviewId,
+                  fullTranscript: params?.transcript ?? fallbackTranscript,
+                  hintsUsed: params?.hintsUsed ?? [],
+                }),
+              });
+            } catch (e) {
+              console.error("Failed to save transcript:", e);
+            }
+            return JSON.stringify({ status: "concluded" });
           },
         },
       };
 
-      // Let ElevenLabs handle mic access internally — do NOT call getUserMedia separately
-      let conversation;
-      try {
-        conversation = await Conversation.startSession({
-          ...baseSessionConfig,
-          overrides: {
-            agent: {
-              prompt: { prompt: systemPrompt },
-              firstMessage,
-            },
-          },
-          onConnect: () => {
-            setConnecting(false);
-          },
-          onDisconnect: () => {
-            setEnded(true);
-            setShowReport(true);
-          },
-          onModeChange: ({ mode }) => {
-            setAgentSpeaking(mode === "speaking");
-            setUserSpeaking(mode === "listening");
-          },
-          onMessage: ({ message, source }) => {
-            setMessages((prev) => [
-              ...prev,
-              {
-                role: source === "ai" ? "ai" : "candidate",
-                text: message,
-              },
-            ]);
-          },
-          onError: (err) => {
-            console.error("ElevenLabs error:", err);
-            setError(typeof err === "string" ? err : "Connection error");
-          },
-        });
-      } catch (err) {
-        const message = err instanceof Error ? err.message.toLowerCase() : "";
-        const firstMessageBlocked =
-          message.includes("first_message") && message.includes("not allowed");
+      // Track which attempt we're on so onDisconnect can decide what to do.
+      // attempt 1 → with prompt override
+      // attempt 2 → no overrides at all (dashboard defaults)
 
-        if (!firstMessageBlocked) {
-          throw err;
-        }
+      const sharedCallbacks = {
+        onConnect: () => {
+          setConnecting(false);
+        },
+        onDisconnect: () => {
+          isEndingRef.current = true;
 
-        // Agent config disallows overriding first_message. Retry without firstMessage.
-        conversation = await Conversation.startSession({
-          ...baseSessionConfig,
-          overrides: {
-            agent: {
-              prompt: { prompt: systemPrompt },
-            },
-          },
-          onConnect: () => {
+          // Session closed with zero messages = server silently rejected our
+          // overrides (prompt too long, override permission disabled, or
+          // transient error). On attempt 1, automatically retry with NO
+          // overrides so the agent uses its dashboard-configured prompt.
+          if (messagesRef.current.length === 0) {
+            if (attemptRef.current === 1) {
+              attemptRef.current = 2;
+              isEndingRef.current = false;
+              startedRef.current = false;
+              setTimeout(() => startConversation(), 300);
+              return;
+            }
+            // Both attempts failed
+            startedRef.current = false;
+            isEndingRef.current = false;
             setConnecting(false);
-          },
-          onDisconnect: () => {
-            setEnded(true);
-            setShowReport(true);
-          },
-          onModeChange: ({ mode }) => {
-            setAgentSpeaking(mode === "speaking");
-            setUserSpeaking(mode === "listening");
-          },
-          onMessage: ({ message, source }) => {
-            setMessages((prev) => [
-              ...prev,
-              {
-                role: source === "ai" ? "ai" : "candidate",
-                text: message,
-              },
-            ]);
-          },
-          onError: (innerErr) => {
-            console.error("ElevenLabs error:", innerErr);
-            setError(typeof innerErr === "string" ? innerErr : "Connection error");
-          },
-        });
-      }
+            setError(
+              "Could not connect to the AI interviewer. Please check your microphone permissions and retry.",
+            );
+            return;
+          }
+
+          setEnded(true);
+          setShowReport(true);
+        },
+        onModeChange: ({ mode }: { mode: string }) => {
+          setAgentSpeaking(mode === "speaking");
+          setUserSpeaking(mode === "listening");
+        },
+        onMessage: ({ message, source }: { message: string; source: string }) => {
+          setMessages((prev) => [
+            ...prev,
+            { role: source === "ai" ? "ai" : "candidate", text: message },
+          ]);
+        },
+        onError: (err: unknown) => {
+          console.error("ElevenLabs error:", err);
+          setError(typeof err === "string" ? err : "Connection error");
+        },
+      };
+
+      // Attempt 1: override only the system prompt (stay under char limit).
+      // If the server drops the connection silently, onDisconnect auto-retries
+      // with no overrides (attempt 2) — using whatever the dashboard has.
+      const sessionOptions =
+        attemptRef.current === 1
+          ? {
+              ...baseSessionConfig,
+              overrides: { agent: { prompt: { prompt: safeSystemPrompt } } },
+              ...sharedCallbacks,
+            }
+          : { ...baseSessionConfig, ...sharedCallbacks }; // no overrides
+
+      const conversation = await Conversation.startSession(sessionOptions);
 
       if (!conversation) {
         throw new Error("Failed to initialize conversation session");
       }
 
-      const stableConversation = conversation;
-
-      conversationRef.current = stableConversation;
+      conversationRef.current = conversation;
     } catch (err) {
       console.error("Failed to start interview session:", err);
       startedRef.current = false;
       setConnecting(false);
-      setError(
-        err instanceof Error ? err.message : "Failed to start session",
-      );
+      setError(err instanceof Error ? err.message : "Failed to start session");
     }
-  }, [jobId]);
+  }, [jobId, safeEndSession]);
 
   useEffect(() => {
     startConversation();
     return () => {
-      conversationRef.current?.endSession().catch(() => {});
+      // FIX 4: safeEndSession is idempotent — safe to call from cleanup
+      safeEndSession();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* Mute / unmute */
+  /* Mute / unmute — guard against calling on closed session */
   useEffect(() => {
-    if (!conversationRef.current) return;
-    conversationRef.current.setVolume({ volume: muted ? 0 : 1 });
+    if (!conversationRef.current || isEndingRef.current) return;
+    try {
+      conversationRef.current.setVolume({ volume: muted ? 0 : 1 });
+    } catch {
+      // WebSocket may be closing — swallow
+    }
   }, [muted]);
 
   const handleEnd = async () => {
     setEnded(true);
-    await conversationRef.current?.endSession().catch(() => {});
+    await safeEndSession(); // FIX 4: use the guarded helper
     setShowReport(true);
   };
 
   const handleRetry = () => {
     setError(null);
+    isEndingRef.current = false;
     startedRef.current = false;
+    attemptRef.current = 1;
     startConversation();
   };
 
@@ -313,7 +385,6 @@ export function InterviewPage() {
       <div className="flex-1 min-h-0 grid grid-cols-[1fr_380px] overflow-hidden">
         {/* Left — Interview stage */}
         <div className="flex flex-col items-center justify-center p-10 gap-6 relative overflow-hidden">
-          {/* Subtle radial gradient behind avatar */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -334,7 +405,6 @@ export function InterviewPage() {
                   : "bg-white/[0.04] border-2 border-white/[0.08]",
               ].join(" ")}
             >
-              {/* Pulse ring when speaking */}
               {agentSpeaking && (
                 <div className="absolute inset-[-8px] rounded-full border-2 border-primary/20 animate-ping" />
               )}
@@ -348,10 +418,8 @@ export function InterviewPage() {
             </p>
           </div>
 
-          {/* AI voice wave */}
           <VoiceWave active={agentSpeaking} bars={11} />
 
-          {/* Separator */}
           <div className="flex items-center gap-3 w-[200px]">
             <div className="flex-1 h-px bg-white/[0.06]" />
             <span className="text-[9px] text-white/20 font-display tracking-[0.2em] uppercase">vs</span>
@@ -393,14 +461,13 @@ export function InterviewPage() {
 
             <button
               onClick={handleEnd}
-              disabled={connecting}
+              disabled={connecting || ended}
               className="h-12 px-7 bg-red-600 hover:bg-red-700 border-0 text-white cursor-pointer rounded-full font-display font-extrabold text-[12px] tracking-[0.12em] uppercase transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               End Interview
             </button>
           </div>
 
-          {/* Anti-cheat footer */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/[0.02] border border-white/[0.05] rounded-full py-1.5 px-4">
             <span className="text-[10px] text-primary">🔒</span>
             <span className="font-body text-white/25 text-[10px]">
@@ -412,7 +479,6 @@ export function InterviewPage() {
 
         {/* Right — transcript panel */}
         <div className="flex flex-col min-h-0 bg-white/[0.02] border-l border-white/[0.06]">
-          {/* Panel header */}
           <div className="py-3.5 px-5 border-b border-white/[0.06] flex items-center justify-between">
             <span className="font-display font-extrabold text-[10px] text-white/40 tracking-[0.18em] uppercase">
               Live Transcript
@@ -422,7 +488,6 @@ export function InterviewPage() {
             </span>
           </div>
 
-          {/* Messages */}
           <div
             ref={chatRef}
             className="flex-1 overflow-y-auto py-5 px-4 flex flex-col gap-3.5"
@@ -432,10 +497,8 @@ export function InterviewPage() {
                 <div className="text-3xl mb-3 opacity-30">🎙️</div>
                 <p className="font-body text-sm text-white/20">
                   {connecting
-                   
-                  ? "Connecting to AI interviewer…"
-                   
-                  : "Waiting for the conversation to begin…"}
+                    ? "Connecting to AI interviewer…"
+                    : "Waiting for the conversation to begin…"}
                 </p>
               </div>
             )}
@@ -467,16 +530,13 @@ export function InterviewPage() {
                 </div>
               </div>
             ))}
-            {/* Typing indicator */}
             {agentSpeaking && (
               <div className="flex gap-1.5 py-2 px-1 items-center">
                 {[0, 1, 2].map((i) => (
                   <div
                     key={i}
                     className="w-1.5 h-1.5 rounded-full bg-primary/60"
-                    style={{
-                      animation: `pulse 1s ease ${i * 0.15}s infinite`,
-                    }}
+                    style={{ animation: `pulse 1s ease ${i * 0.15}s infinite` }}
                   />
                 ))}
               </div>
@@ -503,7 +563,6 @@ function ReportView({ jobId }: { jobId: string }) {
   return (
     <div className="min-h-screen bg-[#0d0f14] flex items-center justify-center py-12 px-6">
       <div className="max-w-[740px] w-full">
-        {/* Header */}
         <div className="fade-up text-center mb-10">
           <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500/30 mx-auto mb-4 flex items-center justify-center text-3xl">
             ✅
@@ -517,7 +576,6 @@ function ReportView({ jobId }: { jobId: string }) {
         </div>
 
         <div className="grid grid-cols-2 gap-5">
-          {/* Overall score */}
           <div className="bg-gradient-to-br from-primary/90 to-primary border border-primary/40 p-8 rounded-lg text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1),transparent)] pointer-events-none" />
             <div className="relative z-10">
@@ -533,24 +591,16 @@ function ReportView({ jobId }: { jobId: string }) {
             </div>
           </div>
 
-          {/* Category scores */}
           <div className="bg-white/[0.03] border border-white/[0.07] p-5 rounded-lg">
             {scores.map((s, idx) => (
               <div key={s.label} className={idx < scores.length - 1 ? "mb-3.5" : ""}>
                 <div className="flex justify-between mb-1">
-                  <span className="font-body text-[11px] text-white/50">
-                    {s.label}
-                  </span>
-                  <span className="font-display font-black text-sm text-white/80">
-                    {s.score}
-                  </span>
+                  <span className="font-body text-[11px] text-white/50">{s.label}</span>
+                  <span className="font-display font-black text-sm text-white/80">{s.score}</span>
                 </div>
                 <div className="h-[4px] bg-white/[0.06] rounded-full overflow-hidden">
                   <div
-                    className={[
-                      "h-full rounded-full transition-[width] duration-1000",
-                      s.score >= 90 ? "bg-emerald-500" : "bg-primary",
-                    ].join(" ")}
+                    className={["h-full rounded-full transition-[width] duration-1000", s.score >= 90 ? "bg-emerald-500" : "bg-primary"].join(" ")}
                     style={{ width: `${s.score}%` }}
                   />
                 </div>
@@ -559,7 +609,6 @@ function ReportView({ jobId }: { jobId: string }) {
           </div>
         </div>
 
-        {/* Flags */}
         <div className="bg-white/[0.03] border border-white/[0.07] p-5 mt-5 rounded-lg">
           <div className="font-display font-extrabold text-[11px] tracking-[0.18em] uppercase text-white/40 mb-3.5">
             Anti-Cheat &amp; Flags
@@ -586,23 +635,16 @@ function ReportView({ jobId }: { jobId: string }) {
         </div>
 
         <div className="mt-8 flex gap-3 justify-center">
-          <Btn
-            variant="secondary"
-            onClick={() => navigate("/candidate-profile")}
-          >
+          <Btn variant="secondary" onClick={() => navigate("/candidate-profile")}>
             Back to Profile
           </Btn>
           {(() => {
             const next = getNextRoundPath(jobId, "ai_voice_interview");
             const label = getNextRoundLabel(jobId, "ai_voice_interview");
             return next ? (
-              <Btn onClick={() => navigate(next)}>
-                Proceed to {label} →
-              </Btn>
+              <Btn onClick={() => navigate(next)}>Proceed to {label} →</Btn>
             ) : (
-              <Btn onClick={() => navigate("/candidate-profile")}>
-                View Full Report
-              </Btn>
+              <Btn onClick={() => navigate("/candidate-profile")}>View Full Report</Btn>
             );
           })()}
         </div>

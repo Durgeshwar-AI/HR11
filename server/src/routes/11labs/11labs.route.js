@@ -36,8 +36,8 @@ router.post("/token", authenticateCandidate, async (req, res) => {
     let interviewId = null;
     if (mode !== "aptitude") {
       const interview = await Interview.findOneAndUpdate(
-        { candidateId, jobId, status: "Scheduled" },
-        { status: "InProgress" },
+        { candidateId, jobId, status: { $in: ["Scheduled", "InProgress"] } },
+        { $set: { status: "InProgress" } },
         { new: true, upsert: true, setDefaultsOnInsert: true },
       );
       interviewId = interview._id;
