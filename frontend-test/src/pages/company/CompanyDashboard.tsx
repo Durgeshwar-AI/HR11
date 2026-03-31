@@ -8,7 +8,7 @@ import {
   Tag,
 } from "../../assets/components/shared/Badges";
 import { Btn } from "../../assets/components/shared/Btn";
-import { jobsApi, isLoggedIn } from "../../services/api";
+import { jobsApi, interviewsApi, isLoggedIn } from "../../services/api";
 
 type DashboardOpening = {
   id: string | number;
@@ -30,6 +30,29 @@ type BackendJob = {
   status?: string;
   createdAt?: string;
   pipeline?: Array<string | { stageType?: string; stageName?: string }>;
+};
+
+type BackendInterview = {
+  _id: string;
+  status?: string;
+  overallScore?: number;
+  currentRound?: string;
+  createdAt?: string;
+  candidateId?: { _id?: string; name?: string; email?: string } | string;
+  candidateName?: string;
+  name?: string;
+  skills?: string[];
+};
+
+type DashboardCandidate = {
+  id: string;
+  name: string;
+  score: number;
+  status: string;
+  round: string;
+  avatar: string;
+  skills: string[];
+  appliedDate: string;
 };
 
 function ActivityFeed() {
@@ -140,6 +163,7 @@ function OpeningCard({ opening }: { opening: DashboardOpening }) {
 export function CompanyDashboard() {
   const navigate = useNavigate();
   const [openings, setOpenings] = useState<DashboardOpening[]>([]);
+  const [topCandidates, setTopCandidates] = useState<DashboardCandidate[]>([]);
   const [stats, setStats] = useState({
     totalApplicants: 0,
     activeOpenings: 0,
@@ -156,49 +180,98 @@ export function CompanyDashboard() {
     }
   }, [navigate]);
 
-  /* Try fetching real jobs from backend, fallback to mock */
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const jobs = (await jobsApi.list()) as BackendJob[];
-        if (!cancelled && Array.isArray(jobs) && jobs.length) {
-          setOpenings(
-            jobs.map((j) => ({
-              id: j._id,
-              title: j.title,
-              department:
-                typeof j.description === "string"
-                  ? j.description
-                  : "Engineering",
-              applicants: j.applicantCount ?? 0,
-              shortlisted: j.shortlistedCount ?? 0,
-              status: j.status || "active",
-              posted: j.createdAt
-                ? new Date(j.createdAt).toLocaleDateString()
-                : "—",
-              pipeline: (j.pipeline || []).map((s) =>
-                typeof s === "string" ? s : s?.stageType || "unknown",
-              ),
-            })),
-          );
-          setStats((prev) => ({
-            ...prev,
-            activeOpenings: jobs.filter(
-              (j) => j.status === "active" || !j.status,
-            ).length,
-            totalApplicants: jobs.reduce(
-              (sum, j) => sum + (j.applicantCount ?? 0),
-              0,
-            ),
-          }));
-        }
-      } catch {
-        /* keep mock data */
+  const refreshDashboard = async () => {
+    try {
+      const jobs = (await jobsApi.list()) as BackendJob[];
+      if (!Array.isArray(jobs) || jobs.length === 0) {
+        setOpenings([]);
+        setTopCandidates([]);
+        setStats({
+          totalApplicants: 0,
+          activeOpenings: 0,
+          shortlisted: 0,
+          hiredThisMonth: 0,
+          avgTimeToHire: "—",
+          pipelineHealth: 0,
+        });
+        return;
       }
-    })();
+
+      const mappedOpenings = jobs.map((j) => ({
+        id: j._id,
+        title: j.title,
+        department:
+          typeof j.description === "string" ? j.description : "Engineering",
+        applicants: j.applicantCount ?? 0,
+        shortlisted: j.shortlistedCount ?? 0,
+        status: j.status || "active",
+        posted: j.createdAt ? new Date(j.createdAt).toLocaleDateString() : "—",
+        pipeline: (j.pipeline || []).map((s) =>
+          typeof s === "string" ? s : s?.stageType || "unknown",
+        ),
+      }));
+
+      setOpenings(mappedOpenings);
+      setStats((prev) => ({
+        ...prev,
+        activeOpenings: jobs.filter((j) => j.status === "active" || !j.status).length,
+        totalApplicants: jobs.reduce((sum, j) => sum + (j.applicantCount ?? 0), 0),
+        shortlisted: jobs.reduce((sum, j) => sum + (j.shortlistedCount ?? 0), 0),
+      }));
+
+      const activeJobId =
+        mappedOpenings.find((job) => job.status === "active")?.id ??
+        mappedOpenings[0]?.id;
+
+      if (!activeJobId) {
+        setTopCandidates([]);
+        return;
+      }
+
+      const interviews = (await interviewsApi.getByJob(String(activeJobId))) as BackendInterview[];
+      const ranked = Array.isArray(interviews)
+        ? interviews
+            .filter((iv) => iv.status === "Evaluated" || typeof iv.overallScore === "number")
+            .sort((a, b) => (b.overallScore || 0) - (a.overallScore || 0))
+            .slice(0, 5)
+            .map((iv, index) => {
+              const candidateRecord = typeof iv.candidateId === "object" ? iv.candidateId : null;
+              const candidateName = iv.candidateName || iv.name || candidateRecord?.name || `Candidate ${index + 1}`;
+              const avatar = candidateName
+                .split(" ")
+                .map((part) => part[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase();
+
+              return {
+                id: iv._id,
+                name: candidateName,
+                score: iv.overallScore ?? 0,
+                status: iv.status || "in_progress",
+                round: iv.currentRound || "AI Voice Interview",
+                avatar: avatar || "CN",
+                skills: iv.skills || [],
+                appliedDate: iv.createdAt ? new Date(iv.createdAt).toLocaleDateString() : "",
+              };
+            })
+        : [];
+
+      setTopCandidates(ranked);
+    } catch {
+      // Keep the dashboard usable even if a refresh fails.
+    }
+  };
+
+  /* Try fetching real jobs and interview data from backend */
+  useEffect(() => {
+    const initialTimer = window.setTimeout(() => {
+      void refreshDashboard();
+    }, 0);
+    const interval = window.setInterval(refreshDashboard, 15000);
     return () => {
-      cancelled = true;
+      window.clearTimeout(initialTimer);
+      window.clearInterval(interval);
     };
   }, []);
   return (
@@ -274,9 +347,36 @@ export function CompanyDashboard() {
               </span>
             </div>
             <Card>
-              <div className="px-4 py-6 text-center text-ink-faint text-sm">
-                No candidates yet. Create a job opening and start screening resumes.
-              </div>
+              {topCandidates.length === 0 ? (
+                <div className="px-4 py-6 text-center text-ink-faint text-sm">
+                  No evaluated candidates yet. This will update automatically after an interview completes.
+                </div>
+              ) : (
+                topCandidates.map((candidate, index) => (
+                  <div
+                    key={candidate.id}
+                    className={[
+                      "flex items-center gap-3 px-4 py-3",
+                      index < topCandidates.length - 1 ? "border-b border-border-clr" : "",
+                    ].join(" ")}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary text-white font-display font-black text-xs flex items-center justify-center">
+                      {candidate.avatar}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-display font-extrabold text-sm uppercase text-secondary">
+                        {candidate.name}
+                      </div>
+                      <div className="text-[11px] text-ink-faint font-body truncate">
+                        {candidate.round}
+                      </div>
+                    </div>
+                    <div className="font-display font-black text-lg text-secondary">
+                      {candidate.score}
+                    </div>
+                  </div>
+                ))
+              )}
             </Card>
           </div>
 

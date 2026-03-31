@@ -122,6 +122,7 @@ export function InterviewPage() {
       const {
         signedUrl,
         systemPrompt,
+        firstMessage,
         candidateName,
         jobTitle,
         questions,
@@ -145,9 +146,7 @@ export function InterviewPage() {
         `Be professional, concise, and encouraging.`;
 
       // Use the full system prompt only if it fits; otherwise fall back to the
-      // minimal one. Never pass firstMessage as an override — if the agent
-      // dashboard has that permission disabled the server silently drops the
-      // connection immediately.
+      // minimal one.
       const safeSystemPrompt =
         systemPrompt.length <= PROMPT_CHAR_LIMIT ? systemPrompt : minimalPrompt;
 
@@ -155,11 +154,16 @@ export function InterviewPage() {
       const questionList: Array<{ id: number; text: string; category: string }> = questions ?? [];
 
       const fallbackQuestions = [
-        "Can you tell me more about your most recent role and your key responsibilities?",
-        "What's a project you're most proud of and why?",
-        "How do you handle disagreements with teammates?",
-        "Where do you see yourself growing professionally in the next few years?",
-        "Is there anything else you'd like to share about your background or experience?",
+        "Tell me about yourself and what has prepared you for this role.",
+        "What interested you in this role and our company?",
+        "Which skills or experiences make you a strong fit for this position?",
+        "Can you walk me through a project or achievement that best shows your impact?",
+        "Tell me about a time you handled a difficult challenge or conflict at work.",
+        "How do you collaborate with teammates when priorities or opinions differ?",
+        "How do you handle feedback, ambiguity, or pressure in day-to-day work?",
+        "What would you want to accomplish in your first 90 days if you joined us?",
+        "Where do you see your career heading over the next few years, and how does this role fit that plan?",
+        "What compensation expectations do you have for this role?",
       ];
 
       const baseSessionConfig = {
@@ -169,6 +173,8 @@ export function InterviewPage() {
             JSON.stringify({
               name: candidateName ?? "Candidate",
               jobTitle: jobTitle ?? "the open position",
+              resumeSummary: "",
+              skills: [],
             }),
 
           fetch_next_question: () => {
@@ -281,7 +287,12 @@ export function InterviewPage() {
         attemptRef.current === 1
           ? {
               ...baseSessionConfig,
-              overrides: { agent: { prompt: { prompt: safeSystemPrompt } } },
+              overrides: {
+                agent: {
+                  prompt: { prompt: safeSystemPrompt },
+                  firstMessage: firstMessage || undefined,
+                },
+              },
               ...sharedCallbacks,
             }
           : { ...baseSessionConfig, ...sharedCallbacks }; // no overrides

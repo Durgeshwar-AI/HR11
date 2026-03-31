@@ -8,6 +8,7 @@ import InterviewCandidate from "../../models/Candidate.model.js";
 import {
   DEFAULT_HR_QUESTIONS,
   buildInterviewPrompt,
+  generateHRInterviewQuestions,
 } from "../../services/interviewQuestions.js";
 
 const router = express.Router();
@@ -44,41 +45,104 @@ router.post("/token", authenticateCandidate, async (req, res) => {
     }
 
     // ── Gather context for the system prompt ─────────────────────
-    // 1. Candidate name
+    // 1. Candidate profile context
     const candidate = await InterviewCandidate.findById(candidateId).select(
-      "name",
+      "name skills resumeSummary",
     );
     const candidateName = candidate?.name || "Candidate";
+    const candidateSkills = Array.isArray(candidate?.skills) ? candidate.skills : [];
+    const candidateResumeSummary = candidate?.resumeSummary || "";
 
-    // 2. Job title
-    const job = await JobRole.findById(jobId).select("title");
+    // 2. Job context
+    const job = await JobRole.findById(jobId).select("title description skills");
     const jobTitle = job?.title || "the open position";
+    const jobDescription = job?.description || "";
+    const jobSkills = Array.isArray(job?.skills) ? job.skills : [];
 
-    // 3. Questions — prefer job-specific from DB, fall back to 20 defaults
+    // 3. Questions — prefer job-specific from DB, otherwise generate a 10-question HR set
     let questions;
     const dbQuestions = await Question.find({ jobId })
       .sort("stepNumber")
       .lean();
 
     if (dbQuestions.length > 0) {
-      questions = dbQuestions.map((q) => ({
-        id: q.stepNumber,
-        text: q.text,
-        category: q.level?.toLowerCase() || "general",
-        followUp: q.followUpPrompt || null,
-      })).filter((q) => typeof q.text === "string" && q.text.trim().length > 0);
+      questions = dbQuestions
+        .map((q) => ({
+          id: q.stepNumber,
+          text: q.text,
+          category: q.level?.toLowerCase() || "general",
+          followUp: q.followUpPrompt || null,
+        }))
+        .filter((q) => typeof q.text === "string" && q.text.trim().length > 0);
     } else {
-      // Pick generic default questions
-      questions = DEFAULT_HR_QUESTIONS;
+      questions = [];
     }
 
-    if (!Array.isArray(questions) || questions.length === 0) {
-      questions = DEFAULT_HR_QUESTIONS;
+    const generatedQuestions = generateHRInterviewQuestions({
+      candidateName,
+      jobTitle,
+      jobDescription,
+      jobSkills,
+      candidateSkills,
+      resumeSummary: candidateResumeSummary,
+    });
+
+    if (!Array.isArray(questions)) {
+      questions = [];
     }
 
-    // SLICE QUESTIONS: ElevenLabs limits 'system_prompt' to ~2288 characters.
-    // If the list of questions is too long, the prompt throws an error or fails.
-    // So we safely restrict it to maximum 10 questions.
+    const questionByStep = new Map(
+      questions.map((question) => [Number(question.id), question]),
+    );
+    const generatedByStep = new Map(
+      generatedQuestions.map((question) => [Number(question.id), question]),
+    );
+
+    const missingQuestionDocs = generatedQuestions
+      .filter((question) => !questionByStep.has(question.id))
+      .map((question, index) => ({
+        jobId,
+        stepNumber: question.id,
+        text: question.text,
+        level: index < 3 ? "Easy" : index < 7 ? "Medium" : "Hard",
+        keyConceptsExpected: [],
+        maxScore: 10,
+        allowFollowUp: true,
+        followUpPrompt: null,
+      }));
+
+    if (missingQuestionDocs.length > 0) {
+      await Promise.all(
+        missingQuestionDocs.map((doc) =>
+          Question.updateOne(
+            { jobId, stepNumber: doc.stepNumber },
+            { $setOnInsert: doc },
+            { upsert: true },
+          ),
+        ),
+      );
+
+      const refreshedQuestions = await Question.find({ jobId })
+        .sort("stepNumber")
+        .lean();
+
+      questions = refreshedQuestions
+        .map((q) => ({
+          id: q.stepNumber,
+          text: q.text,
+          category:
+            generatedByStep.get(q.stepNumber)?.category ||
+            q.level?.toLowerCase() ||
+            "general",
+          followUp: q.followUpPrompt || null,
+        }))
+        .filter((q) => typeof q.text === "string" && q.text.trim().length > 0);
+    }
+
+    if (!questions.length) {
+      questions = generatedQuestions.length ? generatedQuestions : DEFAULT_HR_QUESTIONS;
+    }
+
     questions = questions.slice(0, 10);
 
     // 4. Build the full system prompt

@@ -147,63 +147,101 @@ export function HiringLeaderboard() {
   const [selectedOpening, setSelectedOpening] = useState<LeaderboardOpening | null>(null);
   const [candidates, setCandidates] = useState<LeaderboardCandidate[]>([]);
 
+  const refreshOpenings = async () => {
+    try {
+      const jobs = (await jobsApi.list()) as BackendJob[];
+      if (!Array.isArray(jobs) || jobs.length === 0) {
+        setOpenings([]);
+        setSelectedOpening(null);
+        return;
+      }
+
+      const mapped: LeaderboardOpening[] = jobs.map((j) => ({
+        id: j._id,
+        title: j.title,
+        department: j.description || "Engineering",
+        applicants: j.applicantCount ?? 0,
+        shortlisted: j.shortlistedCount ?? 0,
+        status: j.status || "active",
+        posted: j.createdAt ? new Date(j.createdAt).toLocaleDateString() : "—",
+        pipeline: j.pipeline || ["resume_screening"],
+      }));
+
+      setOpenings(mapped);
+      setSelectedOpening((current) =>
+        current && mapped.some((opening) => opening.id === current.id)
+          ? mapped.find((opening) => opening.id === current.id) ?? mapped[0]
+          : mapped[0],
+      );
+    } catch {
+      console.error("Failed to fetch job openings");
+    }
+  };
+
+  const refreshLeaderboard = async (jobId: string | number) => {
+    try {
+      const data = (await interviewsApi.leaderboard(String(jobId))) as LeaderboardEntry[];
+      if (Array.isArray(data) && data.length) {
+        setCandidates(
+          data.map((c, i) => ({
+            id: c._id || c.candidateId || i,
+            name: c.candidateName || c.name || `Candidate ${i + 1}`,
+            score: c.totalScore ?? c.score ?? 0,
+            status: c.status || "in_progress",
+            round: c.currentRound || "Resume Screening",
+            avatar: (c.candidateName || c.name || "??")
+              .split(" ")
+              .map((w: string) => w[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase(),
+            skills: c.skills || [],
+            appliedDate: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "",
+          })),
+        );
+      } else {
+        setCandidates([]);
+      }
+    } catch {
+      setCandidates([]);
+    }
+  };
+
   /* Fetch real job openings */
   useEffect(() => {
-    (async () => {
-      try {
-        const jobs = (await jobsApi.list()) as BackendJob[];
-        if (Array.isArray(jobs) && jobs.length) {
-          const mapped: LeaderboardOpening[] = jobs.map((j) => ({
-            id: j._id,
-            title: j.title,
-            department: j.description || "Engineering",
-            applicants: j.applicantCount ?? 0,
-            shortlisted: j.shortlistedCount ?? 0,
-            status: j.status || "active",
-            posted: j.createdAt ? new Date(j.createdAt).toLocaleDateString() : "—",
-            pipeline: j.pipeline || ["resume_screening"],
-          }));
-          setOpenings(mapped);
-          setSelectedOpening(mapped[0]);
-        }
-      } catch {
-        // Handle error - no fallback to mock data
-        console.error("Failed to fetch job openings");
-      }
-    })();
+    const initialTimer = window.setTimeout(() => {
+      void refreshOpenings();
+    }, 0);
+    const interval = window.setInterval(() => {
+      void refreshOpenings();
+    }, 15000);
+
+    return () => {
+      window.clearTimeout(initialTimer);
+      window.clearInterval(interval);
+    };
   }, []);
 
   /* Fetch leaderboard when selectedOpening changes */
   useEffect(() => {
-    if (!selectedOpening?.id) return;
-    (async () => {
-      try {
-        const data = (await interviewsApi.leaderboard(String(selectedOpening.id))) as LeaderboardEntry[];
-        if (Array.isArray(data) && data.length) {
-          setCandidates(
-            data.map((c, i) => ({
-              id: c._id || c.candidateId || i,
-              name: c.candidateName || c.name || `Candidate ${i + 1}`,
-              score: c.totalScore ?? c.score ?? 0,
-              status: c.status || "in_progress",
-              round: c.currentRound || "Resume Screening",
-              avatar: (c.candidateName || c.name || "??")
-                .split(" ")
-                .map((w: string) => w[0])
-                .join("")
-                .slice(0, 2)
-                .toUpperCase(),
-              skills: c.skills || [],
-              appliedDate: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "",
-            })),
-          );
-        } else {
-          setCandidates([]);
-        }
-      } catch {
+    if (!selectedOpening?.id) {
+      const resetTimer = window.setTimeout(() => {
         setCandidates([]);
-      }
-    })();
+      }, 0);
+      return () => window.clearTimeout(resetTimer);
+    }
+
+    const initialTimer = window.setTimeout(() => {
+      void refreshLeaderboard(selectedOpening.id);
+    }, 0);
+    const interval = window.setInterval(() => {
+      void refreshLeaderboard(selectedOpening.id);
+    }, 15000);
+
+    return () => {
+      window.clearTimeout(initialTimer);
+      window.clearInterval(interval);
+    };
   }, [selectedOpening]);
 
   const sorted = [...candidates].sort(
