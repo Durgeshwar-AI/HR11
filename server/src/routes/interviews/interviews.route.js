@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import { authenticateHR, authenticateCandidate } from "../../middleware/auth.js";
 import Interview from "../../models/Interview.model.js";
 import JobRole from "../../models/JobRole.model.js";

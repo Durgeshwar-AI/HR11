@@ -2,8 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Conversation } from "@11labs/client";
 import { Btn } from "../../assets/components/shared/Btn";
-import { interviewSessionApi } from "../../services/api";
-import { getNextRoundPath, getNextRoundLabel } from "../../services/pipeline";
+import { interviewSessionApi, candidateApi } from "../../services/api";
 
 // ─── SDK patch ────────────────────────────────────────────────────────────────
 if (typeof window !== "undefined") {
@@ -69,6 +68,7 @@ export function InterviewPage() {
   const [muted, setMuted] = useState(false);
   const [ended, setEnded] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [interviewId, setInterviewId] = useState("");
   const [connecting, setConnecting] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,6 +128,7 @@ export function InterviewPage() {
         questions,
         interviewId,  // FIX 2: destructure interviewId from response
       } = await interviewSessionApi.startSession(jobId);
+      setInterviewId(interviewId);
 
       // Read JWT token from localStorage (same key used by saveAuth)
       const token = localStorage.getItem("prompthire_token");
@@ -350,7 +351,7 @@ export function InterviewPage() {
 
   const connectionStatus = ended ? "ended" : connecting ? "connecting" : "live";
 
-  if (showReport) return <ReportView jobId={jobId} />;
+  if (showReport) return <ReportView interviewId={interviewId} />;
 
   return (
     <div className="h-screen bg-[#0d0f14] flex flex-col overflow-hidden">
@@ -559,16 +560,79 @@ export function InterviewPage() {
 }
 
 /* ─── Post-Interview Report ─── */
-function ReportView({ jobId }: { jobId: string }) {
+function ReportView({ interviewId }: { interviewId: string }) {
   const navigate = useNavigate();
-  const scores = [
-    { label: "Technical Depth", score: 88 },
-    { label: "Communication Clarity", score: 82 },
-    { label: "Problem Solving", score: 91 },
-    { label: "Redis / Distributed Sys", score: 94 },
-    { label: "System Design", score: 85 },
-  ];
-  const overall = Math.round(scores.reduce((s, c) => s + c.score, 0) / scores.length);
+  const [result, setResult] = useState<{
+    status: string;
+    overallScore?: number;
+    technicalAccuracy?: number;
+    communicationScore?: number;
+    hintRelianceScore?: number;
+    questionBreakdown?: Array<{
+      stepNumber?: number;
+      questionText?: string;
+      level?: string;
+      candidateAnswerSummary?: string;
+      score?: number;
+      hintWasUsed?: boolean;
+      keyConceptsCovered?: string[];
+    }>;
+    strengths?: string[];
+    weaknesses?: string[];
+    completedAt?: string;
+    evaluatedAt?: string;
+  } | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!interviewId) {
+      return;
+    }
+
+    let cancelled = false;
+    let timer: number | undefined;
+
+    const loadResult = async () => {
+      try {
+        const data = await candidateApi.interviewResult(interviewId);
+        if (cancelled) return;
+        setResult(data);
+
+        if (data.status !== "Evaluated") {
+          timer = window.setTimeout(() => {
+            void loadResult();
+          }, 4000);
+          return;
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setErrorMessage(err instanceof Error ? err.message : "Failed to load interview result");
+      }
+    };
+
+    void loadResult();
+
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [interviewId]);
+
+  const loading = Boolean(interviewId) && (!result || result.status !== "Evaluated") && !errorMessage;
+  const fetchError = !interviewId ? "Interview ID is missing." : errorMessage;
+
+  const scoreCards = result?.questionBreakdown?.length
+    ? result.questionBreakdown.map((item) => ({
+        label: item.questionText || `Question ${item.stepNumber ?? ""}`,
+        score: item.score ?? 0,
+      }))
+    : [
+        { label: "Technical Depth", score: result?.technicalAccuracy ? Math.round(result.technicalAccuracy * 10) : 0 },
+        { label: "Communication Clarity", score: result?.communicationScore ? Math.round(result.communicationScore * 10) : 0 },
+        { label: "Hint Reliance", score: result?.hintRelianceScore ? Math.round(result.hintRelianceScore * 10) : 0 },
+      ];
+
+  const overall = result?.overallScore ?? 0;
 
   return (
     <div className="min-h-screen bg-[#0d0f14] flex items-center justify-center py-12 px-6">
@@ -581,29 +645,37 @@ function ReportView({ jobId }: { jobId: string }) {
             INTERVIEW COMPLETE
           </h1>
           <p className="font-body text-sm text-white/40">
-            Your session has been analysed. Here's your performance summary.
+            {loading
+              ? "Your session is being analysed. This report will refresh automatically once the evaluation is ready."
+              : "Your session has been analysed. Here's your performance summary."}
           </p>
         </div>
+
+        {fetchError && (
+          <div className="mb-5 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {fetchError}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-5">
           <div className="bg-gradient-to-br from-primary/90 to-primary border border-primary/40 p-8 rounded-lg text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1),transparent)] pointer-events-none" />
             <div className="relative z-10">
               <div className="font-display font-black text-[72px] text-white leading-none">
-                {overall}
+                {loading ? "—" : overall}
               </div>
               <div className="font-display font-extrabold text-[12px] text-white/70 tracking-[0.18em] uppercase mt-2">
                 Overall Score
               </div>
               <div className="font-body text-[11px] text-white/50 mt-1">
-                Top 8% of candidates
+                {loading ? "Evaluating now" : "Evaluation complete"}
               </div>
             </div>
           </div>
 
           <div className="bg-white/[0.03] border border-white/[0.07] p-5 rounded-lg">
-            {scores.map((s, idx) => (
-              <div key={s.label} className={idx < scores.length - 1 ? "mb-3.5" : ""}>
+            {scoreCards.map((s, idx) => (
+              <div key={s.label} className={idx < scoreCards.length - 1 ? "mb-3.5" : ""}>
                 <div className="flex justify-between mb-1">
                   <span className="font-body text-[11px] text-white/50">{s.label}</span>
                   <span className="font-display font-black text-sm text-white/80">{s.score}</span>
@@ -625,9 +697,9 @@ function ReportView({ jobId }: { jobId: string }) {
           </div>
           <div className="flex gap-2.5 flex-wrap">
             {[
-              { icon: "✅", text: "No scripted reading detected", ok: true },
-              { icon: "✅", text: "No external audio source detected", ok: true },
-              { icon: "⚠️", text: "1 long pause on Redis question", ok: false },
+              { icon: "✅", text: result?.strengths?.[0] || "No scripted reading detected", ok: true },
+              { icon: "✅", text: result?.strengths?.[1] || "No external audio source detected", ok: true },
+              { icon: "⚠️", text: result?.weaknesses?.[0] || "No major red flags recorded", ok: false },
             ].map((f, i) => (
               <div
                 key={i}
@@ -648,15 +720,7 @@ function ReportView({ jobId }: { jobId: string }) {
           <Btn variant="secondary" onClick={() => navigate("/candidate-profile")}>
             Back to Profile
           </Btn>
-          {(() => {
-            const next = getNextRoundPath(jobId, "ai_voice_interview");
-            const label = getNextRoundLabel(jobId, "ai_voice_interview");
-            return next ? (
-              <Btn onClick={() => navigate(next)}>Proceed to {label} →</Btn>
-            ) : (
-              <Btn onClick={() => navigate("/candidate-profile")}>View Full Report</Btn>
-            );
-          })()}
+          <Btn onClick={() => navigate("/candidate-profile")}>View Full Report</Btn>
         </div>
       </div>
     </div>

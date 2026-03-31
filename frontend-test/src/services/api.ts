@@ -413,6 +413,29 @@ export const candidateApi = {
     request<{ progress: ApplicationProgress | null }>(
       `/candidate/my-progress/${jobId}`,
     ),
+
+  /** Get the evaluated result for a specific interview */
+  interviewResult: (interviewId: string) =>
+    request<{
+      status: string;
+      overallScore?: number;
+      technicalAccuracy?: number;
+      communicationScore?: number;
+      hintRelianceScore?: number;
+      questionBreakdown?: Array<{
+        stepNumber?: number;
+        questionText?: string;
+        level?: string;
+        candidateAnswerSummary?: string;
+        score?: number;
+        hintWasUsed?: boolean;
+        keyConceptsCovered?: string[];
+      }>;
+      strengths?: string[];
+      weaknesses?: string[];
+      completedAt?: string;
+      evaluatedAt?: string;
+    }>(`/interviews/result/${interviewId}`),
 };
 
 /* ─── Token helpers ───────────────────────────────────────────── */
