@@ -9,7 +9,6 @@ import {
 } from "../../assets/components/shared/Badges";
 import { Avatar } from "../../assets/components/shared/Avatar";
 import { Btn } from "../../assets/components/shared/Btn";
-import { MOCK_OPENINGS, MOCK_CANDIDATES } from "../../constants/data";
 import { jobsApi, interviewsApi } from "../../services/api";
 
 type LeaderboardOpening = {
@@ -144,9 +143,9 @@ function CandidateRow({ candidate, rank, onViewInterview }: CandidateRowProps) {
 
 export function HiringLeaderboard() {
   const navigate = useNavigate();
-  const [openings, setOpenings] = useState<LeaderboardOpening[]>(MOCK_OPENINGS as LeaderboardOpening[]);
-  const [selectedOpening, setSelectedOpening] = useState<LeaderboardOpening>((MOCK_OPENINGS as LeaderboardOpening[])[0]);
-  const [candidates, setCandidates] = useState<LeaderboardCandidate[]>(MOCK_CANDIDATES as LeaderboardCandidate[]);
+  const [openings, setOpenings] = useState<LeaderboardOpening[]>([]);
+  const [selectedOpening, setSelectedOpening] = useState<LeaderboardOpening | null>(null);
+  const [candidates, setCandidates] = useState<LeaderboardCandidate[]>([]);
 
   /* Fetch real job openings */
   useEffect(() => {
@@ -167,7 +166,10 @@ export function HiringLeaderboard() {
           setOpenings(mapped);
           setSelectedOpening(mapped[0]);
         }
-      } catch { /* keep mock */ }
+      } catch {
+        // Handle error - no fallback to mock data
+        console.error("Failed to fetch job openings");
+      }
     })();
   }, []);
 
@@ -196,10 +198,10 @@ export function HiringLeaderboard() {
             })),
           );
         } else {
-          setCandidates(MOCK_CANDIDATES as LeaderboardCandidate[]);
+          setCandidates([]);
         }
       } catch {
-        setCandidates(MOCK_CANDIDATES as LeaderboardCandidate[]);
+        setCandidates([]);
       }
     })();
   }, [selectedOpening]);
@@ -231,88 +233,101 @@ export function HiringLeaderboard() {
       <div className="fade-up mb-6">
         <SectionLabel>Select Job Opening</SectionLabel>
         <div className="flex gap-2.5 flex-wrap">
-          {openings.map((o) => (
-            <button
-              key={o.id}
-              onClick={() => setSelectedOpening(o)}
-              className={[
-                "px-[18px] py-2.5 cursor-pointer font-display font-extrabold text-[13px] tracking-[0.05em] uppercase border-2 transition-colors",
-                selectedOpening.id === o.id
-                  ? "bg-primary border-primary text-white"
-                  : "bg-surface border-secondary text-secondary",
-              ].join(" ")}
-            >
-              {o.title}
-              <span
+          {openings.length === 0 ? (
+            <p className="text-ink-faint text-sm">No job openings available.</p>
+          ) : (
+            openings.map((o) => (
+              <button
+                key={o.id}
+                onClick={() => setSelectedOpening(o)}
                 className={[
-                  "ml-2 text-[10px] px-1.5 py-px",
-                  selectedOpening.id === o.id
-                    ? "bg-white/25"
-                    : "bg-surface-alt",
+                  "px-[18px] py-2.5 cursor-pointer font-display font-extrabold text-[13px] tracking-[0.05em] uppercase border-2 transition-colors",
+                  selectedOpening?.id === o.id
+                    ? "bg-primary border-primary text-white"
+                    : "bg-surface border-secondary text-secondary",
                 ].join(" ")}
               >
-                {o.applicants}
-              </span>
-            </button>
-          ))}
+                {o.title}
+                <span
+                  className={[
+                    "ml-2 text-[10px] px-1.5 py-px",
+                    selectedOpening?.id === o.id
+                      ? "bg-white/25"
+                      : "bg-surface-alt",
+                  ].join(" ")}
+                >
+                  {o.applicants}
+                </span>
+              </button>
+            ))
+          )}
         </div>
       </div>
 
       {/* Stats row */}
-      <div className="fade-up grid grid-cols-4 gap-4 mb-6">
-        {[
-          {
-            label: "Total Applicants",
-            val: selectedOpening.applicants,
-            accent: true,
-          },
-          { label: "Shortlisted", val: selectedOpening.shortlisted },
-          {
-            label: "In Progress",
-            val: candidates.filter((c) => c.status === "in_progress")
-              .length,
-          },
-          {
-            label: "Avg Score",
-            val: candidates.length
-              ? Math.round(
-                  candidates.reduce((a, b) => a + b.score, 0) /
-                    candidates.length,
-                )
-              : 0,
-          },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className={[
-              "border-2 border-secondary p-[18px_20px]",
-              s.accent ? "bg-primary" : "bg-surface",
-            ].join(" ")}
-          >
+      {selectedOpening && (
+        <div className="fade-up grid grid-cols-4 gap-4 mb-6">
+          {[
+            {
+              label: "Total Applicants",
+              val: selectedOpening.applicants,
+              accent: true,
+            },
+            { label: "Shortlisted", val: selectedOpening.shortlisted },
+            {
+              label: "In Progress",
+              val: candidates.filter((c) => c.status === "in_progress")
+                .length,
+            },
+            {
+              label: "Avg Score",
+              val: candidates.length
+                ? Math.round(
+                    candidates.reduce((a, b) => a + b.score, 0) /
+                      candidates.length,
+                  )
+                : 0,
+            },
+          ].map((s) => (
             <div
+              key={s.label}
               className={[
-                "font-display font-black text-[32px] leading-none",
-                s.accent ? "text-white" : "text-secondary",
+                "border-2 border-secondary p-[18px_20px]",
+                s.accent ? "bg-primary" : "bg-surface",
               ].join(" ")}
             >
-              {s.val}
+              <div
+                className={[
+                  "font-display font-black text-[32px] leading-none",
+                  s.accent ? "text-white" : "text-secondary",
+                ].join(" ")}
+              >
+                {s.val}
+              </div>
+              <div
+                className={[
+                  "font-display font-bold text-[10px] tracking-[0.15em] uppercase mt-[5px]",
+                  s.accent ? "text-white/75" : "text-ink-light",
+                ].join(" ")}
+              >
+                {s.label}
+              </div>
             </div>
-            <div
-              className={[
-                "font-display font-bold text-[10px] tracking-[0.15em] uppercase mt-[5px]",
-                s.accent ? "text-white/75" : "text-ink-light",
-              ].join(" ")}
-            >
-              {s.label}
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Leaderboard table */}
       <div className="fade-up">
-        <SectionLabel>Ranked Candidates — {selectedOpening.title}</SectionLabel>
-        <Card>
+        <SectionLabel>Ranked Candidates {selectedOpening && `— ${selectedOpening.title}`}</SectionLabel>
+        {!selectedOpening ? (
+          <Card>
+            <div className="px-5 py-6 text-center text-ink-faint text-sm">
+              Select a job opening to view candidates.
+            </div>
+          </Card>
+        ) : (
+          <Card>
           {/* Table header */}
           <div className="flex items-center gap-3.5 px-5 py-2.5 bg-secondary">
             {["RANK", "CANDIDATE", "", "CURRENT ROUND", "SCORE", "ACTIONS"].map(
@@ -339,11 +354,8 @@ export function HiringLeaderboard() {
               onViewInterview={() => navigate("/interview")}
             />
           ))}
-        </Card>
-
-        <p className="text-[11px] text-ink-faint mt-3 font-body text-right">
-           This leaderboard is only visible to HR team members.
-        </p>
+          </Card>
+        )}
       </div>
     </AppShell>
   );

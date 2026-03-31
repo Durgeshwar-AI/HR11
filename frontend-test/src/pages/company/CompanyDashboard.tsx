@@ -5,16 +5,9 @@ import { StatBox } from "../../assets/components/shared/StatBox";
 import { Card, SectionLabel } from "../../assets/components/shared/Card";
 import {
   StatusPill,
-  ScoreBadge,
   Tag,
 } from "../../assets/components/shared/Badges";
 import { Btn } from "../../assets/components/shared/Btn";
-import { Avatar } from "../../assets/components/shared/Avatar";
-import {
-  MOCK_STATS,
-  MOCK_OPENINGS,
-  MOCK_CANDIDATES,
-} from "../../constants/data";
 import { jobsApi, isLoggedIn } from "../../services/api";
 
 type DashboardOpening = {
@@ -28,8 +21,6 @@ type DashboardOpening = {
   pipeline: unknown[];
 };
 
-type DashboardCandidate = (typeof MOCK_CANDIDATES)[number];
-
 type BackendJob = {
   _id: string;
   title: string;
@@ -42,33 +33,23 @@ type BackendJob = {
 };
 
 function ActivityFeed() {
-  const items = [
-    {
-      time: "2 min ago",
-      icon: "",
-      text: "Arjun Mehta completed AI Voice Interview — Score: 94",
-    },
-    {
-      time: "18 min ago",
-      icon: "",
-      text: "12 new resumes parsed for Senior Backend Engineer",
-    },
-    {
-      time: "1 hr ago",
-      icon: "",
-      text: "Priya Sharma shortlisted for Technical Interview",
-    },
-    {
-      time: "3 hrs ago",
-      icon: "",
-      text: "Job posting went live: Product Designer",
-    },
-    {
-      time: "5 hrs ago",
-      icon: "",
-      text: "Background check cleared for Rohan Das",
-    },
-  ];
+  const items: Array<{ time: string; icon: string; text: string }> = [];
+  
+  if (items.length === 0) {
+    return (
+      <Card>
+        <div className="bg-secondary px-5 py-3">
+          <span className="font-display font-extrabold text-xs text-white tracking-[0.15em] uppercase">
+            Live Activity Feed
+          </span>
+        </div>
+        <div className="px-5 py-6 text-center text-ink-faint text-sm">
+          No activity yet. Create a job opening to get started.
+        </div>
+      </Card>
+    );
+  }
+  
   return (
     <Card>
       <div className="bg-secondary px-5 py-3">
@@ -158,10 +139,15 @@ function OpeningCard({ opening }: { opening: DashboardOpening }) {
 
 export function CompanyDashboard() {
   const navigate = useNavigate();
-  const [openings, setOpenings] = useState<DashboardOpening[]>(
-    MOCK_OPENINGS as DashboardOpening[],
-  );
-  const [stats, setStats] = useState(MOCK_STATS);
+  const [openings, setOpenings] = useState<DashboardOpening[]>([]);
+  const [stats, setStats] = useState({
+    totalApplicants: 0,
+    activeOpenings: 0,
+    shortlisted: 0,
+    hiredThisMonth: 0,
+    avgTimeToHire: "—",
+    pipelineHealth: 0,
+  });
 
   /* Redirect to login if not authenticated */
   useEffect(() => {
@@ -288,29 +274,9 @@ export function CompanyDashboard() {
               </span>
             </div>
             <Card>
-              {MOCK_CANDIDATES.slice(0, 5).map(
-                (c: DashboardCandidate, i: number) => (
-                  <div
-                    key={c.id}
-                    className={[
-                      "flex items-center gap-3 px-4 py-3",
-                      i < 4 ? "border-b border-border-clr" : "",
-                    ].join(" ")}
-                  >
-                    <Avatar initials={c.avatar} size={36} rank={i + 1} />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-display font-extrabold text-sm uppercase text-secondary">
-                        {c.name}
-                      </div>
-                      <div className="text-[11px] text-ink-faint font-body truncate">
-                        {c.round}
-                      </div>
-                    </div>
-                    <ScoreBadge score={c.score} />
-                    <StatusPill status={c.status} />
-                  </div>
-                ),
-              )}
+              <div className="px-4 py-6 text-center text-ink-faint text-sm">
+                No candidates yet. Create a job opening and start screening resumes.
+              </div>
             </Card>
           </div>
 

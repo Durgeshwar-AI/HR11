@@ -4,20 +4,31 @@ import { Card } from "../../assets/components/shared/Card";
 import { Btn } from "../../assets/components/shared/Btn";
 import { Tag, StatusPill } from "../../assets/components/shared/Badges";
 
-const JOB = {
-  title: "Senior Backend Engineer",
-  company: "TechCorp Inc.",
-  round: "AI Voice Interview",
-  roundNum: 4,
-  totalRounds: 5,
-  duration: "20–30 minutes",
-  skills: ["Node.js", "AWS", "System Design", "Databases"],
-  interviewer: "PromptHire AI — Adaptive Voice Agent",
+type JobDetails = {
+  title: string;
+  company: string;
+  round: string;
+  roundNum: number;
+  totalRounds: number;
+  duration: string;
+  skills: string[];
+  interviewer: string;
+  notes: string[];
+};
+
+const DEFAULT_JOB: JobDetails = {
+  title: "Job Title",
+  company: "Company Name",
+  round: "Assessment Round",
+  roundNum: 0,
+  totalRounds: 0,
+  duration: "—",
+  skills: [],
+  interviewer: "AI Assessment Agent",
   notes: [
-    "Your microphone and camera will be accessed.",
-    "Questions are generated from your specific resume projects.",
-    "The session is recorded and analysed for technical depth.",
-    "Anti-cheat monitoring is active throughout.",
+    "Your microphone will be accessed.",
+    "The session will be recorded.",
+    "Questions are tailored to your profile.",
     "You can ask for clarification at any time.",
   ],
 };
@@ -26,6 +37,8 @@ export function InterviewEntryPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const jobId = searchParams.get("jobId") ?? "";
+  // TODO: Fetch job details from API when jobId is available
+  const job = DEFAULT_JOB;
   const [micOk, setMicOk] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
 
@@ -80,27 +93,31 @@ export function InterviewEntryPage() {
               <div className="p-6">
                 <div className="border-l-4 border-primary pl-3.5 mb-5">
                   <div className="font-display font-black text-[22px] uppercase text-secondary mb-1">
-                    {JOB.title}
+                    {job.title}
                   </div>
                   <div className="font-body text-[13px] text-ink-light">
-                    {JOB.company}
+                    {job.company}
                   </div>
                 </div>
 
                 <div className="flex gap-2.5 mb-4 flex-wrap">
-                  {JOB.skills.map((s) => (
-                    <Tag key={s}>{s}</Tag>
-                  ))}
+                  {job.skills.length > 0 ? (
+                    job.skills.map((s) => (
+                      <Tag key={s}>{s}</Tag>
+                    ))
+                  ) : (
+                    <span className="text-xs text-ink-faint">No skills on file</span>
+                  )}
                 </div>
 
                 {/* Round progress */}
                 <div className="bg-surface-alt border border-border-clr p-3 px-3.5">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-display font-extrabold text-xs tracking-[0.15em] uppercase text-secondary">
-                      Round {JOB.roundNum} of {JOB.totalRounds}
+                      {job.roundNum > 0 ? `Round ${job.roundNum} of ${job.totalRounds}` : "Assessment Round"}
                     </span>
                     <span className="font-display font-black text-sm text-primary">
-                      {JOB.round}
+                      {job.round}
                     </span>
                   </div>
                   {/* Progress bar */}
@@ -108,7 +125,7 @@ export function InterviewEntryPage() {
                     <div
                       className="h-full bg-primary transition-[width] duration-500"
                       style={{
-                        width: `${(JOB.roundNum / JOB.totalRounds) * 100}%`,
+                        width: job.totalRounds > 0 ? `${(job.roundNum / job.totalRounds) * 100}%` : "0%",
                       }}
                     />
                   </div>
@@ -123,8 +140,8 @@ export function InterviewEntryPage() {
                   Session Details
                 </div>
                 {[
-                  { icon: "⏱", label: "Duration", val: JOB.duration },
-                  { icon: "", label: "Interviewer", val: JOB.interviewer },
+                  { icon: "⏱", label: "Duration", val: job.duration },
+                  { icon: "", label: "Interviewer", val: job.interviewer },
                   {
                     icon: "",
                     label: "Format",
@@ -165,7 +182,7 @@ export function InterviewEntryPage() {
                   Before You Start
                 </div>
                 <div className="flex flex-col gap-2">
-                  {JOB.notes.map((n, i) => (
+                  {job.notes.map((n, i) => (
                     <div key={i} className="flex gap-2.5 items-start">
                       <div className="w-[18px] h-[18px] bg-primary shrink-0 mt-px flex items-center justify-center font-display font-black text-[9px] text-white">
                         {i + 1}

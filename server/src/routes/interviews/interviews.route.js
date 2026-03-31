@@ -1,5 +1,5 @@
 import express from "express";
-import { authenticateHR } from "../../middleware/auth.js";
+import { authenticateHR, authenticateCandidate } from "../../middleware/auth.js";
 import Interview from "../../models/Interview.model.js";
 import JobRole from "../../models/JobRole.model.js";
 import InterviewProgress from "../../models/InterviewProgress.model.js";
@@ -10,6 +10,34 @@ import { sendAssessmentLinkEmail } from "../../services/mail.services.js";
 import { buildAssessmentLink } from "../../utils/assessmentLinks.js";
 
 const router = express.Router();
+
+
+router.get("/result/:interviewId", authenticateCandidate, async (req, res) => {
+  try {
+    const { interviewId } = req.params;
+    const candidateId = req.candidate.id;
+ 
+    if (!mongoose.isValidObjectId(interviewId)) {
+      return res.status(400).json({ error: "Invalid interviewId" });
+    }
+ 
+    const interview = await Interview.findOne({
+      _id: interviewId,
+      candidateId, // ← ensures candidate can only see their own interview
+    }).select(
+      "status overallScore technicalAccuracy communicationScore hintRelianceScore " +
+      "questionBreakdown strengths weaknesses completedAt evaluatedAt"
+    );
+ 
+    if (!interview) {
+      return res.status(404).json({ error: "Interview not found" });
+    }
+ 
+    res.json(interview);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ─── Get single evaluated interview ──────────────────────────────
 router.get("/:id", authenticateHR, async (req, res) => {
