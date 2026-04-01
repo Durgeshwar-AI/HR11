@@ -12,6 +12,11 @@ interface AuthShellProps {
   footer?: React.ReactNode;
 }
 
+interface AuthResponse {
+  token: string;
+  user: { _id?: string; [key: string]: unknown };
+}
+
 type FormKey = "company" | "name" | "email" | "pass";
 type CandidateFormKey = "name" | "email" | "pass" | "role";
 
@@ -111,8 +116,11 @@ export function CompanyLogin() {
     setError("");
     setLoading(true);
     try {
-      const res = await authApi.hrLogin({ email, password: pass });
-      saveAuth(res.token, res.user as { _id?: string; [key: string]: unknown });
+      const res = (await authApi.hrLogin({
+        email,
+        password: pass,
+      })) as AuthResponse;
+      saveAuth(res.token, res.user);
       navigate("/dashboard");
     } catch (err: unknown) {
       setError(getMessage(err, "Login failed"));
@@ -171,9 +179,9 @@ export function CompanyLogin() {
         <Btn
           fullWidth
           variant="secondary"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => console.log("Google OAuth - TODO")}
         >
-           Continue with Google
+          Continue with Google
         </Btn>
       </form>
     </AuthShell>
@@ -199,8 +207,13 @@ export function CompanyRegister() {
     setError("");
     setLoading(true);
     try {
-      const res = await authApi.hrRegister({ name: form.name, email: form.email, password: form.pass, company: form.company });
-      saveAuth(res.token, res.user as { _id?: string; [key: string]: unknown });
+      const res = (await authApi.hrRegister({
+        name: form.name,
+        email: form.email,
+        password: form.pass,
+        company: form.company,
+      })) as AuthResponse;
+      saveAuth(res.token, res.user);
       navigate("/dashboard");
     } catch (err: unknown) {
       setError(getMessage(err, "Registration failed"));
@@ -270,9 +283,9 @@ export function CompanyRegister() {
         <Btn
           fullWidth
           variant="secondary"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => console.log("Google OAuth - TODO")}
         >
-           Register with Google
+          Register with Google
         </Btn>
       </form>
     </AuthShell>
@@ -292,8 +305,11 @@ export function CandidateLogin() {
     setError("");
     setLoading(true);
     try {
-      const res = await authApi.candidateLogin({ email, password: pass });
-      saveAuth(res.token, res.user as { _id?: string; [key: string]: unknown });
+      const res = (await authApi.candidateLogin({
+        email,
+        password: pass,
+      })) as AuthResponse;
+      saveAuth(res.token, res.user);
       navigate("/candidate-profile");
     } catch (err: unknown) {
       setError(getMessage(err, "Login failed"));
@@ -344,11 +360,19 @@ export function CandidateLogin() {
           {loading ? "Signing in…" : "Sign In →"}
         </Btn>
         <OrDivider />
-        <Btn fullWidth variant="secondary">
-           Continue with Google
+        <Btn
+          fullWidth
+          variant="secondary"
+          onClick={() => console.log("Google OAuth - TODO")}
+        >
+          Continue with Google
         </Btn>
-        <Btn fullWidth variant="secondary">
-           Continue with LinkedIn
+        <Btn
+          fullWidth
+          variant="secondary"
+          onClick={() => console.log("LinkedIn OAuth - TODO")}
+        >
+          Continue with LinkedIn
         </Btn>
       </form>
     </AuthShell>
@@ -361,16 +385,22 @@ export function CandidateRegister() {
   const [form, setForm] = useState({ name: "", email: "", pass: "", role: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const set = (k: CandidateFormKey) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set =
+    (k: CandidateFormKey) => (e: React.ChangeEvent<HTMLInputElement>) =>
+      setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const handleRegister = async (e?: React.FormEvent) => {
     e?.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await authApi.candidateRegister({ name: form.name, email: form.email, password: form.pass, role: form.role });
-      saveAuth(res.token, res.user as { _id?: string; [key: string]: unknown });
+      const res = (await authApi.candidateRegister({
+        name: form.name,
+        email: form.email,
+        password: form.pass,
+        role: form.role,
+      })) as AuthResponse;
+      saveAuth(res.token, res.user);
       navigate("/candidate-profile");
     } catch (err: unknown) {
       setError(getMessage(err, "Registration failed"));
@@ -433,11 +463,19 @@ export function CandidateRegister() {
         <Btn fullWidth type="submit" disabled={loading}>
           {loading ? "Creating account…" : "Create My Account →"}
         </Btn>
-        <Btn fullWidth variant="secondary">
-           Sign Up with Google
+        <Btn
+          fullWidth
+          variant="secondary"
+          onClick={() => console.log("Google OAuth - TODO")}
+        >
+          Sign Up with Google
         </Btn>
-        <Btn fullWidth variant="secondary">
-           Import from LinkedIn
+        <Btn
+          fullWidth
+          variant="secondary"
+          onClick={() => console.log("LinkedIn Import - TODO")}
+        >
+          Import from LinkedIn
         </Btn>
       </form>
     </AuthShell>
